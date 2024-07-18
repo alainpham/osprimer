@@ -1,0 +1,4 @@
+authorized_keys
+*.raw
+*.qcow2
+*.vhd
