@@ -74,19 +74,6 @@ cat << EOF | chroot ${ROOTFS}
     update-grub
 EOF
 
-# first boot script
-cat <<EOF | sudo tee ${ROOTFS}/usr/local/bin/firstboot.sh
-#!/bin/bash
-if [ ! -f /var/log/firstboot.log ]; then
-    # Code to execute if log file does not exist
-    echo "First boot script has run">/var/log/firstboot.log
-    growpart /dev/sda 1
-    resize2fs /dev/sda1
-fi
-EOF
-
-chmod 755 ${ROOTFS}/usr/local/bin/firstboot.sh
-
 # super aliases
 cat <<EOF | sudo tee ${ROOTFS}/etc/profile.d/super_aliases.sh
 alias ll="ls -larth"
@@ -100,14 +87,21 @@ EOF
 echo "setup apt"
 cat <<EOF > ${ROOTFS}/etc/apt/sources.list
 deb http://deb.debian.org/debian bookworm main contrib non-free non-free-firmware
+deb-src http://deb.debian.org/debian bookworm main contrib non-free non-free-firmware
+
 deb http://deb.debian.org/debian-security/ bookworm-security main contrib non-free non-free-firmware
+deb-src http://deb.debian.org/debian-security/ bookworm-security main contrib non-free non-free-firmware
+
 deb http://deb.debian.org/debian bookworm-updates main contrib non-free non-free-firmware
+deb-src http://deb.debian.org/debian bookworm-updates main contrib non-free non-free-firmware
 EOF
 
 echo "install essentials"
 cat << EOF | chroot ${ROOTFS}
     sudo apt update && sudo apt upgrade -y
-    sudo apt install -y git tmux vim curl rsync ncdu dnsutils bmon ntp ntpstat htop bash-completion gpg whois containerd haveged
+    sudo apt install -y git tmux vim curl rsync ncdu dnsutils bmon ntp ntpstat htop bash-completion gpg whois containerd 
+    sudo apt remove -y netplan.io
+    sudo apt install -y ifupdown resolvconf
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup
 EOF
 

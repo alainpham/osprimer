@@ -26,21 +26,52 @@ export DEVICE=/dev/loop0
 export ROOTFS="/tmp/installing-rootfs"
 
 # resize image
-qemu-img  resize -f raw $INPUT_IMG 4G
+qemu-img create -f raw $INPUT_IMG 4G
+
+sed -e 's/\s*\([\+0-9a-zA-Z]*\).*/\1/' << EOF | sudo fdisk $INPUT_IMG
+o # clear the in memory partition table
+n # new partition
+p # primary partition
+1 # partition number 1 
+    # default - start at beginning of disk
++128M # 512 MB boot parttion
+n # new partition
+p # primary partition
+2 # partion number 2
+    # default, start immediately after preceding partition
+    # default, extend partition to end of disk
+a # make a partition bootable
+1 # bootable partition is partition 1 -- /dev/loop0p1
+p # print the in-memory partition table
+w # write the partition table
+q # and we're done
+EOF
 
 # setup loopback
 losetup -D 
 losetup -fP $INPUT_IMG
 
 # fix partition
-printf "fix\n" | parted ---pretend-input-tty $DEVICE print
-growpart ${DEVICE} 1
-resize2fs ${DEVICE}p1
+sudo mkfs.ext4 ${DEVICE}p1
+sudo mkfs.ext4 ${DEVICE}p2
 
 # mount image for chroot
 echo "Mount OS partition"
 mkdir -p ${ROOTFS}
 mount ${DEVICE}p1 ${ROOTFS}
+sudo mkdir ${ROOTFS}/boot
+sudo mount ${DEVICE}p2 ${ROOTFS}/boot
+
+sudo debootstrap --arch amd64 bookworm ${ROOTFS} https://deb.debian.org/debian
+
+# sudo debootstrap \
+#    --arch=amd64 \
+#    --variant=minbase \
+#    --components "main" \
+#    --include "ca-certificates,cron,iptables,isc-dhcp-client,libnss-myhostname,ntp,ntpdate,rsyslog,ssh,sudo,dialog,whiptail,man-db,curl,dosfstools,e2fsck-static" \
+#    bookworm \
+#    ${ROOTFS} \
+#    http://deb.debian.org/debian/
 
 echo "Get ready for chroot"
 mount --bind /dev ${ROOTFS}/dev
@@ -51,6 +82,39 @@ mount -t proc proc ${ROOTFS}/proc
 mount -t sysfs sysfs ${ROOTFS}/sys
 mount -t tmpfs tmpfs ${ROOTFS}/tmp
 
+
+# create user and setup ssh
+echo "setup apt"
+cat <<EOF > ${ROOTFS}/etc/apt/sources.list
+deb http://deb.debian.org/debian bookworm main contrib non-free non-free-firmware
+deb-src http://deb.debian.org/debian bookworm main contrib non-free non-free-firmware
+
+deb http://deb.debian.org/debian-security/ bookworm-security main contrib non-free non-free-firmware
+deb-src http://deb.debian.org/debian-security/ bookworm-security main contrib non-free non-free-firmware
+
+deb http://deb.debian.org/debian bookworm-updates main contrib non-free non-free-firmware
+deb-src http://deb.debian.org/debian bookworm-updates main contrib non-free non-free-firmware
+EOF
+
+echo "setup fstab"
+cat <<EOF > ${ROOTFS}/etc/fstab
+# /etc/fstab: static file system information.
+#
+# Use 'blkid' to print the universally unique identifier for a
+# device; this may be used with UUID= as a more robust way to name devices
+# that works even if disks are added and removed. See fstab(5).
+#
+# <file system>         <mount point>   <type>  <options>                       <dump>  <pass>
+/dev/sda2               /               ext4    errors=remount-ro               0       1
+/dev/sda1               /boot           ext4    defaults                        0       2
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    apt update
+    apt install -y systemd-sysv
+    ln -s /bin/true /sbin/initctl
+    DEBIAN_FRONTEND=noninteractive apt install -y os-prober ifupdown resolvconf locales build-essential module-assistant grub-pc grub2 linux-image-amd64 linux-headers-amd64 firmware-linux
+EOF
 
 # create user and setup ssh
 echo "chroot setup users"
@@ -69,23 +133,20 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 
 # accelerate grub startup
+
+cat << EOF | chroot ${ROOTFS}
+    grub-install ${DEVICE}
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    sed -i 's/GRUB_TIMEOUT=./GRUB_TIMEOUT=0/g' /etc/default/grub
+    update-grub
+EOF
+
 cat << EOF | chroot ${ROOTFS}
     sed -i 's/GRUB_TIMEOUT=./GRUB_TIMEOUT=0/g' /etc/default/grub.d/15_timeout.cfg
     update-grub
 EOF
-
-# first boot script
-cat <<EOF | sudo tee ${ROOTFS}/usr/local/bin/firstboot.sh
-#!/bin/bash
-if [ ! -f /var/log/firstboot.log ]; then
-    # Code to execute if log file does not exist
-    echo "First boot script has run">/var/log/firstboot.log
-    growpart /dev/sda 1
-    resize2fs /dev/sda1
-fi
-EOF
-
-chmod 755 ${ROOTFS}/usr/local/bin/firstboot.sh
 
 # super aliases
 cat <<EOF | sudo tee ${ROOTFS}/etc/profile.d/super_aliases.sh
@@ -97,17 +158,13 @@ cat << EOF | chroot ${ROOTFS}
     sed -i 's/.SystemMaxUse=/SystemMaxUse=50M/g' /etc/systemd/journald.conf
 EOF
 
-echo "setup apt"
-cat <<EOF > ${ROOTFS}/etc/apt/sources.list
-deb http://deb.debian.org/debian bookworm main contrib non-free non-free-firmware
-deb http://deb.debian.org/debian-security/ bookworm-security main contrib non-free non-free-firmware
-deb http://deb.debian.org/debian bookworm-updates main contrib non-free non-free-firmware
-EOF
-
 echo "install essentials"
 cat << EOF | chroot ${ROOTFS}
     sudo apt update && sudo apt upgrade -y
-    sudo apt install -y git tmux vim curl rsync ncdu dnsutils bmon ntp ntpstat htop bash-completion gpg whois containerd haveged
+    sudo apt install -y git tmux vim curl rsync ncdu dnsutils bmon ntp ntpstat htop bash-completion gpg whois containerd 
+    sudo apt install -y firmware-linux-nonfree
+    sudo apt remove -y netplan.io
+    sudo apt install -y ifupdown resolvconf
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup
 EOF
 
@@ -198,6 +255,7 @@ EOF
 
 echo "install kube bins"
 cat << EOF | chroot ${ROOTFS}
+    rm /etc/apt/keyrings/kubernetes-apt-keyring.gpg /etc/apt/sources.list.d/kubernetes.list
     curl -fsSL https://pkgs.k8s.io/core:/stable:/$MAJOR_KUBE_VERSION/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
     echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/$MAJOR_KUBE_VERSION/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
 

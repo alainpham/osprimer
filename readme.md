@@ -3,7 +3,7 @@ Make sure everything is unmounted
 
 ```bash
 export ROOTFS="/tmp/installing-rootfs"
-sudo umount ${ROOTFS}/{dev/pts,dev,run,proc,sys,tmp,}
+sudo umount ${ROOTFS}/{dev/pts,boot,dev,run,proc,sys,tmp,}
 sudo losetup -D 
 ```
 
@@ -29,5 +29,5 @@ scp d12-full.raw awon:/home/apham/apps/static/data
 create qcow and vhd images
 
 ```bash
-sudo ./make-vm-disk.sh d12-full.raw sandbox 30G
+sudo ./make-vm-disk.sh d12-full.raw sb 30G 172.29.123.10/20
 ```
