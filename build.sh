@@ -28,16 +28,30 @@ export ROOTFS="/tmp/installing-rootfs"
 
 # resize image
 cp $INPUT_IMG $OUTPUT_IMAGE
-qemu-img  resize -f raw $OUTPUT_IMAGE 4G
+
+if [ $KUBE_HOST -eq 1 ]; then
+    echo "resize kube"
+    qemu-img  resize -f raw $OUTPUT_IMAGE 2.5G
+fi
+
+if [ $DOCKER_HOST -eq 1 ]; then
+    echo "resize docker"
+    qemu-img  resize -f raw $OUTPUT_IMAGE 3.5G
+fi
+
+
 
 # setup loopback
 losetup -D 
 losetup -fP $OUTPUT_IMAGE
 
 # fix partition
+if [ $DOCKER_HOST -eq 1 ] || [ $KUBE_HOST -eq 1 ] ; then
 printf "fix\n" | parted ---pretend-input-tty $DEVICE print
 growpart ${DEVICE} 1
 resize2fs ${DEVICE}p1
+fi
+
 
 # mount image for chroot
 echo "Mount OS partition"
@@ -131,7 +145,7 @@ EOF
 echo "install essentials"
 cat << EOF | chroot ${ROOTFS}
     sudo apt update && sudo apt upgrade -y
-    sudo apt install -y git tmux vim curl rsync ncdu dnsutils bmon ntp ntpstat htop bash-completion gpg whois containerd haveged
+    sudo apt install -y git tmux vim curl wget rsync ncdu dnsutils bmon ntp ntpstat htop bash-completion gpg whois containerd haveged
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup
 EOF
 

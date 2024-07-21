@@ -25,7 +25,6 @@ mkdir -p ${ROOTFS}
 mount ${DEVICE}p1 ${ROOTFS}
 
 echo $OUTPUT_NAME > ${ROOTFS}/etc/hostname
-sed -i "s/127.0.1.1.*/127.0.1.1 ${OUTPUT_NAME}/g" ${ROOTFS}/etc/hosts
 
 # ifupdown 
 cat << EOF > ${ROOTFS}/etc/network/interfaces

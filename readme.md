@@ -20,10 +20,14 @@ sudo mount ${DEVICE}p1 ${ROOTFS}
 Build image
 
 ```bash
-cp debian-12-nocloud-amd64.raw d12-full.raw
-sudo ./build.sh d12-full.raw apham password authorized_keys 1 1
+sudo ./build.sh debian-12-nocloud-amd64.raw d12-full.raw apham password authorized_keys 1 1
+
+sudo ./build.sh debian-12-nocloud-amd64.raw d12-min.raw apham password authorized_keys 0 0
+
 
 scp d12-full.raw awon:/home/apham/apps/static/data
+scp d12-min.raw awon:/home/apham/apps/static/data
+scp d12-kube.raw awon:/home/apham/apps/static/data
 ```
 
 create qcow and vhd images

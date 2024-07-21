@@ -7,7 +7,7 @@ if ! [ $# -eq 2 ]; then
     exit 1
 fi
 
-wget -qO- http://192.168.100:8383/$1 | dd of=/dev/sda bs=1M status=progress
+wget -qO- http://192.168.100:8787/$1 | dd of=/dev/sda bs=1M status=progress
 
 printf "fix\n" | parted ---pretend-input-tty /dev/sda print
 parted -s /dev/sda -- mkpart "" fat32 -4M -1
