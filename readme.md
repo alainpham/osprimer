@@ -29,5 +29,5 @@ scp d12-full.raw awon:/home/apham/apps/static/data
 create qcow and vhd images
 
 ```bash
-sudo ./make-vm-disk.sh d12-full.raw sb 30G 172.29.123.10/20
+sudo ./make-vm-disk.sh d12-full.raw sb 30G 192.168.199.10/24
 ```

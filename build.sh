@@ -1,9 +1,9 @@
 #!/bin/bash
 set -e
 
-if ! [ $# -eq 6 ]; then
-    echo "Usage: $0 <INPUT_IMG> <TARGET_USERNAME> <TARGET_PASSWD> <AUTHSSHFILE> <DOCKER_HOST> <KUBE_HOST>"
-    echo "ie: $0 d12-full.raw apham password authorized_keys 1 1"
+if ! [ $# -eq 7 ]; then
+    echo "Usage: $0 <INPUT_IMG> <OUTPUT_IMAGE> <TARGET_USERNAME> <TARGET_PASSWD> <AUTHSSHFILE> <DOCKER_HOST> <KUBE_HOST>"
+    echo "ie: $0 debian-12-nocloud-amd64.raw d12-full.raw apham password authorized_keys 1 1"
     exit 1
 fi
 
@@ -15,22 +15,24 @@ export KEYBOARD_LAYOUT=fr
 
 # Map input parameters
 export INPUT_IMG=$1
-export TARGET_USERNAME=$2
-export TARGET_PASSWD=$3
-export AUTHSSHFILE=$4
-export DOCKER_HOST=$5
-export KUBE_HOST=$6
+export OUTPUT_IMAGE=$2
+export TARGET_USERNAME=$3
+export TARGET_PASSWD=$4
+export AUTHSSHFILE=$5
+export DOCKER_HOST=$6
+export KUBE_HOST=$7
 
 # name devices
 export DEVICE=/dev/loop0
 export ROOTFS="/tmp/installing-rootfs"
 
 # resize image
-qemu-img  resize -f raw $INPUT_IMG 4G
+cp $INPUT_IMG $OUTPUT_IMAGE
+qemu-img  resize -f raw $OUTPUT_IMAGE 4G
 
 # setup loopback
 losetup -D 
-losetup -fP $INPUT_IMG
+losetup -fP $OUTPUT_IMAGE
 
 # fix partition
 printf "fix\n" | parted ---pretend-input-tty $DEVICE print
@@ -51,13 +53,13 @@ mount -t proc proc ${ROOTFS}/proc
 mount -t sysfs sysfs ${ROOTFS}/sys
 mount -t tmpfs tmpfs ${ROOTFS}/tmp
 
-
+export TARGET_ENCRYPTED_PASSWD=$(openssl passwd -6 -salt acmh $TARGET_PASSWD)
 # create user and setup ssh
 echo "chroot setup users"
 cat << EOF | chroot ${ROOTFS}
     useradd -m -s /bin/bash $TARGET_USERNAME
-    echo "${TARGET_USERNAME}:${TARGET_PASSWD}" | chpasswd
-    echo "root:${TARGET_PASSWD}" | chpasswd
+    echo "${TARGET_USERNAME}:${TARGET_ENCRYPTED_PASSWD}" | chpasswd -e
+    echo "root:${TARGET_ENCRYPTED_PASSWD}" | chpasswd -e
     echo '${TARGET_USERNAME} ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo -f /etc/sudoers.d/nopwd
 EOF
 
@@ -86,6 +88,28 @@ fi
 EOF
 
 chmod 755 ${ROOTFS}/usr/local/bin/firstboot.sh
+
+cat <<EOF | sudo tee ${ROOTFS}/etc/systemd/system/firstboot.service
+[Unit]
+Description=firstboot
+Requires=network.target
+After=network.target
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/usr/local/bin/firstboot.sh
+RemainAfterExit=yes
+
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    sudo systemctl enable firstboot.service
+EOF
+
 
 # super aliases
 cat <<EOF | sudo tee ${ROOTFS}/etc/profile.d/super_aliases.sh
@@ -134,9 +158,9 @@ if [ $DOCKER_HOST -eq 1 ]; then
 
 echo "install docker"
 cat << EOF | chroot ${ROOTFS}
-    apt update
-    apt install -y docker.io python3-docker docker-compose skopeo
-    apt install -y ansible openjdk-17-jdk-headless ntfs-3g
+    sudo apt update
+    sudo apt install -y docker.io python3-docker docker-compose skopeo
+    sudo apt install -y ansible openjdk-17-jdk-headless ntfs-3g
 EOF
 
 cat <<EOF | sudo tee ${ROOTFS}/etc/docker/daemon.json
@@ -172,6 +196,73 @@ EOF
 # TODO on first boot : 
 # docker network create --opt com.docker.network.bridge.name=primenet --driver=bridge --subnet=172.18.0.0/16 --gateway=172.18.0.1 primenet
 # docker buildx create --name multibuilder --platform linux/amd64,linux/arm/v7,linux/arm64/v8 --use
+
+cat <<EOF | sudo tee ${ROOTFS}/usr/local/bin/firstboot-dockernet.sh
+#!/bin/bash
+echo "Setting up dedicated network bridge.."
+if [[ -z "\$(docker network ls | grep primenet)" ]] then
+     docker network create --driver=bridge --subnet=172.18.0.0/16 --gateway=172.18.0.1 primenet
+     echo "net created"
+     echo "✅ primenet docker network created !">/var/log/firstboot-dockernet.log
+else
+     echo "net exists"
+     echo "✅ primenet already exisits ! ">/var/log/firstboot-dockernet.log
+fi
+EOF
+
+cat <<EOF | sudo tee ${ROOTFS}/usr/local/bin/firstboot-dockerbuildx.sh
+#!/bin/bash
+
+echo "Setting up builder"
+if [[ -z "\$(docker buildx ls | grep multibuilder.*linux)" ]] then
+     docker buildx create --name multibuilder --platform linux/amd64,linux/arm/v7,linux/arm64/v8 --use
+     echo "✅ multibuilder docker buildx created !">~/firstboot-dockerbuildx.log
+else
+     echo "build exists"
+     echo "✅ multibuilder already exisits ! ">~/firstboot-dockerbuildx.log
+fi
+EOF
+
+chmod 755 ${ROOTFS}/usr/local/bin/firstboot-dockernet.sh
+chmod 755 ${ROOTFS}/usr/local/bin/firstboot-dockerbuildx.sh
+
+cat <<EOF | sudo tee ${ROOTFS}/etc/systemd/system/firstboot-dockernet.service
+[Unit]
+Description=firstboot-dockernet
+Requires=network.target docker.service
+After=network.target docker.service
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/usr/local/bin/firstboot-dockernet.sh
+RemainAfterExit=yes
+
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+cat <<EOF | sudo tee ${ROOTFS}/etc/systemd/system/firstboot-dockerbuildx.service
+[Unit]
+Description=firstboot-dockerbuildx
+Requires=network.target docker.service
+After=network.target docker.service
+
+[Service]
+Type=oneshot
+User=${TARGET_USERNAME}
+ExecStart=/usr/local/bin/firstboot-dockerbuildx.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    sudo systemctl enable firstboot-dockernet.service
+    sudo systemctl enable firstboot-dockerbuildx.service
+EOF
 
 fi
 
