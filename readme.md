@@ -3,7 +3,7 @@ Make sure everything is unmounted
 
 ```bash
 export ROOTFS="/tmp/installing-rootfs"
-sudo umount ${ROOTFS}/{dev/pts,boot,dev,run,proc,sys,tmp,}
+sudo umount ${ROOTFS}/{dev/pts,boot/efi,boot,dev,run,proc,sys,tmp,}
 sudo losetup -D 
 ```
 
@@ -11,18 +11,19 @@ Mount for debug
 ```bash
 export DEVICE=/dev/loop0
 export ROOTFS="/tmp/installing-rootfs"
-export INPUT_IMG=d12-full.raw
+export INPUT_IMG=d12-min.raw
 sudo losetup -fP $INPUT_IMG
 sudo mkdir -p ${ROOTFS}
 sudo mount ${DEVICE}p1 ${ROOTFS}
+sudo mount ${DEVICE}p15 ${ROOTFS}/boot/efi
 ```
 
 Build image
 
 ```bash
 sudo ./build.sh debian-12-nocloud-amd64.raw d12-full.raw apham password authorized_keys 1 1
-
 sudo ./build.sh debian-12-nocloud-amd64.raw d12-min.raw apham password authorized_keys 0 0
+sudo ./build.sh debian-12-nocloud-amd64.raw d12-kube.raw apham password authorized_keys 0 1
 
 
 scp d12-full.raw awon:/home/apham/apps/static/data

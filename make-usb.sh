@@ -3,7 +3,7 @@
 # Take one argument from the commandline: VM name TODO
 if ! [ $# -eq 2 ]; then
     echo "Usage: $0 <input_img> <outputname>"
-    echo "ie: $0 d12-kube.raw usb"
+    echo "ie: $0 d12-min.raw usb"
     exit 1
 fi
 
@@ -25,13 +25,13 @@ mount ${DEVICE}p1 ${ROOTFS}
 # hostname
 echo $OUTPUT_NAME > ${ROOTFS}/etc/hostname
 
-mkdir /usbdata
+mkdir -p ${ROOTFS}/usbdata
 
-# fstab
-if ! grep -q 'usbdata' ${ROOTFS}/etc/fstab ; then   
-  echo '#usbdata' >> ${ROOTFS}/etc/fstab 
-  echo 'LABEL=USBDATA    /usbdata    vfat    defaults    0    0' >> ${ROOTFS}/etc/fstab
-fi
+# # fstab
+# if ! grep -q 'usbdata' ${ROOTFS}/etc/fstab ; then   
+#   echo '#usbdata' >> ${ROOTFS}/etc/fstab 
+#   echo 'LABEL=USBDATA    /usbdata    vfat    defaults    0    0' >> ${ROOTFS}/etc/fstab
+# fi
 
 # flash script
 cp ./flash-nocloud-online.sh ${ROOTFS}/usr/local/bin/flash-nocloud-online.sh

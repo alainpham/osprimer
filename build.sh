@@ -67,13 +67,13 @@ mount -t proc proc ${ROOTFS}/proc
 mount -t sysfs sysfs ${ROOTFS}/sys
 mount -t tmpfs tmpfs ${ROOTFS}/tmp
 
-export TARGET_ENCRYPTED_PASSWD=$(openssl passwd -6 -salt acmh $TARGET_PASSWD)
+export TARGET_ENCRYPTED_PASSWD=$(openssl passwd -6 -salt xyz $TARGET_PASSWD)
 # create user and setup ssh
 echo "chroot setup users"
 cat << EOF | chroot ${ROOTFS}
     useradd -m -s /bin/bash $TARGET_USERNAME
-    echo "${TARGET_USERNAME}:${TARGET_ENCRYPTED_PASSWD}" | chpasswd -e
-    echo "root:${TARGET_ENCRYPTED_PASSWD}" | chpasswd -e
+    echo '${TARGET_USERNAME}:${TARGET_ENCRYPTED_PASSWD}' | sudo chpasswd -e
+    echo 'root:${TARGET_ENCRYPTED_PASSWD}' | sudo chpasswd -e
     echo '${TARGET_USERNAME} ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo -f /etc/sudoers.d/nopwd
 EOF
 
