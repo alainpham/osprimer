@@ -11,11 +11,12 @@ Mount for debug
 ```bash
 export DEVICE=/dev/loop0
 export ROOTFS="/tmp/installing-rootfs"
-export INPUT_IMG=d12-min.raw
+export INPUT_IMG=usb.raw
 sudo losetup -fP $INPUT_IMG
 sudo mkdir -p ${ROOTFS}
 sudo mount ${DEVICE}p1 ${ROOTFS}
 sudo mount ${DEVICE}p15 ${ROOTFS}/boot/efi
+
 ```
 
 Build image
@@ -35,4 +36,12 @@ create qcow and vhd images
 
 ```bash
 sudo ./make-vm-disk.sh d12-full.raw sb 30G 192.168.199.10/24
+```
+
+create usb livedisk
+
+```bash
+sudo ./make-usb.sh d12-min.raw usb
+qemu-img convert -f raw -O vpc usb.raw usb.vhd
+
 ```

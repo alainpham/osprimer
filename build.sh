@@ -57,6 +57,7 @@ fi
 echo "Mount OS partition"
 mkdir -p ${ROOTFS}
 mount ${DEVICE}p1 ${ROOTFS}
+mount ${DEVICE}p15 ${ROOTFS}/boot/efi
 
 echo "Get ready for chroot"
 mount --bind /dev ${ROOTFS}/dev
@@ -338,8 +339,7 @@ cat << EOF | chroot ${ROOTFS}
     apt-get clean && rm -rf /var/lib/apt/lists/*
 EOF
 
-
 echo "Unmounting filesystems"
-umount ${ROOTFS}/{dev/pts,dev,run,proc,sys,tmp,}
+umount ${ROOTFS}/{dev/pts,boot/efi,dev,run,proc,sys,tmp,}
 
 losetup -D
