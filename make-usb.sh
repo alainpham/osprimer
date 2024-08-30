@@ -39,9 +39,9 @@ mount -t tmpfs tmpfs ${ROOTFS}/tmp
 
 # change boot root efi uuid
 echo "Change boot root efi uuid"
-sed -i 's/6b1e68af-1a11-4789-9cca-387103bfdbc9/4011286f-c983-4f7b-9a28-4156be37c584/g' ${ROOTFS}/boot/efi/EFI/debian/grub.cfg
-sed -i 's/6b1e68af-1a11-4789-9cca-387103bfdbc9/4011286f-c983-4f7b-9a28-4156be37c584/g' ${ROOTFS}/boot/grub/i386-pc/load.cfg
-sed -i 's/6b1e68af-1a11-4789-9cca-387103bfdbc9/4011286f-c983-4f7b-9a28-4156be37c584/g' ${ROOTFS}/boot/grub/x86_64-efi/load.cfg
+sed -i 's/search.fs_uuid.*/search.fs_uuid 4011286f-c983-4f7b-9a28-4156be37c584 root/g' ${ROOTFS}/boot/efi/EFI/debian/grub.cfg
+sed -i 's/search.fs_uuid.*/search.fs_uuid 4011286f-c983-4f7b-9a28-4156be37c584 root/g' ${ROOTFS}/boot/grub/i386-pc/load.cfg
+sed -i 's/search.fs_uuid.*/search.fs_uuid 4011286f-c983-4f7b-9a28-4156be37c584 root/g' ${ROOTFS}/boot/grub/x86_64-efi/load.cfg
 
 
 # change GRUB_DISABLE_LINUX_UUID

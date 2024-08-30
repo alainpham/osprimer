@@ -36,6 +36,8 @@ create qcow and vhd images
 
 ```bash
 sudo ./make-vm-disk.sh d12-full.raw sb 30G 192.168.199.10/24
+sudo ./make-vm-disk.sh d12-full.raw dt 60G 192.168.199.20/24
+
 ```
 
 create usb livedisk
@@ -45,3 +47,4 @@ sudo ./make-usb.sh d12-min.raw usb
 qemu-img convert -f raw -O vpc usb.raw usb.vhd
 
 ```
+
