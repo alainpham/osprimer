@@ -366,3 +366,8 @@ umount ${ROOTFS}/{dev/pts,boot/efi,dev,run,proc,sys,tmp,}
 
 losetup -D
 fi
+
+
+if [ $INSIDE_MACHINE -eq 1 ]; then
+echo "Finished, if you have an NVIDIA card install nvidia-detect and install the right driver"
+fi
