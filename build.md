@@ -1,10 +1,10 @@
 ```bash
 export TARGET_USERNAME=apham
 
-export DOCKER_BUILDX_VERSION=v0.16.0
+export DOCKER_BUILDX_VERSION=v0.16.2
 export MAJOR_KUBE_VERSION=v1.29
 export K9S_VERSION=v0.32.5
-export MVN_VERSION=3.9.8
+export MVN_VERSION=3.9.9
 export KEYBOARD_LAYOUT=fr
 
 su

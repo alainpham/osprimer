@@ -21,11 +21,16 @@ sudo mount ${DEVICE}p15 ${ROOTFS}/boot/efi
 
 Build image
 
-```bash
-sudo ./build.sh debian-12-nocloud-amd64.raw d12-full.raw apham password authorized_keys 1 1
-sudo ./build.sh debian-12-nocloud-amd64.raw d12-min.raw apham password authorized_keys 0 0
-sudo ./build.sh debian-12-nocloud-amd64.raw d12-kube.raw apham password authorized_keys 0 1
 
+```bash
+rm debian-12-nocloud-amd64.raw
+wget https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw
+
+sudo ./build.sh debian-12-nocloud-amd64.raw d12-full.raw apham $PASS authorized_keys 1 1 1 5G
+sudo ./build.sh debian-12-nocloud-amd64.raw d12-min.raw apham $PASS authorized_keys 0 0 1 4G
+sudo ./build.sh debian-12-nocloud-amd64.raw d12-kube.raw apham $PASS authorized_keys 0 1 1 4G
+
+./build.sh x x apham password authorized_keys 1 1 1 5G 1 0
 
 scp d12-full.raw awon:/home/apham/apps/static/data
 scp d12-min.raw awon:/home/apham/apps/static/data
