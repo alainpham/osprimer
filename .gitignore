@@ -3,3 +3,4 @@ authorized_keys
 *.qcow2
 *.vhd
 *.img
+dwm-src

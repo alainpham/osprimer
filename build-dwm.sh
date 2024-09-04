@@ -1,17 +1,9 @@
 #!/bin/bash
 set -e
 
-if ! [ $# -eq 13 ]; then
-
-    echo "make sure to download debian cloud image : rm debian-12-nocloud-amd64.raw && wget https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw"
-
-    echo "Usage: $0 <INSIDE_MACHINE> <CREATE_USER> <TARGET_USERNAME> <TARGET_PASSWD> <AUTHSSHFILE> <DOCKER_HOST> <KUBE_HOST> <GUI> <BLACKLIST_NOUVEAU> <NVIDIA_DRIVERS> <INPUT_IMG> <OUTPUT_IMAGE> <DISK_SIZE>"
-    echo "baremetal fullgui:    $0 1 0 apham password authorized_keys 1 1 1 1 1 debian-12-nocloud-amd64.raw d12-fgui.raw 5G"
-    echo "cloud fullgui:        $0 0 1 apham password authorized_keys 1 1 1 1 0 debian-12-nocloud-amd64.raw d12-fgui.raw 5G"
-    echo "cloud full:           $0 0 1 apham password authorized_keys 1 1 0 1 0 debian-12-nocloud-amd64.raw d12-full.raw 5G"
-    echo "cloud image min:      $0 0 1 apham password authorized_keys 0 0 0 1 0 debian-12-nocloud-amd64.raw d12-mini.raw 3G"
-    echo "cloud image kube:     $0 0 1 apham password authorized_keys 0 1 0 1 0 debian-12-nocloud-amd64.raw d12-kube.raw 4G"
-
+if ! [ $# -eq 11 ]; then
+    echo "Usage: $0 <INPUT_IMG> <OUTPUT_IMAGE> <TARGET_USERNAME> <TARGET_PASSWD> <AUTHSSHFILE> <DOCKER_HOST> <KUBE_HOST> <BLACKLIST_NOUVEAU> <DISK_SIZE> <INSIDE_MACHINE> <CREATE_USER>"
+    echo "ie: $0 debian-12-nocloud-amd64.raw d12-full.raw apham password authorized_keys 1 1 1 5G 0 0"
     exit 1
 fi
 
@@ -19,29 +11,25 @@ export DOCKER_BUILDX_VERSION=v0.16.2
 export MAJOR_KUBE_VERSION=v1.29
 export K9S_VERSION=v0.32.5
 export MVN_VERSION=3.9.9
-export DWM_VERSION=6.5
-export ST_VERSION=0.9.2
-export DMENU_VERSION=5.3
 export KEYBOARD_LAYOUT=fr
 
 # Map input parameters
-export INSIDE_MACHINE=$1
-export CREATE_USER=$2
+export INPUT_IMG=$1
+export OUTPUT_IMAGE=$2
 export TARGET_USERNAME=$3
 export TARGET_PASSWD=$4
 export AUTHSSHFILE=$5
 export DOCKER_HOST=$6
 export KUBE_HOST=$7
-export GUI=$8
-export BLACKLIST_NOUVEAU=$9
-export NVIDIA_DRIVERS=${10}
-export INPUT_IMG=${11}
-export OUTPUT_IMAGE=${12}
-export DISK_SIZE=${13}
+export BLACKLIST_NOUVEAU=$8
+export DISK_SIZE=$9
+export INSIDE_MACHINE=${10}
+export CREATE_USER=${11}
 
 if [ $INSIDE_MACHINE -eq 1 ]; then
     echo "Running inside the machine"
     export ROOTFS=/
+
 fi
 
 # Only execute when working with a raw image
@@ -221,21 +209,16 @@ cat <<EOF | tee ${ROOTFS}/etc/docker/daemon.json
 }
 EOF
 
-
 cat << EOF | chroot ${ROOTFS}
     mkdir -p /usr/lib/docker/cli-plugins
     curl -SL https://github.com/docker/buildx/releases/download/${DOCKER_BUILDX_VERSION}/buildx-${DOCKER_BUILDX_VERSION}.linux-amd64 -o /usr/lib/docker/cli-plugins/docker-buildx
     chmod 755 /usr/lib/docker/cli-plugins/docker-buildx
+    
     adduser $TARGET_USERNAME docker
-EOF
 
-export JAVA_HOME_TARGET=$(echo 'readlink -f /usr/bin/javac | sed "s:/bin/javac::"' | chroot ${ROOTFS})
+    export JAVA_HOME=$(readlink -f /usr/bin/javac | sed "s:/bin/javac::")
+    echo "export JAVA_HOME=$JAVA_HOME" | tee -a /etc/profile.d/java_home.sh
 
-cat << EOF | chroot ${ROOTFS}
-    echo "export JAVA_HOME=${JAVA_HOME_TARGET}" | tee /etc/profile.d/java_home.sh
-EOF
-
-cat << EOF | chroot ${ROOTFS}
     mkdir /opt/appimages/
 
     curl -L -o /tmp/maven.tar.gz https://dlcdn.apache.org/maven/maven-3/${MVN_VERSION}/binaries/apache-maven-${MVN_VERSION}-bin.tar.gz
@@ -353,7 +336,7 @@ EOF
 echo "install helm"
 cat << EOF | chroot ${ROOTFS}
     curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | tee /usr/share/keyrings/helm.gpg > /dev/null
-    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | tee /etc/apt/sources.list.d/helm-stable-debian.list
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | tee /etc/apt/sources.list.d/helm-stable-debian.list
     apt update
     apt install helm -y
     helm completion bash | tee /etc/bash_completion.d/helm > /dev/null
@@ -369,100 +352,39 @@ echo "download kube images"
 cat << EOF | chroot ${ROOTFS}
     kubeadm config images pull
 EOF
-fi
 
-echo "install nvidia drivers"
-if [ $NVIDIA_DRIVERS -eq 1 ]; then
-
-cat << EOF | chroot ${ROOTFS}
-    apt install -y nvidia-detect
-EOF
-
-export NV_VERSION=$(echo "nvidia-detect  | grep nvidia.*driver | xargs" | chroot ${ROOTFS})
-
-cat << EOF | chroot ${ROOTFS}
-    apt install -y $NV_VERSION
-EOF
-fi
-
-echo "install gui"
-if [ $GUI -eq 1 ]; then
-
-cat << EOF | chroot ${ROOTFS}
-    apt install -y make gcc libx11-dev libxft-dev libxinerama-dev xorg pulseaudio pavucontrol
-EOF
-
-if [ ! -d ${ROOTFS}/home/$TARGET_USERNAME/dwm-src ] ; then
-
-echo "The does not exist, installing dwm"
-cat << EOF | chroot ${ROOTFS}
-
-    mkdir -p /home/$TARGET_USERNAME/dwm-src
-    cd /home/$TARGET_USERNAME/dwm-src
-    wget https://dl.suckless.org/dwm/dwm-${DWM_VERSION}.tar.gz
-    wget https://dl.suckless.org/st/st-${ST_VERSION}.tar.gz
-    wget https://dl.suckless.org/tools/dmenu-${DMENU_VERSION}.tar.gz
-    tar -xzvf dwm-${DWM_VERSION}.tar.gz
-    tar -xzvf st-${ST_VERSION}.tar.gz
-    tar -xzvf dmenu-${DMENU_VERSION}.tar.gz
-    
-    cd /home/$TARGET_USERNAME/dwm-src/dwm-${DWM_VERSION} && make clean install
-    cd /home/$TARGET_USERNAME/dwm-src/st-${ST_VERSION} && make clean install
-    cd /home/$TARGET_USERNAME/dwm-src/dmenu-${DMENU_VERSION} && make clean install
-
-    chown $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/dwm-src
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/dwm-src
-EOF
-
-
-cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
-#!/bin/bash
-
-battery() {
-  battery='/sys/class/power_supply/BAT0'
-
-  if [ -d "$battery" ]; then
-    echo -n ' | '
-
-    if grep -q 'Charging' "$battery/status"; then
-      echo -n '+'
-    fi
-
-    tr -d '\n' <"$battery/capacity"
-
-    echo '%'
-  fi
-}
-setxkbmap fr
-while true; do
-        xprop -root -set WM_NAME "$(date '+%Y-%m-%d %H:%M')$(battery)"
-  sleep 5
-done &
-
-exec dwm
-EOF
-
-cat << EOF | chroot ${ROOTFS}
-    chown $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.xinitrc
-EOF
-
-# end dwm
-fi 
-
-#end gui
 fi
 
 
+
+# DESKTOP dwm for desktop env
+
+cat << EOF | chroot ${ROOTFS}
+    apt install make gcc libx11-dev libxft-dev libxinerama-dev xorg
+    wget https://dl.suckless.org/dwm/dwm-6.5.tar.gz
+    wget https://dl.suckless.org/st/st-0.9.2.tar.gz
+    wget https://dl.suckless.org/tools/dmenu-5.3.tar.gz
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    apt install pulseaudio pavucontrol
+EOF
+
+if [ $INSIDE_MACHINE -eq 0 ]; then
 echo "cleaning up"
 cat << EOF | chroot ${ROOTFS}
     apt-get clean && rm -rf /var/lib/apt/lists/*
 EOF
 
-if [ $INSIDE_MACHINE -eq 0 ]; then
 echo "Unmounting filesystems"
 umount ${ROOTFS}/{dev/pts,boot/efi,dev,run,proc,sys,tmp,}
 
 losetup -D
+fi
+
+
+if [ $INSIDE_MACHINE -eq 1 ]; then
+echo "Finished, if you have an NVIDIA card install nvidia-detect and install the right driver"
 fi
 
 
