@@ -1,16 +1,39 @@
 #!/bin/bash
 set -e
 
+lineinfile() {
+    local file_path="$1"   # First argument: file path
+    local regex="$2"       # Second argument: regex to search for
+    local new_line="$3"    # Third argument: new line to replace or add
+
+    # Check if the file exists
+    if [[ ! -f "$file_path" ]]; then
+        echo "File not found!"
+        return 1
+    fi
+
+    # Check if the line matching the regex exists in the file
+    if grep -qE "$regex" "$file_path"; then
+        # If found, replace the matching line
+        sed -i "s/$regex/$new_line/" "$file_path"
+        echo "Line matching '$regex' was replaced."
+    else
+        # If not found, append the new line at the end of the file
+        echo "$new_line" >> "$file_path"
+        echo "New line added : $new_line"
+    fi
+}
+
 if ! [ $# -eq 13 ]; then
 
     echo "make sure to download debian cloud image : rm debian-12-nocloud-amd64.raw && wget https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw"
 
-    echo "Usage: $0 <INSIDE_MACHINE> <CREATE_USER> <TARGET_USERNAME> <TARGET_PASSWD> <AUTHSSHFILE> <DOCKER_HOST> <KUBE_HOST> <GUI> <BLACKLIST_NOUVEAU> <NVIDIA_DRIVERS> <INPUT_IMG> <OUTPUT_IMAGE> <DISK_SIZE>"
-    echo "baremetal fullgui:    $0 1 0 apham password authorized_keys 1 1 1 1 1 debian-12-nocloud-amd64.raw d12-fgui.raw 5G"
-    echo "cloud fullgui:        $0 0 1 apham password authorized_keys 1 1 1 1 0 debian-12-nocloud-amd64.raw d12-fgui.raw 5G"
-    echo "cloud full:           $0 0 1 apham password authorized_keys 1 1 0 1 0 debian-12-nocloud-amd64.raw d12-full.raw 5G"
-    echo "cloud image min:      $0 0 1 apham password authorized_keys 0 0 0 1 0 debian-12-nocloud-amd64.raw d12-mini.raw 3G"
-    echo "cloud image kube:     $0 0 1 apham password authorized_keys 0 1 0 1 0 debian-12-nocloud-amd64.raw d12-kube.raw 4G"
+    echo "Usage: sudo $0 <INSIDE_MACHINE> <CREATE_USER> <TARGET_USERNAME> <TARGET_PASSWD> <AUTHSSHFILE> <DOCKER_HOST> <KUBE_HOST> <GUI> <BLACKLIST_NOUVEAU> <NVIDIA_DRIVERS> <INPUT_IMG> <OUTPUT_IMAGE> <DISK_SIZE>"
+    echo "baremetal fullgui:    sudo $0 1 0 apham ps authorized_keys 1 1 1 1 1 debian-12-nocloud-amd64.raw d12-fgui.raw 5G"
+    echo "cloud fullgui:        sudo $0 0 1 apham ps authorized_keys 1 1 1 1 0 debian-12-nocloud-amd64.raw d12-fgui.raw 5G"
+    echo "cloud full:           sudo $0 0 1 apham ps authorized_keys 1 1 0 1 0 debian-12-nocloud-amd64.raw d12-full.raw 5G"
+    echo "cloud image min:      sudo $0 0 1 apham ps authorized_keys 0 0 0 1 0 debian-12-nocloud-amd64.raw d12-mini.raw 3G"
+    echo "cloud image kube:     sudo $0 0 1 apham ps authorized_keys 0 1 0 1 0 debian-12-nocloud-amd64.raw d12-kube.raw 4G"
 
     exit 1
 fi
@@ -54,7 +77,7 @@ export ROOTFS="/tmp/installing-rootfs"
 # resize image
 cp $INPUT_IMG $OUTPUT_IMAGE
 
-qemu-img  resize -f raw $OUTPUT_IMAGE $9
+qemu-img  resize -f raw $OUTPUT_IMAGE $DISK_SIZE
 
 
 # setup loopback
@@ -155,9 +178,15 @@ EOF
 fi
 
 # super aliases
-cat <<EOF | tee ${ROOTFS}/etc/profile.d/super_aliases.sh
-alias ll="ls -larth"
-EOF
+
+lineinfile ${ROOTFS}/etc/bash.bashrc ".*alias.*ll.*=.*" 'alias ll="ls -larth"'
+lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*ROOTFS*=.*" "export ROOTFS=/"
+lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*TARGET_USERNAME*=.*" "export TARGET_USERNAME=${TARGET_USERNAME}"
+lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*DOCKER_BUILDX_VERSION*=.*" "export DOCKER_BUILDX_VERSION=${DOCKER_BUILDX_VERSION}"
+lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*MAJOR_KUBE_VERSION*=.*" "export MAJOR_KUBE_VERSION=${MAJOR_KUBE_VERSION}"
+lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*K9S_VERSION*=.*" "export K9S_VERSION=${K9S_VERSION}"
+lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*MVN_VERSION*=.*" "export MVN_VERSION=${MVN_VERSION}"
+
 
 echo "lower log volume"
 cat << EOF | chroot ${ROOTFS}
@@ -175,7 +204,7 @@ EOF
 echo "install essentials"
 cat << EOF | chroot ${ROOTFS}
     apt update && apt upgrade -y
-    apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon systemd-timesyncd htop bash-completion gpg whois containerd haveged
+    apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon systemd-timesyncd htop bash-completion gpg whois haveged
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup
 EOF
 
@@ -230,10 +259,11 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 
 export JAVA_HOME_TARGET=$(echo 'readlink -f /usr/bin/javac | sed "s:/bin/javac::"' | chroot ${ROOTFS})
+lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*JAVA_HOME*=.*" "export JAVA_HOME=${JAVA_HOME_TARGET}"
 
-cat << EOF | chroot ${ROOTFS}
-    echo "export JAVA_HOME=${JAVA_HOME_TARGET}" | tee /etc/profile.d/java_home.sh
-EOF
+# cat << EOF | chroot ${ROOTFS}
+#     echo "export JAVA_HOME=${JAVA_HOME_TARGET}" | tee /etc/profile.d/java_home.sh
+# EOF
 
 cat << EOF | chroot ${ROOTFS}
     mkdir /opt/appimages/
@@ -336,6 +366,10 @@ net.bridge.bridge-nf-call-ip6tables = 1
 EOF
 
 cat << EOF | chroot ${ROOTFS}
+    apt install -y containerd
+EOF
+
+cat << EOF | chroot ${ROOTFS}
     containerd config default | tee /etc/containerd/config.toml >/dev/null 2>&1
     sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
 EOF
@@ -371,8 +405,8 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 fi
 
-echo "install nvidia drivers"
 if [ $NVIDIA_DRIVERS -eq 1 ]; then
+echo "install nvidia drivers"
 
 cat << EOF | chroot ${ROOTFS}
     apt install -y nvidia-detect
@@ -385,69 +419,69 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 fi
 
-echo "install gui"
 if [ $GUI -eq 1 ]; then
+echo "install gui"
 
 cat << EOF | chroot ${ROOTFS}
-    apt install -y make gcc libx11-dev libxft-dev libxinerama-dev xorg pulseaudio pavucontrol
+    apt install -y make gcc libx11-dev libxft-dev libfreetype-dev libxinerama-dev xorg pulseaudio pavucontrol
 EOF
 
-if [ ! -d ${ROOTFS}/home/$TARGET_USERNAME/dwm-src ] ; then
+# if [ ! -d ${ROOTFS}/home/$TARGET_USERNAME/dwm-src ] ; then
 
-echo "The does not exist, installing dwm"
-cat << EOF | chroot ${ROOTFS}
+# echo "The does not exist, installing dwm"
+# cat << EOF | chroot ${ROOTFS}
 
-    mkdir -p /home/$TARGET_USERNAME/dwm-src
-    cd /home/$TARGET_USERNAME/dwm-src
-    wget https://dl.suckless.org/dwm/dwm-${DWM_VERSION}.tar.gz
-    wget https://dl.suckless.org/st/st-${ST_VERSION}.tar.gz
-    wget https://dl.suckless.org/tools/dmenu-${DMENU_VERSION}.tar.gz
-    tar -xzvf dwm-${DWM_VERSION}.tar.gz
-    tar -xzvf st-${ST_VERSION}.tar.gz
-    tar -xzvf dmenu-${DMENU_VERSION}.tar.gz
+#     mkdir -p /home/$TARGET_USERNAME/dwm-src
+#     cd /home/$TARGET_USERNAME/dwm-src
+#     wget https://dl.suckless.org/dwm/dwm-${DWM_VERSION}.tar.gz
+#     wget https://dl.suckless.org/st/st-${ST_VERSION}.tar.gz
+#     wget https://dl.suckless.org/tools/dmenu-${DMENU_VERSION}.tar.gz
+#     tar -xzvf dwm-${DWM_VERSION}.tar.gz
+#     tar -xzvf st-${ST_VERSION}.tar.gz
+#     tar -xzvf dmenu-${DMENU_VERSION}.tar.gz
     
-    cd /home/$TARGET_USERNAME/dwm-src/dwm-${DWM_VERSION} && make clean install
-    cd /home/$TARGET_USERNAME/dwm-src/st-${ST_VERSION} && make clean install
-    cd /home/$TARGET_USERNAME/dwm-src/dmenu-${DMENU_VERSION} && make clean install
+#     cd /home/$TARGET_USERNAME/dwm-src/dwm-${DWM_VERSION} && make clean install
+#     cd /home/$TARGET_USERNAME/dwm-src/st-${ST_VERSION} && make clean install
+#     cd /home/$TARGET_USERNAME/dwm-src/dmenu-${DMENU_VERSION} && make clean install
 
-    chown $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/dwm-src
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/dwm-src
-EOF
+#     chown $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/dwm-src
+#     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/dwm-src
+# EOF
 
 
-cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
-#!/bin/bash
+# cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
+# #!/bin/bash
 
-battery() {
-  battery='/sys/class/power_supply/BAT0'
+# battery() {
+#   battery='/sys/class/power_supply/BAT0'
 
-  if [ -d "$battery" ]; then
-    echo -n ' | '
+#   if [ -d "$battery" ]; then
+#     echo -n ' | '
 
-    if grep -q 'Charging' "$battery/status"; then
-      echo -n '+'
-    fi
+#     if grep -q 'Charging' "$battery/status"; then
+#       echo -n '+'
+#     fi
 
-    tr -d '\n' <"$battery/capacity"
+#     tr -d '\n' <"$battery/capacity"
 
-    echo '%'
-  fi
-}
-setxkbmap fr
-while true; do
-        xprop -root -set WM_NAME "$(date '+%Y-%m-%d %H:%M')$(battery)"
-  sleep 5
-done &
+#     echo '%'
+#   fi
+# }
+# setxkbmap fr
+# while true; do
+#         xprop -root -set WM_NAME "$(date '+%Y-%m-%d %H:%M')$(battery)"
+#   sleep 5
+# done &
 
-exec dwm
-EOF
+# exec dwm
+# EOF
 
-cat << EOF | chroot ${ROOTFS}
-    chown $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.xinitrc
-EOF
+# cat << EOF | chroot ${ROOTFS}
+#     chown $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.xinitrc
+# EOF
 
 # end dwm
-fi 
+# fi 
 
 #end gui
 fi

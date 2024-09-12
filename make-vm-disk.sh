@@ -27,6 +27,8 @@ mount ${DEVICE}p1 ${ROOTFS}
 echo $OUTPUT_NAME > ${ROOTFS}/etc/hostname
 
 # ifupdown 
+
+if [ ! $IP == "dhcp" ]; then
 cat << EOF > ${ROOTFS}/etc/network/interfaces
 # This file describes the network interfaces available on your system
 # and how to activate them. For more information, see interfaces(5).
@@ -61,7 +63,7 @@ network:
       addresses:
         - $IP
 EOF
-
+fi
 echo "Unmounting filesystems"
 umount ${ROOTFS}
 
