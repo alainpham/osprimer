@@ -40,12 +40,16 @@ fi
 
 export DOCKER_BUILDX_VERSION=v0.16.2
 export MAJOR_KUBE_VERSION=v1.29
+# https://github.com/derailed/k9s/releases
 export K9S_VERSION=v0.32.5
 export MVN_VERSION=3.9.9
 export DWM_VERSION=6.5
 export ST_VERSION=0.9.2
 export DMENU_VERSION=5.3
 export KEYBOARD_LAYOUT=fr
+
+#default root
+export ROOTFS=/
 
 # Map input parameters
 export INSIDE_MACHINE=$1
@@ -62,10 +66,7 @@ export INPUT_IMG=${11}
 export OUTPUT_IMAGE=${12}
 export DISK_SIZE=${13}
 
-if [ $INSIDE_MACHINE -eq 1 ]; then
-    echo "Running inside the machine"
-    export ROOTFS=/
-fi
+
 
 # Only execute when working with a raw image
 if [ $INSIDE_MACHINE -eq 0 ]; then
