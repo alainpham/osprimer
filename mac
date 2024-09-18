@@ -1,73 +1,6 @@
 #!/bin/sh
 set -e
 
-all(){
-
-    if ! [ $# -eq 13 ]; then
-
-        echo "make sure to download debian cloud image : rm debian-12-nocloud-amd64.raw && wget https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw"
-
-        echo "Usage: sudo $0 <INSIDE_MACHINE> <CREATE_USER> <TARGET_USERNAME> <TARGET_PASSWD> <AUTHSSHFILE> <DOCKER_HOST> <KUBE_HOST> <GUI> <BLACKLIST_NOUVEAU> <NVIDIA_DRIVERS> <INPUT_IMG> <OUTPUT_IMAGE> <DISK_SIZE>"
-        echo "baremetal fullgui:    sudo all 1 0 apham ps authorized_keys 1 1 1 1 1 debian-12-nocloud-amd64.raw d12-fgui.raw 5G"
-        echo "cloud fullgui:        sudo all 0 1 apham ps authorized_keys 1 1 1 1 0 debian-12-nocloud-amd64.raw d12-fgui.raw 5G"
-        echo "cloud full:           sudo all 0 1 apham ps authorized_keys 1 1 0 1 0 debian-12-nocloud-amd64.raw d12-full.raw 5G"
-        echo "cloud image min:      sudo all 0 1 apham ps authorized_keys 0 0 0 1 0 debian-12-nocloud-amd64.raw d12-mini.raw 3G"
-        echo "cloud image kube:     sudo all 0 1 apham ps authorized_keys 0 1 0 1 0 debian-12-nocloud-amd64.raw d12-kube.raw 4G"
-
-        return
-    fi
-
-    init $@
-    mountraw
-    createuser
-    authkeys
-    rmnouveau
-    fastboot
-    firstbootexpandfs
-    bashaliases
-    smalllogs
-    aptsrc
-    iessentials
-    isudo
-    ikeyboard
-    idocker
-    ikube
-    idlkubeimg
-    invidia
-    igui
-    cleanupapt
-    unmountraw
-}
-
-baremetalfullgui() {
-    # Set the default values
-    all 1 0 apham x x 1 1 1 1 1 x x x
-}
-
-cloudfull() {
-    all 0 1 apham ps authorized_keys 1 1 0 1 0 debian-12-nocloud-amd64.raw d12-full.raw 5G
-}
-
-cloudmin() {
-    all 0 1 apham ps authorized_keys 0 0 0 1 0 debian-12-nocloud-amd64.raw d12-mini.raw 3G
-}
-
-clouddocker(){
-    all 0 1 apham ps authorized_keys 1 0 0 1 0 debian-12-nocloud-amd64.raw d12-docker.raw 4G
-}
-
-cloudkube() {
-    all 0 1 apham ps authorized_keys 0 1 0 1 0 debian-12-nocloud-amd64.raw d12-kube.raw 4G
-}
-
-
-init() {
-    # Set the default values
-    inputversions
-    inputkeyboard
-    inputtasks $@
-}
-
 inputversions() {
     # https://github.com/docker/buildx/releases
     export DOCKER_BUILDX_VERSION=v0.17.1
@@ -136,7 +69,7 @@ lineinfile() {
     fi
 
     # Check if the file exists
-    if [[ ! -f "$file_path" ]]; then
+    if [ ! -f "$file_path" ]; then
         if [ $create_file -eq 1 ]; then
             echo "File not found creating file !"
             touch "$file_path"
@@ -148,7 +81,7 @@ lineinfile() {
     # Check if the line matching the regex exists in the file
     if grep -qE "$regex" "$file_path"; then
         # If found, replace the matching line
-        sed -i "s/$regex/$new_line/" "$file_path"
+        sed -i "s]$regex]$new_line]" "$file_path"
         echo "Line matching '$regex' was replaced."
     else
         # If not found, append the new line at the end of the file
@@ -315,7 +248,7 @@ iessentials() {
 echo "install essentials"
 cat << EOF | chroot ${ROOTFS}
     apt update && apt upgrade -y
-    apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon systemd-timesyncd htop bash-completion gpg whois haveged
+    apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon systemd-timesyncd htop bash-completion gpg whois haveged zip unzip
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup
 EOF
 
@@ -386,11 +319,11 @@ lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*JAVA_HOME*=.*" "export JAVA_HOME
 # EOF
 # install maven
 
-mkdir ${ROOTFS}/opt/appimages/
+mkdir -p ${ROOTFS}/opt/appimages/
 curl -L -o /tmp/maven.tar.gz https://dlcdn.apache.org/maven/maven-3/${MVN_VERSION}/binaries/apache-maven-${MVN_VERSION}-bin.tar.gz
 tar xzvf /tmp/maven.tar.gz  -C ${ROOTFS}/opt/appimages/
 cat << EOF | chroot ${ROOTFS}
-    ln -s /opt/appimages/apache-maven-${MVN_VERSION}/bin/mvn /usr/local/bin/mvn
+    ln -sf /opt/appimages/apache-maven-${MVN_VERSION}/bin/mvn /usr/local/bin/mvn
 EOF
 rm /tmp/maven.tar.gz
 
@@ -493,7 +426,7 @@ EOF
 
 echo "install kube bins"
 cat << EOF | chroot ${ROOTFS}
-    curl -fsSL https://pkgs.k8s.io/core:/stable:/$MAJOR_KUBE_VERSION/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    curl -fsSL https://pkgs.k8s.io/core:/stable:/$MAJOR_KUBE_VERSION/deb/Release.key | gpg --batch --yes --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
     echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/$MAJOR_KUBE_VERSION/deb/ /' | tee /etc/apt/sources.list.d/kubernetes.list
 
     apt update
@@ -561,14 +494,14 @@ for font in ${NERDFONTS} ; do
  echo "installing $font"
  wget -O ${ROOTFS}/tmp/${font}.zip "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/${font}.zip"
  mkdir -p ${ROOTFS}/usr/share/fonts/nerd-fonts/
- unzip /tmp/${font}.zip -d ${ROOTFS}/usr/share/fonts/nerd-fonts/
+ unzip -o /tmp/${font}.zip -d ${ROOTFS}/usr/share/fonts/nerd-fonts/
  rm /tmp/${font}.zip
  echo "installed $font"
 done
  
 echo "additional gui packages"
 cat << EOF | chroot ${ROOTFS}
-    apt install -y ntfs-3g mpv vlc cmatrix nmon mesa-utils neofetch nitrogen
+    apt install -y ntfs-3g mpv vlc cmatrix nmon mesa-utils neofetch feh
 EOF
 
 #begin dwm
@@ -589,17 +522,23 @@ cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/wm
 EOF
 
+# wallpaper
+mkdir -p ${ROOTFS}/usr/share/backgrounds/
+wget -O ${ROOTFS}/usr/share/backgrounds/wallpaper.jpg https://free-images.com/or/8606/canyon_antelope_canyon_usa_1.jpg
 
 cat << EOF | tee ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
 #!/bin/bash
 
 setxkbmap fr
 
+feh --bg-scale /usr/share/backgrounds/wallpaper.jpg &
+
 while true; do
     # Log stderror to a file
     dwm 2> ~/.dwm.log
     # No error logging
     #dwm >/dev/null 2>&1
+
 done
 
 EOF
@@ -633,5 +572,49 @@ umount ${ROOTFS}/{dev/pts,boot/efi,dev,run,proc,sys,tmp,}
 losetup -D
 fi
 
-
 }
+
+init() {
+    # Set the default values
+    inputversions
+    inputkeyboard
+    inputtasks $@
+}
+
+
+if ! [ $# -eq 13 ]; then
+
+    echo "make sure to download debian cloud image : rm debian-12-nocloud-amd64.raw && wget https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw"
+
+    echo "Usage: sudo $0 <INSIDE_MACHINE> <CREATE_USER> <TARGET_USERNAME> <TARGET_PASSWD> <AUTHSSHFILE> <DOCKER_HOST> <KUBE_HOST> <GUI> <BLACKLIST_NOUVEAU> <NVIDIA_DRIVERS> <INPUT_IMG> <OUTPUT_IMAGE> <DISK_SIZE>"
+    echo "baremetal fullgui:    sudo $0 1 0 apham ps authorized_keys 1 1 1 1 1 debian-12-nocloud-amd64.raw d12-fgui.raw 5G"
+    echo "cloud fullgui:        sudo $0 0 1 apham ps authorized_keys 1 1 1 1 0 debian-12-nocloud-amd64.raw d12-fgui.raw 5G"
+    echo "cloud full:           sudo $0 0 1 apham ps authorized_keys 1 1 0 1 0 debian-12-nocloud-amd64.raw d12-full.raw 5G"
+    echo "cloud image min:      sudo $0 0 1 apham ps authorized_keys 0 0 0 1 0 debian-12-nocloud-amd64.raw d12-mini.raw 3G"
+    echo "cloud image kube:     sudo $0 0 1 apham ps authorized_keys 0 1 0 1 0 debian-12-nocloud-amd64.raw d12-kube.raw 4G"
+
+    return
+fi
+
+
+# Run all the script
+init $@
+mountraw
+createuser
+authkeys
+rmnouveau
+fastboot
+firstbootexpandfs
+bashaliases
+smalllogs
+aptsrc
+iessentials
+isudo
+ikeyboard
+idocker
+ikube
+idlkubeimg
+invidia
+igui
+cleanupapt
+unmountraw

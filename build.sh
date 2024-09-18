@@ -15,7 +15,6 @@ if ! [ $# -eq 13 ]; then
     exit 1
 fi
 
-setversions() {
 # https://github.com/docker/buildx/releases
 export DOCKER_BUILDX_VERSION=v0.17.1
 # https://kubernetes.io/releases/  https://cloud.google.com/kubernetes-engine/docs/release-notes
@@ -26,17 +25,11 @@ export K9S_VERSION=v0.32.5
 export MVN_VERSION=3.9.9
 
 export NERDFONTS="ComicShannsMono FiraMono JetBrainsMono"
-}
 
-setversions
 
-setkeyboard() {
 export KEYBOARD_LAYOUT=fr
-}
 
-setkeyboard
 
-setinput() {
 #default root
 export ROOTFS=/
 
@@ -54,7 +47,6 @@ export NVIDIA_DRIVERS=${10}
 export INPUT_IMG=${11}
 export OUTPUT_IMAGE=${12}
 export DISK_SIZE=${13}
-}
 
 lineinfile() {
     local file_path="$1"   # First argument: file path
