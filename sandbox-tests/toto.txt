@@ -1,0 +1,7 @@
+alias ll="ls -larth"
+export ROOTFS=/
+export TARGET_USERNAME=apham
+export DOCKER_BUILDX_VERSION=v0.16.2
+export MAJOR_KUBE_VERSION=v1.29
+export K9S_VERSION=v0.32.5
+export MVN_VERSION=3.9.9
