@@ -41,7 +41,7 @@ all(){
 
 baremetalfullgui() {
     # Set the default values
-    all 1 0 apham x x 1 1 1 1 1 x x
+    all 1 0 apham x x 1 1 1 1 1 x x x
 }
 
 cloudfull() {
