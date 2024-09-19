@@ -248,7 +248,7 @@ iessentials() {
 echo "install essentials"
 cat << EOF | chroot ${ROOTFS}
     apt update && apt upgrade -y
-    apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon systemd-timesyncd htop bash-completion gpg whois haveged zip unzip
+    apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon systemd-timesyncd htop bash-completion gpg whois haveged zip unzip virt-what
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup
 EOF
 
@@ -521,6 +521,8 @@ cat << EOF | chroot ${ROOTFS}
 
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/wm
 EOF
+# end dwm
+fi 
 
 # wallpaper
 mkdir -p ${ROOTFS}/usr/share/backgrounds/
@@ -531,24 +533,42 @@ cat << EOF | tee ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
 
 setxkbmap fr
 
-feh --bg-scale /usr/share/backgrounds/wallpaper.jpg &
+numlockx &
 
 while true; do
+    feh --bg-scale /usr/share/backgrounds/wallpaper.jpg &
     # Log stderror to a file
     dwm 2> ~/.dwm.log
     # No error logging
     #dwm >/dev/null 2>&1
-
 done
-
 EOF
 
 cat << EOF | chroot ${ROOTFS}
     chown $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.xinitrc
 EOF
 
-# end dwm
-fi 
+
+# if inside virtual machine
+# video=Virtual-1:1280x720
+
+export hypervisor=$(echo "virt-what" | chroot ${ROOTFS})
+
+# Hyperv
+if [ $hypervisor = "hyperv" ]; then
+sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/ {/video=Virtual-1:1280x720/! s/"$/ video=Virtual-1:1280x720"/}' ${ROOTFS}/etc/default/grub
+cat << EOF | chroot ${ROOTFS}
+    update-grub
+EOF
+
+cat <<EOF | tee ${ROOTFS}/etc/X11/xorg.conf.d/30-hyperv.conf
+Section "Device"
+  Identifier "HYPER_V Framebuffer"
+  Driver "fbdev"
+EndSection
+EOF
+#end hyperv
+fi
 
 # end gui
 fi
