@@ -530,7 +530,6 @@ curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o ${RO
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /usr/local/bin/yt-dlp
 EOF
-lineinfile ${ROOTFS}/etc/bash.bashrc ".*alias.*yt.*=.*" 'alias yt=""'
 
 #begin dwm
 if [ ! -d ${ROOTFS}/home/$TARGET_USERNAME/wm ] ; then
