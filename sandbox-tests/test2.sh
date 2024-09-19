@@ -1,0 +1,16 @@
+cat << 'EOF' | tee xinit
+#!/bin/bash
+
+setxkbmap fr
+
+numlockx &
+
+while true; do
+    bgfile=$(ls /usr/share/backgrounds/ | shuf -n 1)
+    feh --bg-scale /usr/share/backgrounds/${bgfile} &
+    # Log stderror to a file
+    dwm 2> ~/.dwm.log
+    # No error logging
+    #dwm >/dev/null 2>&1
+done
+EOF

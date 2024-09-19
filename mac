@@ -22,6 +22,10 @@ inputversions() {
 inputkeyboard() {
     export KEYBOARD_LAYOUT=fr
     echo "export KEYBOARD_LAYOUT=${KEYBOARD_LAYOUT}"
+
+
+    export NEEDRESTART_MODE=a
+    echo "export NEEDRESTART_MODE=a"
 }
 
 
@@ -151,6 +155,8 @@ cp $AUTHSSHFILE ${ROOTFS}/home/$TARGET_USERNAME/.ssh/
 cat << EOF | chroot ${ROOTFS}
     chown $TARGET_USERNAME:$TARGET_USERNAME -R /home/$TARGET_USERNAME/.ssh
 EOF
+
+echo "Copied authorized_keys"
 fi
 
 }
@@ -163,6 +169,7 @@ sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/ {/modprobe.blacklist=nouveau/! s/"$/ modpro
 cat << EOF | chroot ${ROOTFS}
     update-grub
 EOF
+echo "Deactivated nouveau drivers"
 fi
 
 }
@@ -174,6 +181,8 @@ echo 'GRUB_TIMEOUT=0' | tee -a ${ROOTFS}/etc/default/grub.d/15_timeout.cfg
 cat << EOF | chroot ${ROOTFS}
     update-grub
 EOF
+
+echo "fastboot activated"
 
 }
 
@@ -212,6 +221,7 @@ EOF
 cat << EOF | chroot ${ROOTFS}
     systemctl enable firstboot.service
 EOF
+echo "firstboot script activated"
 fi
 
 }
@@ -227,11 +237,13 @@ lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*K9S_VERSION*=.*" "export K9S_VER
 lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*MVN_VERSION*=.*" "export MVN_VERSION=${MVN_VERSION}"
 lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*NERDFONTS*=.*" "export NERDFONTS=${NERDFONTS}"
 
+echo "bash aliases setup finished"
 }
 
 smalllogs() {
-echo "lower log volume"
 lineinfile ${ROOTFS}/etc/systemd/journald.conf ".*SystemMaxUse=.*" "SystemMaxUse=50M"
+
+echo "lower log volume activated"
 }
 
 aptsrc() {
@@ -241,6 +253,8 @@ deb http://deb.debian.org/debian bookworm main contrib non-free non-free-firmwar
 deb http://deb.debian.org/debian-security/ bookworm-security main contrib non-free non-free-firmware
 deb http://deb.debian.org/debian bookworm-updates main contrib non-free non-free-firmware
 EOF
+
+echo "apt sources setup finished"
 }
 
 iessentials() {
@@ -251,7 +265,7 @@ cat << EOF | chroot ${ROOTFS}
     apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon systemd-timesyncd htop bash-completion gpg whois haveged zip unzip virt-what
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup
 EOF
-
+echo "essentials installed"
 }
 
 isudo() {
@@ -263,6 +277,7 @@ cat << EOF | chroot ${ROOTFS}
     sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
 EOF
 
+echo "sudo setup finished"
 }
 
 ikeyboard() {
@@ -280,6 +295,7 @@ XKBLAYOUT="${KEYBOARD_LAYOUT}"
 
 # BACKSPACE="guess"
 EOF
+echo "keyboard setup finished"
 fi
 }
 
@@ -293,6 +309,8 @@ cat << EOF | chroot ${ROOTFS}
     apt install -y ansible openjdk-17-jdk-headless
 EOF
 
+
+
 cat <<EOF | tee ${ROOTFS}/etc/docker/daemon.json
 {
   "log-opts": {
@@ -301,7 +319,7 @@ cat <<EOF | tee ${ROOTFS}/etc/docker/daemon.json
   }
 }
 EOF
-
+echo "docker logs configured"
 
 mkdir -p ${ROOTFS}/usr/lib/docker/cli-plugins
 curl -SL https://github.com/docker/buildx/releases/download/${DOCKER_BUILDX_VERSION}/buildx-${DOCKER_BUILDX_VERSION}.linux-amd64 -o ${ROOTFS}/usr/lib/docker/cli-plugins/docker-buildx
@@ -310,10 +328,11 @@ chmod 755 ${ROOTFS}/usr/lib/docker/cli-plugins/docker-buildx
 cat << EOF | chroot ${ROOTFS}
     adduser $TARGET_USERNAME docker
 EOF
-
+echo "docker build x installed"
 export JAVA_HOME_TARGET=$(echo 'readlink -f /usr/bin/javac | sed "s:/bin/javac::"' | chroot ${ROOTFS})
 lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*JAVA_HOME*=.*" "export JAVA_HOME=${JAVA_HOME_TARGET}"
 
+echo "java home setup finished"
 # cat << EOF | chroot ${ROOTFS}
 #     echo "export JAVA_HOME=${JAVA_HOME_TARGET}" | tee /etc/profile.d/java_home.sh
 # EOF
@@ -326,7 +345,7 @@ cat << EOF | chroot ${ROOTFS}
     ln -sf /opt/appimages/apache-maven-${MVN_VERSION}/bin/mvn /usr/local/bin/mvn
 EOF
 rm /tmp/maven.tar.gz
-
+echo "maven installed"
 
 cat <<EOF | tee ${ROOTFS}/usr/local/bin/firstboot-dockernet.sh
 #!/bin/bash
@@ -394,7 +413,7 @@ cat << EOF | chroot ${ROOTFS}
     systemctl enable firstboot-dockernet.service
     systemctl enable firstboot-dockerbuildx.service
 EOF
-
+echo "docker network and buildx on first boot service configured"
 fi
 }
 
@@ -414,10 +433,12 @@ net.bridge.bridge-nf-call-iptables = 1
 net.ipv4.ip_forward = 1 
 net.bridge.bridge-nf-call-ip6tables = 1 
 EOF
-
+echo "kube readiness setup finished"
 cat << EOF | chroot ${ROOTFS}
     apt install -y containerd
 EOF
+
+echo "containerd setup"
 
 cat << EOF | chroot ${ROOTFS}
     containerd config default | tee /etc/containerd/config.toml >/dev/null 2>&1
@@ -504,6 +525,13 @@ cat << EOF | chroot ${ROOTFS}
     apt install -y ntfs-3g mpv vlc cmatrix nmon mesa-utils neofetch feh
 EOF
 
+#YT-DLP latest
+curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o ${ROOTFS}/usr/local/bin/yt-dlp
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /usr/local/bin/yt-dlp
+EOF
+lineinfile ${ROOTFS}/etc/bash.bashrc ".*alias.*yt.*=.*" 'alias yt=""'
+
 #begin dwm
 if [ ! -d ${ROOTFS}/home/$TARGET_USERNAME/wm ] ; then
 
@@ -526,9 +554,12 @@ fi
 
 # wallpaper
 mkdir -p ${ROOTFS}/usr/share/backgrounds/
-wget -O ${ROOTFS}/usr/share/backgrounds/wallpaper.jpg https://free-images.com/or/8606/canyon_antelope_canyon_usa_1.jpg
+wget -O ${ROOTFS}/usr/share/backgrounds/01.jpg https://free-images.com/or/8606/canyon_antelope_canyon_usa_1.jpg
+wget -O ${ROOTFS}/usr/share/backgrounds/02.jpg https://free-images.com/or/9cf1/city_overcast_buildings_skyline.jpg
+wget -O ${ROOTFS}/usr/share/backgrounds/03.jpg https://free-images.com/lg/f1b3/sunset_on_seine.jpg
+wget -O ${ROOTFS}/usr/share/backgrounds/04.jpg https://free-images.com/lg/e216/parrots_macaw_bird_parrot.jpg
 
-cat << EOF | tee ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
+cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
 #!/bin/bash
 
 setxkbmap fr
@@ -536,7 +567,8 @@ setxkbmap fr
 numlockx &
 
 while true; do
-    feh --bg-scale /usr/share/backgrounds/wallpaper.jpg &
+    bgfile=$(ls /usr/share/backgrounds/ | shuf -n 1)
+    feh --bg-fill /usr/share/backgrounds/${bgfile} &
     # Log stderror to a file
     dwm 2> ~/.dwm.log
     # No error logging
