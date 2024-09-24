@@ -23,7 +23,6 @@ inputkeyboard() {
     export KEYBOARD_LAYOUT=fr
     echo "export KEYBOARD_LAYOUT=${KEYBOARD_LAYOUT}"
 
-
     export NEEDRESTART_MODE=a
     echo "export NEEDRESTART_MODE=a"
 }
@@ -44,22 +43,27 @@ inputtasks() {
     echo "export TARGET_PASSWD=${TARGET_PASSWD}"
     export AUTHSSHFILE=$5
     echo "export AUTHSSHFILE=${AUTHSSHFILE}"
-    export DOCKER_HOST=$6
-    echo "export DOCKER_HOST=${DOCKER_HOST}"
-    export KUBE_HOST=$7
-    echo "export KUBE_HOST=${KUBE_HOST}"
-    export GUI=$8
-    echo "export GUI=${GUI}"
-    export BLACKLIST_NOUVEAU=$9
-    echo "export BLACKLIST_NOUVEAU=${BLACKLIST_NOUVEAU}"
-    export NVIDIA_DRIVERS=${10}
-    echo "export NVIDIA_DRIVERS=${NVIDIA_DRIVERS}"
-    export INPUT_IMG=${11}
+    export INPUT_IMG=$6
     echo "export INPUT_IMG=${INPUT_IMG}"
-    export OUTPUT_IMAGE=${12}
+    export OUTPUT_IMAGE=$7
     echo "export OUTPUT_IMAGE=${OUTPUT_IMAGE}"
-    export DISK_SIZE=${13}
+    export DISK_SIZE=$8
     echo "export DISK_SIZE=${DISK_SIZE}"
+
+    export DOCKER_HOST=$9
+    echo "export DOCKER_HOST=${DOCKER_HOST}"
+    export KUBE_HOST=${10}
+    echo "export KUBE_HOST=${KUBE_HOST}"
+    export GUI=${11}
+    echo "export GUI=${GUI}"
+    export BLACKLIST_NOUVEAU=${12}
+    echo "export BLACKLIST_NOUVEAU=${BLACKLIST_NOUVEAU}"
+    export NVIDIA_DRIVERS=${13}
+    echo "export NVIDIA_DRIVERS=${NVIDIA_DRIVERS}"
+    export WSTATION=${14}
+    echo "export WSTATION=${WSTATION}"
+    export VIRTL=${14}
+    echo "export VIRTL=${VIRTL}"
 }
 
 lineinfile() {
@@ -266,6 +270,9 @@ cat << EOF | chroot ${ROOTFS}
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup
 EOF
 echo "essentials installed"
+
+
+
 }
 
 isudo() {
@@ -467,6 +474,7 @@ EOF
 cat << EOF | chroot ${ROOTFS}
     curl -LO https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/k9s_Linux_amd64.tar.gz
     tar -xzvf k9s_Linux_amd64.tar.gz  -C /usr/local/bin/ k9s
+    chown root:root /usr/local/bin/k9s
     rm k9s_Linux_amd64.tar.gz
 EOF
 
@@ -507,7 +515,7 @@ if [ $GUI -eq 1 ]; then
 echo "install gui"
 
 cat << EOF | chroot ${ROOTFS}
-    apt install -y make gcc libx11-dev libxft-dev libfreetype-dev libxinerama-dev xorg pulseaudio pavucontrol numlockx
+    apt install -y make gcc libx11-dev libxft-dev libfreetype-dev libxinerama-dev xorg pulseaudio pavucontrol numlockx 
 EOF
 
 echo "install nerdfonts"
@@ -522,13 +530,26 @@ done
  
 echo "additional gui packages"
 cat << EOF | chroot ${ROOTFS}
-    apt install -y ntfs-3g mpv vlc cmatrix nmon mesa-utils neofetch feh
+    apt install -y ntfs-3g ifuse mpv vlc cmatrix nmon mesa-utils neofetch feh network-manager acpitool fonts-noto
 EOF
 
-#YT-DLP latest
-curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o ${ROOTFS}/usr/local/bin/yt-dlp
+
+cat << 'EOF' | tee ${ROOTFS}/etc/network/interfaces
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+source /etc/network/interfaces.d/*
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+EOF
+
+# install chrome browser
+mkdir -p ${ROOTFS}/opt/debs/
+wget -O /opt/debs/google-chrome-stable_current_amd64.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb 
 cat << EOF | chroot ${ROOTFS}
-    chmod 755 /usr/local/bin/yt-dlp
+    apt install -y /opt/debs/google-chrome-stable_current_amd64.deb
 EOF
 
 #begin dwm
@@ -541,10 +562,12 @@ cat << EOF | chroot ${ROOTFS}
     git clone https://github.com/alainpham/dwm-flexipatch.git
     git clone https://github.com/alainpham/st-flexipatch.git
     git clone https://github.com/alainpham/dmenu-flexipatch.git
+    git clone https://github.com/alainpham/dwmblocks.git
 
     cd /home/$TARGET_USERNAME/wm/dwm-flexipatch && make clean install
     cd /home/$TARGET_USERNAME/wm/st-flexipatch && make clean install
     cd /home/$TARGET_USERNAME/wm/dmenu-flexipatch && make clean install
+    cd /home/$TARGET_USERNAME/wm/dwmblocks && make clean install
 
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/wm
 EOF
@@ -586,7 +609,7 @@ EOF
 export hypervisor=$(echo "virt-what" | chroot ${ROOTFS})
 
 # Hyperv
-if [ $hypervisor = "hyperv" ]; then
+if [ "$hypervisor" = "hyperv" ]; then
 sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/ {/video=Virtual-1:1280x720/! s/"$/ video=Virtual-1:1280x720"/}' ${ROOTFS}/etc/default/grub
 cat << EOF | chroot ${ROOTFS}
     update-grub
@@ -606,6 +629,49 @@ fi
  
 }
 
+
+iworkstation() {
+
+if [ $WSTATION -eq 1 ]; then
+echo "additional workstation tools"
+cat << EOF | chroot ${ROOTFS}
+    apt install -y handbrake gimp inkscape obs-studio libdvd-pkg kdenlive
+EOF
+
+echo "dpkg libdvd-pkg"
+cat << EOF | chroot ${ROOTFS}
+    dpkg-reconfigure libdvd-pkg
+EOF
+
+#YT-DLP latest
+curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o ${ROOTFS}/usr/local/bin/yt-dlp
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /usr/local/bin/yt-dlp
+EOF
+
+# install onlyoffice
+mkdir -p ${ROOTFS}/opt/debs/
+wget -O /opt/debs/onlyoffice-desktopeditors_amd64.deb https://download.onlyoffice.com/install/desktop/editors/linux/onlyoffice-desktopeditors_amd64.deb
+cat << EOF | chroot ${ROOTFS}
+    apt install -y /opt/debs/onlyoffice-desktopeditors_amd64.deb
+EOF
+
+fi
+}
+
+ivirt(){
+if [ $VIRTL -eq 1 ]; then
+echo "virtualization tools"
+cat << EOF | chroot ${ROOTFS}
+    apt install qemu-system qemu-utils virtinst libvirt-clients libvirt-daemon-system libguestfs-tools bridge-utils libosinfo-bin virt-manager genisoimage
+EOF
+
+
+fi
+}
+
+
+
 cleanupapt() {
 echo "cleaning up"
 cat << EOF | chroot ${ROOTFS}
@@ -615,7 +681,6 @@ EOF
 
 
 unmountraw() {
-
 if [ $INSIDE_MACHINE -eq 0 ]; then
 echo "Unmounting filesystems"
 umount ${ROOTFS}/{dev/pts,boot/efi,dev,run,proc,sys,tmp,}
@@ -633,16 +698,17 @@ init() {
 }
 
 
-if ! [ $# -eq 13 ]; then
+if ! [ $# -eq 15 ]; then
 
     echo "make sure to download debian cloud image : rm debian-12-nocloud-amd64.raw && wget https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw"
 
-    echo "Usage: sudo $0 <INSIDE_MACHINE> <CREATE_USER> <TARGET_USERNAME> <TARGET_PASSWD> <AUTHSSHFILE> <DOCKER_HOST> <KUBE_HOST> <GUI> <BLACKLIST_NOUVEAU> <NVIDIA_DRIVERS> <INPUT_IMG> <OUTPUT_IMAGE> <DISK_SIZE>"
-    echo "baremetal fullgui:    sudo $0 1 0 apham ps authorized_keys 1 1 1 1 1 debian-12-nocloud-amd64.raw d12-fgui.raw 5G"
-    echo "cloud fullgui:        sudo $0 0 1 apham ps authorized_keys 1 1 1 1 0 debian-12-nocloud-amd64.raw d12-fgui.raw 5G"
-    echo "cloud full:           sudo $0 0 1 apham ps authorized_keys 1 1 0 1 0 debian-12-nocloud-amd64.raw d12-full.raw 5G"
-    echo "cloud image min:      sudo $0 0 1 apham ps authorized_keys 0 0 0 1 0 debian-12-nocloud-amd64.raw d12-mini.raw 3G"
-    echo "cloud image kube:     sudo $0 0 1 apham ps authorized_keys 0 1 0 1 0 debian-12-nocloud-amd64.raw d12-kube.raw 4G"
+    echo "Usage: sudo $0 <1_INSIDE_MACHINE> <2_CREATE_USER> <3_TARGET_USERNAME> <4_TARGET_PASSWD> <5_AUTHSSHFILE> <6_INPUT_IMG> <7_OUTPUT_IMAGE> <8_DISK_SIZE> <9_DOCKER_HOST> <10_KUBE_HOST> <11_GUI> <12_BLACKLIST_NOUVEAU> <13_NVIDIA_DRIVERS> <14_WSTATION> <15_VIRT>"
+    echo "baremetal fullguinv:  sudo $0 1 0 apham ps authorized_keys debian-12-nocloud-amd64.raw d12-fgui.raw 5G 1 1 1 1 1 0 0"
+    echo "baremetal fullgui:    sudo $0 1 0 apham ps authorized_keys debian-12-nocloud-amd64.raw d12-fgui.raw 5G 1 1 1 1 0 0 0"
+    echo "cloud fullgui:        sudo $0 0 1 apham ps authorized_keys debian-12-nocloud-amd64.raw d12-fgui.raw 5G 1 1 1 1 0 0 0"
+    echo "cloud full:           sudo $0 0 1 apham ps authorized_keys debian-12-nocloud-amd64.raw d12-full.raw 5G 1 1 0 1 0 0 0"
+    echo "cloud image min:      sudo $0 0 1 apham ps authorized_keys debian-12-nocloud-amd64.raw d12-mini.raw 3G 0 0 0 1 0 0 0"
+    echo "cloud image kube:     sudo $0 0 1 apham ps authorized_keys debian-12-nocloud-amd64.raw d12-kube.raw 4G 0 1 0 1 0 0 0"
 
     return
 fi
@@ -667,5 +733,6 @@ ikube
 idlkubeimg
 invidia
 igui
+iworkstation
 cleanupapt
 unmountraw

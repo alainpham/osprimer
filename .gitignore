@@ -3,4 +3,5 @@ authorized_keys
 *.qcow2
 *.vhd
 *.img
+pack.tar
 dwm-src
