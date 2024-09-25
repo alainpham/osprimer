@@ -284,7 +284,12 @@ cat << EOF | chroot ${ROOTFS}
     sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
 EOF
 
-echo "sudo setup finished"
+cat << EOF | chroot ${ROOTFS}
+    ssh-keygen -N "" -f /home/${TARGET_USERNAME}/.ssh/id_rsa
+    chown -R ${TARGET_USERNAME}:${TARGET_USERNAME} /home/${TARGET_USERNAME}/.ssh
+EOF
+
+echo "sudo & ssh key setup finished"
 }
 
 ikeyboard() {
@@ -303,6 +308,15 @@ XKBLAYOUT="${KEYBOARD_LAYOUT}"
 # BACKSPACE="guess"
 EOF
 echo "keyboard setup finished"
+
+cat <<EOF | tee ${ROOTFS}/etc/X11/xorg.conf.d/30-touchpad.conf
+Section "InputClass"
+    Identifier "touchpad catchall"
+    Driver "libinput"
+    Option "Tapping" "on"
+EndSection
+EOF
+
 fi
 }
 
@@ -530,7 +544,7 @@ done
  
 echo "additional gui packages"
 cat << EOF | chroot ${ROOTFS}
-    apt install -y ntfs-3g ifuse mpv vlc cmatrix nmon mesa-utils neofetch feh network-manager acpitool fonts-noto
+    apt install -y ntfs-3g ifuse mpv vlc cmatrix nmon mesa-utils neofetch feh network-manager acpitool fonts-noto libnotify-bin dunst
 EOF
 
 
@@ -581,16 +595,28 @@ wget -O ${ROOTFS}/usr/share/backgrounds/02.jpg https://free-images.com/or/9cf1/c
 wget -O ${ROOTFS}/usr/share/backgrounds/03.jpg https://free-images.com/lg/f1b3/sunset_on_seine.jpg
 wget -O ${ROOTFS}/usr/share/backgrounds/04.jpg https://free-images.com/lg/e216/parrots_macaw_bird_parrot.jpg
 
-cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
-#!/bin/bash
+cat << EOF | tee ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
+#!/bin/sh
 
-setxkbmap fr
+. /etc/X11/xinit/xinitrc
 
-numlockx &
+setxkbmap ${KEYBOARD_LAYOUT}
+EOF
+
+
+cat << 'EOF' >> ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
+numlockx
 
 while true; do
+    piddwmblocks=$(pgrep dwmblocks)
+    if [ -z "$piddwmblocks" ]; then
+        dwmblocks &
+    else
+        kill -9 $piddwmblocks
+        dwmblocks &
+    fi
     bgfile=$(ls /usr/share/backgrounds/ | shuf -n 1)
-    feh --bg-fill /usr/share/backgrounds/${bgfile} &
+    feh --bg-fill /usr/share/backgrounds/${bgfile}
     # Log stderror to a file
     dwm 2> ~/.dwm.log
     # No error logging
@@ -604,13 +630,13 @@ EOF
 
 
 # if inside virtual machine
-# video=Virtual-1:1280x720
+# video=Virtual-1:1600x900
 
 export hypervisor=$(echo "virt-what" | chroot ${ROOTFS})
 
 # Hyperv
 if [ "$hypervisor" = "hyperv" ]; then
-sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/ {/video=Virtual-1:1280x720/! s/"$/ video=Virtual-1:1280x720"/}' ${ROOTFS}/etc/default/grub
+sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/ {/video=Virtual-1:1600x900/! s/"$/ video=Virtual-1:1600x900"/}' ${ROOTFS}/etc/default/grub
 cat << EOF | chroot ${ROOTFS}
     update-grub
 EOF
@@ -629,18 +655,20 @@ fi
  
 }
 
-
 iworkstation() {
-
 if [ $WSTATION -eq 1 ]; then
 echo "additional workstation tools"
 cat << EOF | chroot ${ROOTFS}
-    apt install -y handbrake gimp inkscape obs-studio libdvd-pkg kdenlive
+    apt install -y handbrake gimp inkscape obs-studio kdenlive ffmpeg
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    DEBIAN_FRONTEND=noninteractive apt install -y libdvd-pkg
 EOF
 
 echo "dpkg libdvd-pkg"
 cat << EOF | chroot ${ROOTFS}
-    dpkg-reconfigure libdvd-pkg
+    DEBIAN_FRONTEND=noninteractive dpkg-reconfigure libdvd-pkg
 EOF
 
 #YT-DLP latest
@@ -649,13 +677,21 @@ cat << EOF | chroot ${ROOTFS}
     chmod 755 /usr/local/bin/yt-dlp
 EOF
 
+#ffmpeg scripts
+ffmpegscripts="vconv-archive-lossless-h264-vaapi.sh vconv-extract-audio.sh vconv-h264-vaapi-qp.sh vconv-h264-vaapi-vbr.sh vconv-hevc-vaapi-qp.sh vconv-make-mkv.sh vconv-make-mp4.sh vconv-mp3-hq.sh vconv-vp9-vaapi-qp.sh vconv-x264-crf.sh vconv-x264-lowres-lowvbr-2pass.sh vconv-x264-lowres-vbr-2pass.sh vconv-x264-vbr-2pass.sh"
+for script in $ffmpegscripts ; do
+curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/ffmpeg/$script
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /usr/local/bin/$script
+EOF
+done
+
 # install onlyoffice
 mkdir -p ${ROOTFS}/opt/debs/
 wget -O /opt/debs/onlyoffice-desktopeditors_amd64.deb https://download.onlyoffice.com/install/desktop/editors/linux/onlyoffice-desktopeditors_amd64.deb
 cat << EOF | chroot ${ROOTFS}
     apt install -y /opt/debs/onlyoffice-desktopeditors_amd64.deb
 EOF
-
 fi
 }
 
@@ -666,6 +702,18 @@ cat << EOF | chroot ${ROOTFS}
     apt install qemu-system qemu-utils virtinst libvirt-clients libvirt-daemon-system libguestfs-tools bridge-utils libosinfo-bin virt-manager genisoimage
 EOF
 
+
+
+curl -Lo ${ROOTFS}/usr/local/bin/vmcr https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/vms/vmcr
+curl -Lo ${ROOTFS}/usr/local/bin/vmdl https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/vms/vmdl
+curl -Lo ${ROOTFS}/usr/local/bin/vmls https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/vms/vmls
+curl -Lo ${ROOTFS}/usr/local/bin/vmsh https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/vms/vmsh
+
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /usr/local/bin/vmcr /usr/local/bin/vmdl /usr/local/bin/vmls /usr/local/bin/vmsh 
+    ssh-keygen -f /home/${TARGET_USERNAME}/.ssh/vm -N ""
+    chown -R ${TARGET_USERNAME}:${TARGET_USERNAME} /home/${TARGET_USERNAME}/.ssh/vm*
+EOF
 
 fi
 }
@@ -704,6 +752,7 @@ if ! [ $# -eq 15 ]; then
 
     echo "Usage: sudo $0 <1_INSIDE_MACHINE> <2_CREATE_USER> <3_TARGET_USERNAME> <4_TARGET_PASSWD> <5_AUTHSSHFILE> <6_INPUT_IMG> <7_OUTPUT_IMAGE> <8_DISK_SIZE> <9_DOCKER_HOST> <10_KUBE_HOST> <11_GUI> <12_BLACKLIST_NOUVEAU> <13_NVIDIA_DRIVERS> <14_WSTATION> <15_VIRT>"
     echo "baremetal fullguinv:  sudo $0 1 0 apham ps authorized_keys debian-12-nocloud-amd64.raw d12-fgui.raw 5G 1 1 1 1 1 0 0"
+    echo "baremetal wkstation:  sudo $0 1 0 apham ps authorized_keys debian-12-nocloud-amd64.raw d12-fgui.raw 5G 1 1 1 1 0 1 0"
     echo "baremetal fullgui:    sudo $0 1 0 apham ps authorized_keys debian-12-nocloud-amd64.raw d12-fgui.raw 5G 1 1 1 1 0 0 0"
     echo "cloud fullgui:        sudo $0 0 1 apham ps authorized_keys debian-12-nocloud-amd64.raw d12-fgui.raw 5G 1 1 1 1 0 0 0"
     echo "cloud full:           sudo $0 0 1 apham ps authorized_keys debian-12-nocloud-amd64.raw d12-full.raw 5G 1 1 0 1 0 0 0"
