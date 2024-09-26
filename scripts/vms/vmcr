@@ -53,8 +53,8 @@ ssh_keys:
 $SSH_PRIVVM_KEY
   rsa_public: $SSH_PUBVM_KEY
 users:
-  - name: cloud-user
-    gecos: cloud-user
+  - name: ${USER}
+    gecos: ${USER}
     shell: /bin/bash
     lock-passwd: false
     sudo: ALL=(ALL) NOPASSWD:ALL
@@ -63,7 +63,7 @@ users:
 chpasswd:
   list: |
      root:password
-     cloud-user:password
+     ${USER}:password
   expire: False
 _EOF_
 

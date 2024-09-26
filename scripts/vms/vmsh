@@ -1,2 +1,2 @@
 #!/bin/bash
-ssh cloud-user@"$1"
+ssh ${USER}@"$1"

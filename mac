@@ -17,6 +17,10 @@ inputversions() {
 
     export NERDFONTS="ComicShannsMono FiraMono JetBrainsMono"
     echo "export NERDFONTS=${NERDFONTS}"
+
+    export ZOOM_VERSION=6.2.0.1855
+    echo "export ZOOM_VERSION=${ZOOM_VERSION}"
+
 }
 
 inputkeyboard() {
@@ -267,7 +271,7 @@ echo "install essentials"
 cat << EOF | chroot ${ROOTFS}
     apt update && apt upgrade -y
     apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon systemd-timesyncd htop bash-completion gpg whois haveged zip unzip virt-what
-    DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup
+    DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup iperf3
 EOF
 echo "essentials installed"
 
@@ -544,8 +548,24 @@ done
  
 echo "additional gui packages"
 cat << EOF | chroot ${ROOTFS}
-    apt install -y ntfs-3g ifuse mpv vlc cmatrix nmon mesa-utils neofetch feh network-manager acpitool fonts-noto libnotify-bin dunst
+    apt install -y ntfs-3g ifuse mpv haruna vlc  cmatrix nmon mesa-utils neofetch feh network-manager acpitool fonts-noto libnotify-bin dunst ffmpeg wireguard iptables mediainfo-gui arandr
 EOF
+
+#YT-DLP latest
+curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o ${ROOTFS}/usr/local/bin/yt-dlp
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /usr/local/bin/yt-dlp
+EOF
+
+#ffmpeg scripts
+ffmpegscripts="vconv-archive-lossless-h264-vaapi.sh vconv-extract-audio.sh vconv-h264-vaapi-qp.sh vconv-h264-vaapi-vbr.sh vconv-hevc-vaapi-qp.sh vconv-make-mkv.sh vconv-make-mp4.sh vconv-mp3-hq.sh vconv-vp9-vaapi-qp.sh vconv-x264-crf.sh vconv-x264-lowres-lowvbr-2pass.sh vconv-x264-lowres-vbr-2pass.sh vconv-x264-vbr-2pass.sh"
+for script in $ffmpegscripts ; do
+curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/ffmpeg/$script
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /usr/local/bin/$script
+EOF
+done
+
 
 
 cat << 'EOF' | tee ${ROOTFS}/etc/network/interfaces
@@ -659,7 +679,7 @@ iworkstation() {
 if [ $WSTATION -eq 1 ]; then
 echo "additional workstation tools"
 cat << EOF | chroot ${ROOTFS}
-    apt install -y handbrake gimp inkscape obs-studio kdenlive ffmpeg
+    apt install -y handbrake gimp krita mypaint inkscape blender obs-studio v4l2loopback-utils kdenlive flameshot maim xclip xdotool 
 EOF
 
 cat << EOF | chroot ${ROOTFS}
@@ -671,20 +691,32 @@ cat << EOF | chroot ${ROOTFS}
     DEBIAN_FRONTEND=noninteractive dpkg-reconfigure libdvd-pkg
 EOF
 
-#YT-DLP latest
-curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o ${ROOTFS}/usr/local/bin/yt-dlp
+# cat << EOF | chroot ${ROOTFS}
+#     apt install -y snapd
+#     snap install pinta
+#     snap install rpi-imager
+# EOF
+
+#vscode
+mkdir -p ${ROOTFS}/opt/debs/
+wget -O /opt/debs/vscode.deb https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64
 cat << EOF | chroot ${ROOTFS}
-    chmod 755 /usr/local/bin/yt-dlp
+    apt install -y /opt/debs/vscode.deb
 EOF
 
-#ffmpeg scripts
-ffmpegscripts="vconv-archive-lossless-h264-vaapi.sh vconv-extract-audio.sh vconv-h264-vaapi-qp.sh vconv-h264-vaapi-vbr.sh vconv-hevc-vaapi-qp.sh vconv-make-mkv.sh vconv-make-mp4.sh vconv-mp3-hq.sh vconv-vp9-vaapi-qp.sh vconv-x264-crf.sh vconv-x264-lowres-lowvbr-2pass.sh vconv-x264-lowres-vbr-2pass.sh vconv-x264-vbr-2pass.sh"
-for script in $ffmpegscripts ; do
-curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/ffmpeg/$script
+
+# install zoom
+mkdir -p ${ROOTFS}/opt/debs/
+wget -O /opt/debs/zoom_amd64.deb https://zoom.us/client/${ZOOM_VERSION}/zoom_amd64.deb
 cat << EOF | chroot ${ROOTFS}
-    chmod 755 /usr/local/bin/$script
+    apt install -y /opt/debs/zoom_amd64.deb
 EOF
-done
+
+mkdir -p ${ROOTFS}/opt/debs/
+wget -O /opt/debs/slack.deb https://downloads.slack-edge.com/desktop-releases/linux/x64/4.39.95/slack-desktop-4.39.95-amd64.deb
+cat << EOF | chroot ${ROOTFS}
+    apt install -y /opt/debs/slack.deb
+EOF
 
 # install onlyoffice
 mkdir -p ${ROOTFS}/opt/debs/
@@ -692,6 +724,16 @@ wget -O /opt/debs/onlyoffice-desktopeditors_amd64.deb https://download.onlyoffic
 cat << EOF | chroot ${ROOTFS}
     apt install -y /opt/debs/onlyoffice-desktopeditors_amd64.deb
 EOF
+
+# install dbeaver
+mkdir -p ${ROOTFS}/opt/debs/
+wget -O /opt/debs/dbeaver.deb https://dbeaver.io/files/dbeaver-ce_latest_amd64.deb
+cat << EOF | chroot ${ROOTFS}
+    apt install -y /opt/debs/dbeaver.deb
+EOF
+
+
+
 fi
 }
 
@@ -700,6 +742,7 @@ if [ $VIRTL -eq 1 ]; then
 echo "virtualization tools"
 cat << EOF | chroot ${ROOTFS}
     apt install qemu-system qemu-utils virtinst libvirt-clients libvirt-daemon-system libguestfs-tools bridge-utils libosinfo-bin virt-manager genisoimage
+    adduser $TARGET_USERNAME libvirt
 EOF
 
 
@@ -713,6 +756,9 @@ cat << EOF | chroot ${ROOTFS}
     chmod 755 /usr/local/bin/vmcr /usr/local/bin/vmdl /usr/local/bin/vmls /usr/local/bin/vmsh 
     ssh-keygen -f /home/${TARGET_USERNAME}/.ssh/vm -N ""
     chown -R ${TARGET_USERNAME}:${TARGET_USERNAME} /home/${TARGET_USERNAME}/.ssh/vm*
+    mkdir -p /home/workdrive/virt/images
+    mkdir -p /home/workdrive/virt/runtime
+    chown -R ${TARGET_USERNAME}:${TARGET_USERNAME} /home/workdrive
 EOF
 
 fi
@@ -785,3 +831,5 @@ igui
 iworkstation
 cleanupapt
 unmountraw
+
+sudo reboot now
