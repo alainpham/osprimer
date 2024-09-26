@@ -270,7 +270,7 @@ iessentials() {
 echo "install essentials"
 cat << EOF | chroot ${ROOTFS}
     apt update && apt upgrade -y
-    apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon systemd-timesyncd htop bash-completion gpg whois haveged zip unzip virt-what
+    apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon systemd-timesyncd htop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup iperf3
 EOF
 echo "essentials installed"
@@ -289,7 +289,10 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 
 cat << EOF | chroot ${ROOTFS}
-    ssh-keygen -N "" -f /home/${TARGET_USERNAME}/.ssh/id_rsa
+
+    if [ ! -f /home/${TARGET_USERNAME}/.ssh/id_rsa ]; then
+        ssh-keygen -N "" -f /home/${TARGET_USERNAME}/.ssh/id_rsa
+    fi
     chown -R ${TARGET_USERNAME}:${TARGET_USERNAME} /home/${TARGET_USERNAME}/.ssh
 EOF
 
@@ -548,7 +551,7 @@ done
  
 echo "additional gui packages"
 cat << EOF | chroot ${ROOTFS}
-    apt install -y ntfs-3g ifuse mpv haruna vlc  cmatrix nmon mesa-utils neofetch feh network-manager acpitool fonts-noto libnotify-bin dunst ffmpeg wireguard iptables mediainfo-gui arandr
+    apt install -y ntfs-3g ifuse mpv haruna vlc  cmatrix nmon mesa-utils neofetch feh network-manager acpitool fonts-noto libnotify-bin dunst ffmpeg mediainfo-gui arandr
 EOF
 
 #YT-DLP latest
@@ -699,21 +702,21 @@ EOF
 
 #vscode
 mkdir -p ${ROOTFS}/opt/debs/
-wget -O /opt/debs/vscode.deb https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64
+wget -O ${ROOTFS}/opt/debs/vscode.deb "https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64"
 cat << EOF | chroot ${ROOTFS}
-    apt install -y /opt/debs/vscode.deb
+    DEBIAN_FRONTEND=noninteractive apt install -y /opt/debs/vscode.deb
 EOF
 
 
 # install zoom
 mkdir -p ${ROOTFS}/opt/debs/
-wget -O /opt/debs/zoom_amd64.deb https://zoom.us/client/${ZOOM_VERSION}/zoom_amd64.deb
+wget -O ${ROOTFS}/opt/debs/zoom_amd64.deb https://zoom.us/client/${ZOOM_VERSION}/zoom_amd64.deb
 cat << EOF | chroot ${ROOTFS}
     apt install -y /opt/debs/zoom_amd64.deb
 EOF
 
 mkdir -p ${ROOTFS}/opt/debs/
-wget -O /opt/debs/slack.deb https://downloads.slack-edge.com/desktop-releases/linux/x64/4.39.95/slack-desktop-4.39.95-amd64.deb
+wget -O ${ROOTFS}/opt/debs/slack.deb https://downloads.slack-edge.com/desktop-releases/linux/x64/4.39.95/slack-desktop-4.39.95-amd64.deb
 cat << EOF | chroot ${ROOTFS}
     apt install -y /opt/debs/slack.deb
 EOF
@@ -727,7 +730,7 @@ EOF
 
 # install dbeaver
 mkdir -p ${ROOTFS}/opt/debs/
-wget -O /opt/debs/dbeaver.deb https://dbeaver.io/files/dbeaver-ce_latest_amd64.deb
+wget -O ${ROOTFS}/opt/debs/dbeaver.deb https://dbeaver.io/files/dbeaver-ce_latest_amd64.deb
 cat << EOF | chroot ${ROOTFS}
     apt install -y /opt/debs/dbeaver.deb
 EOF
@@ -753,9 +756,14 @@ curl -Lo ${ROOTFS}/usr/local/bin/vmls https://raw.githubusercontent.com/alainpha
 curl -Lo ${ROOTFS}/usr/local/bin/vmsh https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/vms/vmsh
 
 cat << EOF | chroot ${ROOTFS}
-    chmod 755 /usr/local/bin/vmcr /usr/local/bin/vmdl /usr/local/bin/vmls /usr/local/bin/vmsh 
-    ssh-keygen -f /home/${TARGET_USERNAME}/.ssh/vm -N ""
+    chmod 755 /usr/local/bin/vmcr /usr/local/bin/vmdl /usr/local/bin/vmls /usr/local/bin/vmsh
+
+    if [ ! -f /home/${TARGET_USERNAME}/.ssh/vm ]; then
+        ssh-keygen -f /home/${TARGET_USERNAME}/.ssh/vm -N ""
+    fi
+
     chown -R ${TARGET_USERNAME}:${TARGET_USERNAME} /home/${TARGET_USERNAME}/.ssh/vm*
+    
     mkdir -p /home/workdrive/virt/images
     mkdir -p /home/workdrive/virt/runtime
     chown -R ${TARGET_USERNAME}:${TARGET_USERNAME} /home/workdrive
