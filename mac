@@ -677,6 +677,8 @@ wget -O ${ROOTFS}/usr/share/backgrounds/05.jpg https://free-images.com/lg/ac18/c
 wget -O ${ROOTFS}/usr/share/backgrounds/06.jpg https://free-images.com/lg/5cc4/lights_night_city_night.jpg
 wget -O ${ROOTFS}/usr/share/backgrounds/07.jpg https://free-images.com/lg/64e0/heavens_peek.jpg
 wget -O ${ROOTFS}/usr/share/backgrounds/08.jpg https://free-images.com/lg/5d7d/painting_watercolor_wax_stains.jpg
+wget -O ${ROOTFS}/usr/share/backgrounds/09.jpg https://raw.githubusercontent.com/simple-sunrise/Light-and-Dark-Wallpapers-for-Gnome/main/Wallpapers/LakesideDeer/LakesideDeer-1.png
+wget -O ${ROOTFS}/usr/share/backgrounds/10.jpg https://raw.githubusercontent.com/simple-sunrise/Light-and-Dark-Wallpapers-for-Gnome/main/Wallpapers/LakesideDeer/LakesideDeer-2.png
 
 cat << EOF | tee ${ROOTFS}/home/$TARGET_USERNAME/.xsession
 #!/bin/sh
