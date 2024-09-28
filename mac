@@ -194,6 +194,43 @@ echo "fastboot activated"
 
 }
 
+disableturbo() {
+# disable turbo boost
+
+cat <<'EOF' | tee ${ROOTFS}/usr/local/bin/turboboost.sh
+#!/bin/bash
+input=$1
+if [ "$input" = "no" ]; then
+    state=1	
+else
+    state=0
+fi
+echo "no_turbo=$state"
+if [ -f /sys/devices/system/cpu/intel_pstate/no_turbo ]; then
+    echo $state > /sys/devices/system/cpu/intel_pstate/no_turbo
+fi
+EOF
+
+chmod 755 ${ROOTFS}/usr/local/bin/turboboost.sh
+
+
+cat <<EOF | tee ${ROOTFS}/etc/systemd/system/disable-intel-turboboost.service
+[Unit]
+Description=Disable Intel Turbo Boost using pstate driver 
+[Service]
+ExecStart=/bin/sh -c "/usr/local/bin/turboboost.sh no"
+ExecStop=/bin/sh -c "/usr/local/bin/turboboost.sh yes"
+RemainAfterExit=yes
+[Install]
+WantedBy=sysinit.target
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    systemctl enable disable-intel-turboboost.service
+EOF
+
+}
+
 firstbootexpandfs() {
 if [ $INSIDE_MACHINE -eq 0 ]; then
 # first boot script
@@ -275,6 +312,10 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 echo "essentials installed"
 
+cat << EOF | chroot ${ROOTFS}
+    git config --global core.editor "vim"
+EOF
+
 
 
 }
@@ -334,7 +375,7 @@ if [ $DOCKER_HOST -eq 1 ]; then
 echo "install docker"
 cat << EOF | chroot ${ROOTFS}
     apt install -y docker.io python3-docker docker-compose skopeo
-    apt install -y ansible openjdk-17-jdk-headless
+    apt install -y ansible openjdk-17-jdk-headless npm golang-go
 EOF
 
 
@@ -617,6 +658,10 @@ wget -O ${ROOTFS}/usr/share/backgrounds/01.jpg https://free-images.com/or/8606/c
 wget -O ${ROOTFS}/usr/share/backgrounds/02.jpg https://free-images.com/or/9cf1/city_overcast_buildings_skyline.jpg
 wget -O ${ROOTFS}/usr/share/backgrounds/03.jpg https://free-images.com/lg/f1b3/sunset_on_seine.jpg
 wget -O ${ROOTFS}/usr/share/backgrounds/04.jpg https://free-images.com/lg/e216/parrots_macaw_bird_parrot.jpg
+wget -O ${ROOTFS}/usr/share/backgrounds/05.jpg https://free-images.com/lg/ac18/city_night_light_bokeh.jpg
+wget -O ${ROOTFS}/usr/share/backgrounds/06.jpg https://free-images.com/lg/5cc4/lights_night_city_night.jpg
+wget -O ${ROOTFS}/usr/share/backgrounds/07.jpg https://free-images.com/lg/64e0/heavens_peek.jpg
+wget -O ${ROOTFS}/usr/share/backgrounds/08.jpg https://free-images.com/lg/5d7d/painting_watercolor_wax_stains.jpg
 
 cat << EOF | tee ${ROOTFS}/home/$TARGET_USERNAME/.xsession
 #!/bin/sh
@@ -822,6 +867,7 @@ createuser
 authkeys
 rmnouveau
 fastboot
+disableturbo
 firstbootexpandfs
 bashaliases
 smalllogs
