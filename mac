@@ -281,6 +281,7 @@ lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*MAJOR_KUBE_VERSION*=.*" "export 
 lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*K9S_VERSION*=.*" "export K9S_VERSION=${K9S_VERSION}"
 lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*MVN_VERSION*=.*" "export MVN_VERSION=${MVN_VERSION}"
 lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*NERDFONTS*=.*" "export NERDFONTS=${NERDFONTS}"
+lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*ZOOM_VERSION*=.*" "export ZOOM_VERSION=${ZOOM_VERSION}"
 
 echo "bash aliases setup finished"
 }
@@ -592,7 +593,33 @@ done
  
 echo "additional gui packages"
 cat << EOF | chroot ${ROOTFS}
-    apt install -y ntfs-3g ifuse mpv haruna vlc  cmatrix nmon mesa-utils neofetch feh network-manager acpitool fonts-noto libnotify-bin dunst ffmpeg mediainfo-gui arandr thunar
+    apt install -y ntfs-3g ifuse mpv haruna vlc cmatrix nmon mesa-utils neofetch feh network-manager dnsmasq acpitool fonts-noto libnotify-bin dunst ffmpeg python3-mutagen imagemagick mediainfo-gui arandr 
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    systemctl disable dnsmasq
+EOF
+
+cat << 'EOF' | tee ${ROOTFS}/etc/network/interfaces
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+source /etc/network/interfaces.d/*
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+EOF
+
+cat << 'EOF' | tee ${ROOTFS}/etc/NetworkManager/conf.d/00-use-dnsmasq.conf
+[main]
+dns=dnsmasq
+EOF
+
+cat << 'EOF' | tee ${ROOTFS}/etc/NetworkManager/dnsmasq.d/dev.conf
+#/etc/NetworkManager/dnsmasq.d/dev.conf
+local=/zrz.duckdns.org/
+address=/zrz.duckdns.org/127.0.0.1
 EOF
 
 #YT-DLP latest
@@ -610,18 +637,6 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 done
 
-
-
-cat << 'EOF' | tee ${ROOTFS}/etc/network/interfaces
-# This file describes the network interfaces available on your system
-# and how to activate them. For more information, see interfaces(5).
-
-source /etc/network/interfaces.d/*
-
-# The loopback network interface
-auto lo
-iface lo inet loopback
-EOF
 
 # install chrome browser
 mkdir -p ${ROOTFS}/opt/debs/
@@ -725,7 +740,44 @@ iworkstation() {
 if [ $WSTATION -eq 1 ]; then
 echo "additional workstation tools"
 cat << EOF | chroot ${ROOTFS}
-    apt install -y handbrake gimp krita mypaint inkscape blender obs-studio v4l2loopback-utils kdenlive flameshot maim xclip xdotool 
+    apt install -y handbrake gimp krita mypaint inkscape blender obs-studio v4l2loopback-utils kdenlive flameshot maim xclip xdotool thunar thunar-archive-plugin easytag
+EOF
+
+# configure Thunar
+mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/Thunar/
+
+cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.config/Thunar/uca.xml
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+<action>
+        <icon>utilities-terminal</icon>
+        <name>Open Terminal Here</name>
+        <submenu></submenu>
+        <unique-id>1727457442655389-1</unique-id>
+        <command>st -d %f</command>
+        <description>Open Terminal here</description>
+        <range></range>
+        <patterns>*</patterns>
+        <startup-notify/>
+        <directories/>
+</action>
+<action>
+        <icon>utilities-terminal</icon>
+        <name>VSCode</name>
+        <submenu></submenu>
+        <unique-id>1727457442655389-1</unique-id>
+        <command>code %f</command>
+        <description>Open VSCode here</description>
+        <range></range>
+        <patterns>*</patterns>
+        <startup-notify/>
+        <directories/>
+</action>
+</actions>
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/Thunar
 EOF
 
 cat << EOF | chroot ${ROOTFS}
@@ -815,15 +867,12 @@ EOF
 fi
 }
 
-
-
 cleanupapt() {
 echo "cleaning up"
 cat << EOF | chroot ${ROOTFS}
     apt-get clean && rm -rf /var/lib/apt/lists/*
 EOF
 }
-
 
 unmountraw() {
 if [ $INSIDE_MACHINE -eq 0 ]; then
