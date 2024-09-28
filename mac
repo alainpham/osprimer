@@ -308,7 +308,7 @@ iessentials() {
 echo "install essentials"
 cat << EOF | chroot ${ROOTFS}
     apt update && apt upgrade -y
-    apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon systemd-timesyncd htop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables
+    apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon systemd-timesyncd htop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup iperf3
 EOF
 echo "essentials installed"
