@@ -628,7 +628,7 @@ cat << EOF | chroot ${ROOTFS}
     chmod 755 /usr/local/bin/yt-dlp
 EOF
 
-#ffmpeg scripts
+# ffmpeg scripts
 ffmpegscripts="vconv-archive-lossless-h264-vaapi.sh vconv-extract-audio.sh vconv-h264-vaapi-qp.sh vconv-h264-vaapi-vbr.sh vconv-hevc-vaapi-qp.sh vconv-make-mkv.sh vconv-make-mp4.sh vconv-mp3-hq.sh vconv-vp9-vaapi-qp.sh vconv-x264-crf.sh vconv-x264-lowres-lowvbr-2pass.sh vconv-x264-lowres-vbr-2pass.sh vconv-x264-vbr-2pass.sh"
 for script in $ffmpegscripts ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/ffmpeg/$script
@@ -637,6 +637,29 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 done
 
+# pulseaudio podcast setup
+cat << 'EOF' | tee ${ROOTFS}/etc/pulse/default.pa.d/pulsepod.pa
+# audio sink from desktop
+load-module module-null-sink sink_name=from-desktop sink_properties=device.description="from-desktop"
+set-default-sink from-desktop
+
+# audio sink from caller
+load-module module-null-sink sink_name=from-caller sink_properties=device.description="from-caller"
+
+set-sink-volume from-desktop 62260
+set-sink-volume from-caller 62260
+
+# audio sink mix to caller
+load-module module-null-sink sink_name=to-caller-sink sink_properties=device.description="to-caller-sink"
+
+load-module module-remap-source  source_name=to-caller master=to-caller-sink.monitor source_properties=device.description="to-caller"
+
+set-default-source to-caller-src
+
+
+# connect from-desktop to to-caller-sink
+load-module module-loopback source=from-desktop.monitor sink=to-caller-sink latency_msec=1 source_dont_move=true sink_dont_move=true
+EOF
 
 # install chrome browser
 mkdir -p ${ROOTFS}/opt/debs/
@@ -743,6 +766,18 @@ if [ $WSTATION -eq 1 ]; then
 echo "additional workstation tools"
 cat << EOF | chroot ${ROOTFS}
     apt install -y handbrake gimp krita mypaint inkscape blender obs-studio v4l2loopback-utils kdenlive flameshot maim xclip xdotool thunar thunar-archive-plugin easytag
+EOF
+
+mkdir -p ${ROOTFS}/home/workdrive/recordings
+cat << EOF | chroot ${ROOTFS}
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/workdrive
+EOF
+
+cat << 'EOF' | tee ${ROOTFS}/usr/local/bin/winshot.sh
+maim -i $(xdotool getactivewindow) | xclip -selection clipboard -t image/png
+EOF
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /usr/local/bin/winshot.sh
 EOF
 
 # configure Thunar
