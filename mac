@@ -731,7 +731,7 @@ done
 EOF
 
 cat << EOF | chroot ${ROOTFS}
-    chown $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.xinitrc
+    chown $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.xsession
 EOF
 
 
@@ -814,7 +814,7 @@ cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.config/Thunar/uca.xml
 EOF
 
 cat << EOF | chroot ${ROOTFS}
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/Thunar
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config
 EOF
 
 cat << EOF | chroot ${ROOTFS}
