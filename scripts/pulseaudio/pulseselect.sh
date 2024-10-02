@@ -1,13 +1,8 @@
 #!/bin/bash
 
 # Get list of input devices (sources)
-echo "ALSA Input Devices:"
-pactl list short sources | grep alsa_input | awk '{print $1, $2}'
 input_devices=$(pactl list short sources | grep alsa_input | awk '{print $2}')
 
-echo
-echo "ALSA Output Devices:"
-pactl list short sinks | grep alsa_output | awk '{print $1, $2}'
 output_devices=$(pactl list short sinks | grep alsa_output | awk '{print $2}')
 
 echo "Available Input Devices:"
@@ -52,7 +47,7 @@ speakers=$selected_output
 
 mic=$selected_input
 
-load-module module-combine-sink sink_name=cspeakers sink_properties=device.description=cspeakers slaves=${speakers}
+pactl load-module module-combine-sink sink_name=cspeakers sink_properties=device.description=cspeakers slaves=${speakers}
 
 # connect from-desktop to speakers
 pactl load-module module-loopback source="from-desktop.monitor" sink="cspeakers" latency_msec=1 source_dont_move=true sink_dont_move=true
