@@ -593,7 +593,7 @@ done
  
 echo "additional gui packages"
 cat << EOF | chroot ${ROOTFS}
-    apt install -y ntfs-3g ifuse mpv haruna vlc cmatrix nmon mesa-utils neofetch feh network-manager dnsmasq acpitool fonts-noto libnotify-bin dunst ffmpeg python3-mutagen imagemagick mediainfo-gui arandr 
+    apt install -y ntfs-3g ifuse mpv haruna vlc cmatrix nmon mesa-utils neofetch feh network-manager dnsmasq acpitool lm-sensors fonts-noto libnotify-bin dunst ffmpeg python3-mutagen imagemagick mediainfo-gui arandr 
 EOF
 
 cat << EOF | chroot ${ROOTFS}
