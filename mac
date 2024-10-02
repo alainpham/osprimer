@@ -656,7 +656,6 @@ load-module module-remap-source  source_name=to-caller master=to-caller-sink.mon
 
 set-default-source to-caller-src
 
-
 # connect from-desktop to to-caller-sink
 load-module module-loopback source=from-desktop.monitor sink=to-caller-sink latency_msec=1 source_dont_move=true sink_dont_move=true
 EOF
@@ -934,8 +933,9 @@ if ! [ $# -eq 15 ]; then
     echo "make sure to download debian cloud image : rm debian-12-nocloud-amd64.raw && wget https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw"
 
     echo "Usage: sudo $0 <1_INSIDE_MACHINE> <2_CREATE_USER> <3_TARGET_USERNAME> <4_TARGET_PASSWD> <5_AUTHSSHFILE> <6_INPUT_IMG> <7_OUTPUT_IMAGE> <8_DISK_SIZE> <9_DOCKER_HOST> <10_KUBE_HOST> <11_GUI> <12_BLACKLIST_NOUVEAU> <13_NVIDIA_DRIVERS> <14_WSTATION> <15_VIRT>"
-    echo "baremetal fullguinv:  sudo $0 1 0 apham ps authorized_keys debian-12-nocloud-amd64.raw d12-fgui.raw 5G 1 1 1 1 1 0 0"
-    echo "baremetal wkstation:  sudo $0 1 0 apham ps authorized_keys debian-12-nocloud-amd64.raw d12-fgui.raw 5G 1 1 1 1 0 1 0"
+    echo "baremetal wkstatvrt:  sudo $0 1 0 apham ps authorized_keys debian-12-nocloud-amd64.raw d12-fgui.raw 5G 1 1 1 1 1 1 1"
+    echo "baremetal wkstation:  sudo $0 1 0 apham ps authorized_keys debian-12-nocloud-amd64.raw d12-fgui.raw 5G 1 1 1 1 1 1 0"
+    echo "baremetal fullguivrt: sudo $0 1 0 apham ps authorized_keys debian-12-nocloud-amd64.raw d12-fgui.raw 5G 1 1 1 1 0 0 1"
     echo "baremetal fullgui:    sudo $0 1 0 apham ps authorized_keys debian-12-nocloud-amd64.raw d12-fgui.raw 5G 1 1 1 1 0 0 0"
     echo "cloud fullgui:        sudo $0 0 1 apham ps authorized_keys debian-12-nocloud-amd64.raw d12-fgui.raw 5G 1 1 1 1 0 0 0"
     echo "cloud full:           sudo $0 0 1 apham ps authorized_keys debian-12-nocloud-amd64.raw d12-full.raw 5G 1 1 0 1 0 0 0"
