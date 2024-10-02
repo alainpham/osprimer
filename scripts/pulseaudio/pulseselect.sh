@@ -46,20 +46,25 @@ fi
 speakers=$selected_output
 
 mic=$selected_input
-
+pactl list short | grep module-combine-sink.*cspeakers | awk '{print $1}' | xargs -r -n 1 pactl unload-module
 pactl load-module module-combine-sink sink_name=cspeakers sink_properties=device.description=cspeakers slaves=${speakers}
 
 # connect from-desktop to speakers
-pactl load-module module-loopback source="from-desktop.monitor" sink="cspeakers" latency_msec=1 source_dont_move=true sink_dont_move=true
+pactl load-module module-loopback source="from-desktop.monitor" sink="cspeakers" latency_msec=1 source_dont_move=true sink_dont_move=true rate=48000 adjust_time=0
 
 # connect from-caller to speakers
-pactl load-module module-loopback source="from-caller.monitor" sink="cspeakers" latency_msec=1 source_dont_move=true sink_dont_move=true
+pactl load-module module-loopback source="from-caller.monitor" sink="cspeakers" latency_msec=1 source_dont_move=true sink_dont_move=true rate=48000 adjust_time=0
 
 
 # split mic into 2
+pactl list short | grep module-remap-source.*mic01-processed | awk '{print $1}' | xargs -r -n 1 pactl unload-module
 pactl load-module module-remap-source source_name=mic01-processed master=${mic} master_channel_map="front-left" channel_map="mono" source_properties=device.description="mic01-processed"
+
+pactl list short | grep module-remap-source.*mic02-processed | awk '{print $1}' | xargs -r -n 1 pactl unload-module
 pactl load-module module-remap-source source_name=mic02-processed master=${mic} master_channel_map="front-right" channel_map="mono" source_properties=device.description="mic02-processed"
+
+pactl list short | grep module-remap-source.*mics-raw | awk '{print $1}' | xargs -r -n 1 pactl unload-module
 pactl load-module module-remap-source source_name=mics-raw master=${mic} source_properties=device.description="mics-raw"
 
-pactl load-module module-loopback source="mic01-processed" sink=to-caller-sink latency_msec=1 source_dont_move=true sink_dont_move=true
-pactl load-module module-loopback source="mic02-processed" sink=to-caller-sink latency_msec=1 source_dont_move=true sink_dont_move=true
+pactl load-module module-loopback source="mic01-processed" sink=to-caller-sink latency_msec=1 source_dont_move=true sink_dont_move=true rate=48000 adjust_time=0
+pactl load-module module-loopback source="mic02-processed" sink=to-caller-sink latency_msec=1 source_dont_move=true sink_dont_move=true rate=48000 adjust_time=0
