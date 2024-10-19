@@ -21,6 +21,14 @@ inputversions() {
     export ZOOM_VERSION=6.2.0.1855
     echo "export ZOOM_VERSION=${ZOOM_VERSION}"
 
+    export MLVAPP_VERSION=1.14
+    echo "export MLVAPP_VERSION=${MLVAPP_VERSION}"
+
+    export BEEREF_VERSION=0.3.3
+    echo "export BEEREF_VERSION=${BEEREF_VERSION}"
+
+    export FREAC_VERSION=1.1.7
+    echo "export FREAC_VERSION=${FREAC_VERSION}"
 }
 
 inputkeyboard() {
@@ -282,7 +290,9 @@ lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*K9S_VERSION*=.*" "export K9S_VER
 lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*MVN_VERSION*=.*" "export MVN_VERSION=${MVN_VERSION}"
 lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*NERDFONTS*=.*" "export NERDFONTS=${NERDFONTS}"
 lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*ZOOM_VERSION*=.*" "export ZOOM_VERSION=${ZOOM_VERSION}"
-
+lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*MLVAPP_VERSION*=.*" "export MLVAPP_VERSION=${MLVAPP_VERSION}"
+lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*BEEREF_VERSION*=.*" "export BEEREF_VERSION=${BEEREF_VERSION}"
+lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*FREAC_VERSION*=.*" "export FREAC_VERSION=${FREAC_VERSION}"
 echo "bash aliases setup finished"
 }
 
@@ -766,7 +776,7 @@ iworkstation() {
 if [ $WSTATION -eq 1 ]; then
 echo "additional workstation tools"
 cat << EOF | chroot ${ROOTFS}
-    apt install -y handbrake gimp krita mypaint inkscape blender obs-studio v4l2loopback-utils kdenlive flameshot maim xclip xdotool thunar thunar-archive-plugin easytag
+    apt install -y handbrake gimp rawtherapee krita mypaint inkscape blender obs-studio mgba-qt v4l2loopback-utils kdenlive flameshot maim xclip xdotool thunar thunar-archive-plugin easytag
 EOF
 
 mkdir -p ${ROOTFS}/home/workdrive/recordings
@@ -868,7 +878,34 @@ cat << EOF | chroot ${ROOTFS}
     apt install -y /opt/debs/dbeaver.deb
 EOF
 
+# APPimages
+# MLVP APP
+wget -O ${ROOTFS}/opt/appimages/mlvapp.AppImage https://github.com/ilia3101/MLV-App/releases/download/QTv${MLVAPP_VERSION}/MLV.App.v${MLVAPP_VERSION}.Linux.x86_64.AppImage
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /opt/appimages/mlvapp.AppImage
+    ln -s /opt/appimages/mlvapp.AppImage /usr/local/bin/mlvapp
+EOF
 
+#viber
+wget -O ${ROOTFS}/opt/debs/viber.AppImage https://download.cdn.viber.com/desktop/Linux/viber.AppImage
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /opt/debs/viber.AppImage
+    ln -s /opt/debs/viber.AppImage /usr/local/bin/viber
+EOF
+
+# beeref
+wget -O ${ROOTFS}/opt/debs/beeref.AppImage https://github.com/rbreu/beeref/releases/download/v${BEEREF_VERSION}/BeeRef-${BEEREF_VERSION}.appimage
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /opt/debs/beeref.AppImage
+    ln -s /opt/debs/beeref.AppImage /usr/local/bin/beeref
+EOF
+
+#freac
+wget -O ${ROOTFS}/opt/debs/freac.AppImage https://github.com/enzo1982/freac/releases/download/v${FREAC_VERSION}/freac-${FREAC_VERSION}-linux-x86_64.AppImage
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /opt/debs/freac.AppImage
+    ln -s /opt/debs/freac.AppImage /usr/local/bin/freac
+EOF
 
 fi
 }
@@ -969,6 +1006,7 @@ idlkubeimg
 invidia
 igui
 iworkstation
+ivirt
 cleanupapt
 unmountraw
 
