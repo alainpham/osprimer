@@ -140,7 +140,7 @@ createuser() {
 echo "setup users"
 cat << EOF | chroot ${ROOTFS}
     /usr/sbin/useradd -m -s /bin/bash $TARGET_USERNAME
-
+    mkdir -p /home/${TARGET_USERNAME}/.ssh
     if [ ! -f /home/${TARGET_USERNAME}/.ssh/id_rsa ]; then
         ssh-keygen -N "" -f /home/${TARGET_USERNAME}/.ssh/id_rsa
     fi
@@ -163,7 +163,8 @@ EOF
 authkeys() {
 
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.ssh/
-cp $AUTHSSHFILE ${ROOTFS}/home/$TARGET_USERNAME/.ssh/
+echo "Copy authorized_keys $AUTHSSHFILE"
+cp $AUTHSSHFILE ${ROOTFS}/home/$TARGET_USERNAME/.ssh/authorized_keys
 cat << EOF | chroot ${ROOTFS}
     chown $TARGET_USERNAME:$TARGET_USERNAME -R /home/$TARGET_USERNAME/.ssh
 EOF
@@ -506,6 +507,7 @@ EOF
 echo "containerd setup"
 
 cat << EOF | chroot ${ROOTFS}
+    mkdir -p /etc/containerd
     containerd config default | tee /etc/containerd/config.toml >/dev/null 2>&1
     sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
 EOF
@@ -987,7 +989,7 @@ if ! [ $# -eq 2 ]; then
     return
 fi
 
-init $1 $2 ps NA NA NA NA
+init $1 $2 "ps" "authorized_keys" "NA" "NA" "NA"
 rmnouveau
 fastboot
 disableturbo
@@ -1014,7 +1016,7 @@ if ! [ $# -eq 2 ]; then
     echo "sudo $0 wkstation apham"
     return
 fi
-init $1 $2 ps NA NA NA NA
+init $1 $2 "ps" "authorized_keys" "NA" "NA" "NA"
 rmnouveau
 fastboot
 disableturbo
@@ -1039,7 +1041,7 @@ if ! [ $# -eq 2 ]; then
     echo "sudo $0 fullgui apham"
     return
 fi
-init $1 $2 ps NA NA NA NA
+init $1 $2 "ps" "authorized_keys" "NA" "NA" "NA"
 rmnouveau
 fastboot
 disableturbo
@@ -1064,8 +1066,7 @@ if ! [ $# -eq 2 ]; then
     echo "sudo $0 debianserver apham"
     return
 fi
-init $1 $2 ps authorized_keys NA NA NA
-init $@
+init $1 $2 "ps" "authorized_keys" "NA" "NA" "NA"
 createuser
 authkeys
 bashaliases
@@ -1085,8 +1086,7 @@ if ! [ $# -eq 2 ]; then
     echo "sudo $0 ubuntuserver apham"
     return
 fi
-init $1 $2 ps authorized_keys NA NA NA
-init $@
+init $1 $2 "ps" "authorized_keys" "NA" "NA" "NA"
 createuser
 authkeys
 bashaliases
