@@ -982,9 +982,6 @@ sudo reboot now
 # baremetal workstation with virtualization and nvidia cards
 wkstatvrt(){
 if ! [ $# -eq 2 ]; then
-
-    echo "make sure to download debian cloud image : rm debian-12-nocloud-amd64.raw && wget https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw"
-
     echo "Usage: sudo $0 <1_OPERATION> <2_TARGET_USERNAME>"
     echo "sudo $0 wkstatvrt apham"
     return
@@ -1013,9 +1010,6 @@ sudo reboot now
 # baremetal workstation without virtualization & nvidia
 wkstation(){
 if ! [ $# -eq 2 ]; then
-
-    echo "make sure to download debian cloud image : rm debian-12-nocloud-amd64.raw && wget https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw"
-
     echo "Usage: sudo $0 <1_OPERATION> <2_TARGET_USERNAME>"
     echo "sudo $0 wkstation apham"
     return
@@ -1041,9 +1035,6 @@ sudo reboot now
 #full gui server
 fullgui(){
 if ! [ $# -eq 2 ]; then
-
-    echo "make sure to download debian cloud image : rm debian-12-nocloud-amd64.raw && wget https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw"
-
     echo "Usage: sudo $0 <1_OPERATION> <2_TARGET_USERNAME>"
     echo "sudo $0 fullgui apham"
     return
@@ -1066,13 +1057,32 @@ sudo reboot now
 }
 
 # for cloud servers like on oci, aws, gcp
+
+debianserver(){
+if ! [ $# -eq 2 ]; then
+    echo "Usage: sudo $0 <1_OPERATION> <2_TARGET_USERNAME>"
+    echo "sudo $0 debianserver apham"
+    return
+fi
+init $1 $2 ps authorized_keys NA NA NA
+init $@
+createuser
+authkeys
+bashaliases
+smalllogs
+aptsrc
+iessentials
+isudo
+idocker
+ikube
+sudo reboot now
+}
+
+
 ubuntuserver(){
 if ! [ $# -eq 2 ]; then
-
-    echo "make sure to download debian cloud image : rm debian-12-nocloud-amd64.raw && wget https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw"
-
     echo "Usage: sudo $0 <1_OPERATION> <2_TARGET_USERNAME>"
-    echo "sudo $0 fullgui apham"
+    echo "sudo $0 ubuntuserver apham"
     return
 fi
 init $1 $2 ps authorized_keys NA NA NA
@@ -1097,6 +1107,8 @@ elif [ "$1" = "wkstation" ]; then
     wkstation $@
 elif [ "$1" = "fullgui" ]; then
     fullgui $@
+elif [ "$1" = "debianserver" ]; then
+    debianserver $@
 elif [ "$1" = "ubuntuserver" ]; then
     ubuntuserver $@
 else 
