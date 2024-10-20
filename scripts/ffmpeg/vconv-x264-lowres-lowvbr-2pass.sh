@@ -17,10 +17,16 @@ x264minimal=cabac=1:ref=5:deblock=-1,-1:me=umh:subme=9:psy-rd=1.00,0.15:merange=
 
 x264params=$x264minimal
 
-echo "ffmpeg -y -i $1  -pix_fmt yuv420p -vf scale=${width}:-2 -c:v libx264 -b:v ${bitrate}k -x264-params $x264params -an -pass 1 -f ${format} -movflags +faststart /dev/null"
+# echo "ffmpeg -y -i $1  -pix_fmt yuv420p -vf scale=${width}:-2 -c:v libx264 -b:v ${bitrate}k -x264-params $x264params -an -pass 1 -f ${format} -movflags +faststart /dev/null"
 
-ffmpeg -y -i $1  -pix_fmt yuv420p -vf scale=${width}:-2 -c:v libx264 -b:v ${bitrate}k -x264-params $x264params -an -pass 1 -f ${format} -movflags +faststart /dev/null
+# ffmpeg -y -i $1  -pix_fmt yuv420p -vf scale=${width}:-2 -c:v libx264 -b:v ${bitrate}k -x264-params $x264params -an -pass 1 -f ${format} -movflags +faststart /dev/null
 
-echo "ffmpeg -i $1  -pix_fmt yuv420p -vf scale=${width}:-2 -c:v libx264 -b:v ${bitrate}k -x264-params $x264params -c:a aac -b:a ${ab}k -pass 2 -f ${format} -movflags +faststart ${filename}-x264-vbr${bitrate}k-aac-ab${ab}k-720p.${format}"
+# echo "ffmpeg -i $1  -pix_fmt yuv420p -vf scale=${width}:-2 -c:v libx264 -b:v ${bitrate}k -x264-params $x264params -c:a aac -b:a ${ab}k -pass 2 -f ${format} -movflags +faststart ${filename}-x264-vbr${bitrate}k-aac-ab${ab}k-720p.${format}"
 
-ffmpeg -i $1  -pix_fmt yuv420p -vf scale=${width}:-2 -c:v libx264 -b:v ${bitrate}k -x264-params $x264params -c:a aac -b:a ${ab}k -pass 2 -f ${format} -movflags +faststart ${filename}-x264-vbr${bitrate}k-aac-ab${ab}k-720p.${format}
+# ffmpeg -i $1  -pix_fmt yuv420p -vf scale=${width}:-2 -c:v libx264 -b:v ${bitrate}k -x264-params $x264params -c:a aac -b:a ${ab}k -pass 2 -f ${format} -movflags +faststart ${filename}-x264-vbr${bitrate}k-aac-ab${ab}k-720p.${format}
+
+
+
+ffmpeg -y -i $1  -pix_fmt yuv420p -vf scale=${width}:-2 -c:v libx264 -b:v ${bitrate}k  -an -pass 1 -f ${format} -movflags +faststart /dev/null
+
+ffmpeg -i $1  -pix_fmt yuv420p -vf scale=${width}:-2 -c:v libx264 -b:v ${bitrate}k -maxrate 3500K -bufsize 1000K -c:a aac -b:a ${ab}k -pass 2 -f ${format} -movflags +faststart ${filename}-x264-vbr${bitrate}k-aac-ab${ab}k-720p.${format}
