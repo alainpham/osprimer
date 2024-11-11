@@ -362,6 +362,8 @@ XKBLAYOUT="${KEYBOARD_LAYOUT}"
 EOF
 echo "keyboard setup finished"
 
+mkdir -p ${ROOTFS}/etc/X11/xorg.conf.d/
+
 cat <<EOF | tee ${ROOTFS}/etc/X11/xorg.conf.d/30-touchpad.conf
 Section "InputClass"
     Identifier "touchpad catchall"
@@ -985,7 +987,7 @@ unmountraw
 sudo reboot now
 }
 
-# baremetal workstation with virtualization and nvidia cards
+# baremetal workstation with virtualization and without nvidia cards
 wkstatvrt(){
 if ! [ $# -eq 2 ]; then
     echo "Usage: sudo $0 <1_OPERATION> <2_TARGET_USERNAME>"
@@ -1006,7 +1008,6 @@ allowsshpwd
 ikeyboard
 idocker
 ikube
-invidia
 igui
 iworkstation
 ivirt
