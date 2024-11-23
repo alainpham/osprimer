@@ -5,12 +5,15 @@ inputversions() {
     # https://github.com/docker/buildx/releases
     export DOCKER_BUILDX_VERSION=v0.18.0
     echo "export DOCKER_BUILDX_VERSION=${DOCKER_BUILDX_VERSION}"
+    
     # https://kubernetes.io/releases/  https://cloud.google.com/kubernetes-engine/docs/release-notes
     export MAJOR_KUBE_VERSION=v1.30
     echo "export MAJOR_KUBE_VERSION=${MAJOR_KUBE_VERSION}"
+    
     # https://github.com/derailed/k9s/releases
     export K9S_VERSION=v0.32.6
     echo "export K9S_VERSION=${K9S_VERSION}"
+    
     # https://maven.apache.org/download.cgi
     export MVN_VERSION=3.9.9
     echo "export MVN_VERSION=${MVN_VERSION}"
@@ -19,9 +22,9 @@ inputversions() {
     echo "export NERDFONTS=${NERDFONTS}"
 
     # https://zoom.us/download?os=linux
-    export ZOOM_VERSION=6.2.6.2503
+    export ZOOM_VERSION=6.2.10.4983
     echo "export ZOOM_VERSION=${ZOOM_VERSION}"
-
+    
     # https://mlv.app/
     export MLVAPP_VERSION=1.14
     echo "export MLVAPP_VERSION=${MLVAPP_VERSION}"
