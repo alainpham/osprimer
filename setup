@@ -637,6 +637,7 @@ EOF
 done
 
 # pulseaudio podcast setup
+
 cat << 'EOF' | tee ${ROOTFS}/etc/pulse/default.pa.d/pulsepod.pa
 # audio sink from desktop
 load-module module-null-sink sink_name=from-desktop sink_properties=device.description="from-desktop"
@@ -660,6 +661,9 @@ load-module module-loopback source=from-desktop.monitor sink=to-caller-sink late
 EOF
 
 lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-sample-rate.*" "default-sample-rate = 48000"
+
+curl -Lo ${ROOTFS}/usr/local/bin/pulseselect.sh https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/pulseselect.sh
+chmod 755 ${ROOTFS}/usr/local/bin/pulseselect.sh
 
 # install chrome browser
 mkdir -p ${ROOTFS}/opt/debs/
