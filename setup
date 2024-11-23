@@ -592,7 +592,7 @@ done
  
 echo "additional gui packages"
 cat << EOF | chroot ${ROOTFS}
-    apt install -y ntfs-3g ifuse mpv haruna vlc cmatrix nmon mesa-utils neofetch feh network-manager dnsmasq acpitool lm-sensors fonts-noto libnotify-bin dunst ffmpeg python3-mutagen imagemagick mediainfo-gui arandr 
+    apt install -y ntfs-3g ifuse mpv haruna vlc cmatrix nmon mesa-utils neofetch feh network-manager dnsmasq acpitool lm-sensors fonts-noto libnotify-bin dunst ffmpeg python3-mutagen imagemagick mediainfo-gui arandr picom
 EOF
 
 cat << EOF | chroot ${ROOTFS}
@@ -723,6 +723,7 @@ while true; do
     fi
     bgfile=$(ls /usr/share/backgrounds/ | shuf -n 1)
     feh --bg-fill /usr/share/backgrounds/${bgfile}
+    picom -b
     # Log stderror to a file
     dwm 2> ~/.dwm.log
     # No error logging
@@ -897,7 +898,7 @@ EOF
 ivirt(){
 echo "virtualization tools"
 cat << EOF | chroot ${ROOTFS}
-    apt install qemu-system qemu-utils virtinst libvirt-clients libvirt-daemon-system libguestfs-tools bridge-utils libosinfo-bin virt-manager genisoimage
+    apt install -y qemu-system qemu-utils virtinst libvirt-clients libvirt-daemon-system libguestfs-tools bridge-utils libosinfo-bin virt-manager genisoimage
     adduser $TARGET_USERNAME libvirt
 EOF
 
