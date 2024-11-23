@@ -570,6 +570,24 @@ cat << EOF | chroot ${ROOTFS}
     apt install -y $NV_VERSION
 EOF
 
+# avoid screen tearing
+
+# cat << 'EOF' >> ${ROOTFS}/etc/X11/xorg.conf.d/20-intel.conf
+# Section "Device"
+#   Identifier "Intel Graphics"
+#   Driver "modesetting"
+# EndSection
+# EOF
+
+mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/
+cat << 'EOF' >> ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/picom.conf
+backend = "xr_glx_hybrid";
+vsync = true;
+EOF
+
+chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/$TARGET_USERNAME/.config
+
+
 }
 
 igui() {
@@ -578,6 +596,7 @@ echo "install gui"
 
 cat << EOF | chroot ${ROOTFS}
     apt install -y make gcc libx11-dev libxft-dev libfreetype-dev libxinerama-dev xorg pulseaudio pavucontrol numlockx 
+    apt remove -y xserver-xorg-video-intel
 EOF
 
 echo "install nerdfonts"
@@ -713,6 +732,12 @@ cat << EOF | tee ${ROOTFS}/home/$TARGET_USERNAME/.xsession
 setxkbmap ${KEYBOARD_LAYOUT}
 EOF
 
+if [ ! -f ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/picom.conf ] ; then
+mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/
+cat << 'EOF' >> ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/picom.conf
+# picom config
+EOF
+fi
 
 cat << 'EOF' >> ${ROOTFS}/home/$TARGET_USERNAME/.xsession
 numlockx
@@ -727,7 +752,7 @@ while true; do
     fi
     bgfile=$(ls /usr/share/backgrounds/ | shuf -n 1)
     feh --bg-fill /usr/share/backgrounds/${bgfile}
-    picom -b
+    picom -b --config ~/.config/picom/picom.conf
     # Log stderror to a file
     dwm 2> ~/.dwm.log
     # No error logging
