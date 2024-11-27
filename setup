@@ -683,8 +683,8 @@ lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-sample-rate.*" "default-sa
 lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-fragments.*" "default-fragments = 2"
 lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-fragment-size-msec.*" "default-fragment-size-msec = 10"
 
-curl -Lo ${ROOTFS}/usr/local/bin/pulseselect.sh https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/pulseselect.sh
-chmod 755 ${ROOTFS}/usr/local/bin/pulseselect.sh
+curl -Lo ${ROOTFS}/usr/local/bin/sndsel https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/sndsel
+chmod 755 ${ROOTFS}/usr/local/bin/sndsel
 
 # install chrome browser
 mkdir -p ${ROOTFS}/opt/debs/
