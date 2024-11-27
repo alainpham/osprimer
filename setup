@@ -670,16 +670,18 @@ set-sink-volume from-caller 62260
 
 # audio sink mix to caller
 load-module module-null-sink sink_name=to-caller-sink sink_properties=device.description="to-caller-sink"
+set-sink-volume to-caller-sink 65536
 
 load-module module-remap-source source_name=to-caller master=to-caller-sink.monitor source_properties=device.description="to-caller"
-
-set-default-source to-caller-src
+set-source-volume to-caller 65536
 
 # connect from-desktop to to-caller-sink
 load-module module-loopback source=from-desktop.monitor sink=to-caller-sink latency_msec=1 source_dont_move=true sink_dont_move=true rate=48000 adjust_time=0
 EOF
 
 lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-sample-rate.*" "default-sample-rate = 48000"
+lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-fragments.*" "default-fragments = 2"
+lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-fragment-size-msec.*" "default-fragment-size-msec = 10"
 
 curl -Lo ${ROOTFS}/usr/local/bin/pulseselect.sh https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/pulseselect.sh
 chmod 755 ${ROOTFS}/usr/local/bin/pulseselect.sh

@@ -2,13 +2,15 @@
 
 # Get list of input devices (sources)
 input_devices=$(pactl list short sources | grep alsa_input | awk '{print $2}')
+input_devices_desc=$(pactl -f json list sources | jq -r '.[] | select(.name | startswith("alsa_input")) | .description')
 
 output_devices=$(pactl list short sinks | grep alsa_output | awk '{print $2}')
+output_devices_desc=$(pactl -f json list sinks | jq -r '.[] | select(.name | startswith("alsa_output")) | .description')
 
 echo "Available Input Devices:"
 i=1
 for device in $input_devices; do
-echo "$i) $device"
+echo "$i)" $(echo "$input_devices_desc" | sed -n "${i}p")
 ((i++))
 done
 
@@ -27,7 +29,7 @@ fi
 echo "Available Output Devices:"
 i=1
 for device in $output_devices; do
-echo "$i) $device"
+echo "$i)" $(echo "$output_devices_desc" | sed -n "${i}p")
 ((i++))
 done
 
@@ -44,10 +46,14 @@ fi
 
 #comma separated list of sinks
 speakers=$selected_output
+pactl set-sink-volume $speakers 100%
 
 mic=$selected_input
+pactl set-source-volume $mic 100%
+pactl set-source-mute $mic 0
 pactl list short | grep module-combine-sink.*cspeakers | awk '{print $1}' | xargs -r -n 1 pactl unload-module
 pactl load-module module-combine-sink sink_name=cspeakers sink_properties=device.description=cspeakers slaves=${speakers}
+pactl set-sink-volume cspeakers 60%
 
 # connect from-desktop to speakers
 pactl load-module module-loopback source="from-desktop.monitor" sink="cspeakers" latency_msec=1 source_dont_move=true sink_dont_move=true rate=48000 adjust_time=0
@@ -68,3 +74,6 @@ pactl load-module module-remap-source source_name=mics-raw master=${mic} source_
 
 pactl load-module module-loopback source="mic01-processed" sink=to-caller-sink latency_msec=1 source_dont_move=true sink_dont_move=true rate=48000 adjust_time=0
 pactl load-module module-loopback source="mic02-processed" sink=to-caller-sink latency_msec=1 source_dont_move=true sink_dont_move=true rate=48000 adjust_time=0
+
+# set default mic
+pactl set-default-source mic01-processed
