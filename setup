@@ -18,7 +18,7 @@ inputversions() {
     export MVN_VERSION=3.9.9
     echo "export MVN_VERSION=${MVN_VERSION}"
 
-    export NERDFONTS="ComicShannsMono FiraMono JetBrainsMono"
+    export NERDFONTS="ComicShannsMono FiraMono JetBrainsMono Overpass Noto "
     echo "export NERDFONTS=${NERDFONTS}"
 
     # https://zoom.us/download?os=linux
@@ -572,12 +572,12 @@ EOF
 
 # avoid screen tearing
 
-# cat << 'EOF' >> ${ROOTFS}/etc/X11/xorg.conf.d/20-intel.conf
-# Section "Device"
-#   Identifier "Intel Graphics"
-#   Driver "modesetting"
-# EndSection
-# EOF
+cat << 'EOF' >> ${ROOTFS}/etc/X11/xorg.conf.d/20-intel.conf
+Section "Device"
+  Identifier "Intel Graphics"
+  Driver "modesetting"
+EndSection
+EOF
 
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/
 cat << 'EOF' >> ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/picom.conf
@@ -611,7 +611,7 @@ done
  
 echo "additional gui packages"
 cat << EOF | chroot ${ROOTFS}
-    apt install -y ntfs-3g ifuse mpv haruna vlc cmatrix nmon mesa-utils neofetch feh network-manager dnsmasq acpitool lm-sensors fonts-noto libnotify-bin dunst ffmpeg python3-mutagen imagemagick mediainfo-gui arandr picom
+    apt install -y ntfs-3g ifuse mpv haruna vlc cmatrix nmon mesa-utils neofetch feh network-manager dnsmasq acpitool lm-sensors fonts-noto libnotify-bin dunst ffmpeg python3-mutagen imagemagick mediainfo-gui arandr picom brightnessctl
 EOF
 
 cat << EOF | chroot ${ROOTFS}
