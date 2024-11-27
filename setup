@@ -685,6 +685,8 @@ lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-fragment-size-msec.*" "def
 
 curl -Lo ${ROOTFS}/usr/local/bin/sndsel https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/sndsel
 chmod 755 ${ROOTFS}/usr/local/bin/sndsel
+curl -Lo ${ROOTFS}/usr/local/bin/confsnd https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/confsnd
+chmod 755 ${ROOTFS}/usr/local/bin/confsnd
 
 # install chrome browser
 mkdir -p ${ROOTFS}/opt/debs/
