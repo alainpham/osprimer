@@ -926,6 +926,15 @@ cat << EOF | chroot ${ROOTFS}
     ln -s /opt/debs/freac.AppImage /usr/local/bin/freac
 EOF
 
+#autostart apps
+mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm
+cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm/autostart.sh
+slack &
+zoom &
+confsnddefault &
+EOF
+
+chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/$TARGET_USERNAME/.local
 }
 
 ivirt(){

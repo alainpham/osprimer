@@ -10,7 +10,8 @@ output_devices_desc=$(pactl -f json list sinks | jq -r '.[] | select(.name | sta
 echo "Available Input Devices:"
 i=1
 for device in $input_devices; do
-echo "$i)" $(echo "$input_devices_desc" | sed -n "${i}p")
+echo "$i)" $(echo "$input_devices_desc" | sed -n "${i}p") 
+echo $device
 ((i++))
 done
 
@@ -29,7 +30,8 @@ fi
 echo "Available Output Devices:"
 i=1
 for device in $output_devices; do
-echo "$i)" $(echo "$output_devices_desc" | sed -n "${i}p")
+echo "$i)" $(echo "$output_devices_desc" | sed -n "${i}p") 
+echo $device
 ((i++))
 done
 
