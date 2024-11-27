@@ -19,6 +19,8 @@ Add bluetooth mouse.
 
 setup git default
 git config --global core.editor "vim"
+git config --global apham
+git config --global apham@work
 
 on dell g15
 echo "options  iwlwifi  enable_ini=0" > /etc/modprobe.d/iwlwifi.conf ;
