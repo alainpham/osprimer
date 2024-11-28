@@ -2,15 +2,11 @@
 
 #comma separated list of sinks
 speakers=$1
-pactl set-sink-volume $speakers 100%
 
 mic=$2
-pactl set-source-volume $mic 100%
-pactl set-source-mute $mic 0
 
 pactl list short | grep module-combine-sink.*cspeakers | awk '{print $1}' | xargs -r -n 1 pactl unload-module
 pactl load-module module-combine-sink sink_name=cspeakers sink_properties=device.description=cspeakers slaves=${speakers}
-pactl set-sink-volume cspeakers 60%
 
 # connect from-desktop to speakers
 pactl load-module module-loopback source="from-desktop.monitor" sink="cspeakers" latency_msec=1 source_dont_move=true sink_dont_move=true rate=48000 adjust_time=0
@@ -34,3 +30,37 @@ pactl load-module module-loopback source="mic02-processed" sink=to-caller-sink l
 
 # set default mic
 pactl set-default-source mic01-processed
+
+# set physical volumes
+pactl set-sink-volume $speakers 100%
+pactl set-sink-mute $speakers 0
+
+pactl set-source-volume $mic 100%
+pactl set-source-mute $mic 0
+
+# set vitual volumes
+pactl set-sink-volume from-desktop 95%
+pactl set-sink-mute from-desktop 0
+
+pactl set-sink-volume from-caller 95%
+pactl set-sink-mute from-caller 0
+
+pactl set-sink-volume to-caller-sink 100%
+pactl set-sink-mute to-caller-sink 0
+
+pactl set-sink-volume cspeakers 45%
+pactl set-sink-mute cspeakers 0
+
+pactl set-source-volume to-caller 100%
+pactl set-source-mute to-caller 0
+
+pactl set-source-volume mics-raw 100%
+pactl set-source-mute mics-raw 0
+
+pactl set-source-volume mic01-processed 100%
+pactl set-source-mute mic01-processed 0
+
+pactl set-source-volume mic02-processed 100%
+pactl set-source-mute mic02-processed 0
+
+kill -44 $(pidof dwmblocks)
