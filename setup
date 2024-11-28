@@ -36,6 +36,13 @@ inputversions() {
     # https://www.freac.org/downloads-mainmenu-33
     export FREAC_VERSION=1.1.7
     echo "export FREAC_VERSION=${FREAC_VERSION}"
+
+    # https://github.com/IsmaelMartinez/teams-for-linux/releases/latest
+    export TEAMS_VERSION=1.11.5
+    echo "export TEAMS_VERSION=${TEAMS_VERSION}"
+
+    export CAPRINE_VERSION=2.60.1
+    echo "export CAPRINE_VERSION=${CAPRINE_VERSION}"
 }
 
 inputkeyboard() {
@@ -291,6 +298,9 @@ lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*ZOOM_VERSION*=.*" "export ZOOM_V
 lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*MLVAPP_VERSION*=.*" "export MLVAPP_VERSION=${MLVAPP_VERSION}"
 lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*BEEREF_VERSION*=.*" "export BEEREF_VERSION=${BEEREF_VERSION}"
 lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*FREAC_VERSION*=.*" "export FREAC_VERSION=${FREAC_VERSION}"
+lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*FREAC_VERSION*=.*" "export FREAC_VERSION=${FREAC_VERSION}"
+lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*TEAMS_VERSION*=.*" "export TEAMS_VERSION=${TEAMS_VERSION}"
+lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*CAPRINE_VERSION*=.*" "export CAPRINE_VERSION=${CAPRINE_VERSION}"
 echo "bash aliases setup finished"
 }
 
@@ -640,6 +650,33 @@ local=/zrz.duckdns.org/
 address=/zrz.duckdns.org/127.0.0.1
 EOF
 
+# dunst notification
+mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/dunst
+cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.config/dunst/dunstrc
+[global]
+monitor = 0
+follow = keyboard
+font = Noto Sans 11
+frame_width = 2
+frame_color = "#4e9a06"
+offset = 15x65
+[urgency_low]
+    background = "#4e9a06"
+    foreground = "#eeeeec"
+[urgency_normal]
+    background = "#2e3436"
+    foreground = "#eeeeec"
+[urgency_critical]
+    background = "#a40000"
+    foreground = "#eeeeec"
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/dunst
+EOF
+
+
+
 #YT-DLP latest
 curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o ${ROOTFS}/usr/local/bin/yt-dlp
 cat << EOF | chroot ${ROOTFS}
@@ -906,26 +943,41 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 
 #viber
-wget -O ${ROOTFS}/opt/debs/viber.AppImage https://download.cdn.viber.com/desktop/Linux/viber.AppImage
+wget -O ${ROOTFS}/opt/appimages/viber.AppImage https://download.cdn.viber.com/desktop/Linux/viber.AppImage
 cat << EOF | chroot ${ROOTFS}
-    chmod 755 /opt/debs/viber.AppImage
-    ln -s /opt/debs/viber.AppImage /usr/local/bin/viber
+    chmod 755 /opt/appimages/viber.AppImage
+    ln -sf /opt/appimages/viber.AppImage /usr/local/bin/viber
 EOF
 
 # beeref
-wget -O ${ROOTFS}/opt/debs/beeref.AppImage https://github.com/rbreu/beeref/releases/download/v${BEEREF_VERSION}/BeeRef-${BEEREF_VERSION}.appimage
+wget -O ${ROOTFS}/opt/appimages/beeref.AppImage https://github.com/rbreu/beeref/releases/download/v${BEEREF_VERSION}/BeeRef-${BEEREF_VERSION}.appimage
 cat << EOF | chroot ${ROOTFS}
-    chmod 755 /opt/debs/beeref.AppImage
-    ln -s /opt/debs/beeref.AppImage /usr/local/bin/beeref
+    chmod 755 /opt/appimages/beeref.AppImage
+    ln -sf /opt/appimages/beeref.AppImage /usr/local/bin/beeref
 EOF
 
 #freac
-wget -O ${ROOTFS}/opt/debs/freac.AppImage https://github.com/enzo1982/freac/releases/download/v${FREAC_VERSION}/freac-${FREAC_VERSION}-linux-x86_64.AppImage
+wget -O ${ROOTFS}/opt/appimages/freac.AppImage https://github.com/enzo1982/freac/releases/download/v${FREAC_VERSION}/freac-${FREAC_VERSION}-linux-x86_64.AppImage
 cat << EOF | chroot ${ROOTFS}
-    chmod 755 /opt/debs/freac.AppImage
-    ln -s /opt/debs/freac.AppImage /usr/local/bin/freac
+    chmod 755 /opt/appimages/freac.AppImage
+    ln -sf /opt/appimages/freac.AppImage /usr/local/bin/freac
 EOF
 
+#teams
+wget -O ${ROOTFS}/opt/appimages/teams-for-linux.AppImage https://github.com/IsmaelMartinez/teams-for-linux/releases/download/v${TEAMS_VERSION}/teams-for-linux-${TEAMS_VERSION}.AppImage
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /opt/appimages/teams-for-linux.AppImage
+    ln -sf /opt/appimages/teams-for-linux.AppImage /usr/local/bin/teams-for-linux
+EOF
+
+
+
+#caprine facebook messenger
+wget -O ${ROOTFS}/opt/appimages/caprine.AppImage https://github.com/sindresorhus/caprine/releases/download/v2.60.1/Caprine-2.60.1.AppImage
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /opt/appimages/caprine.AppImage
+    ln -sf /opt/appimages/caprine.AppImage /usr/local/bin/caprine
+EOF
 #autostart apps
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm
 cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm/autostart.sh
@@ -934,7 +986,10 @@ zoom &
 confsnddefault &
 EOF
 
-chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/$TARGET_USERNAME/.local
+cat << EOF | chroot ${ROOTFS}
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.local
+EOF
+
 }
 
 ivirt(){
