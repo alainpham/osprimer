@@ -5,15 +5,22 @@ speakers=$1
 
 mic=$2
 
-pactl list short | grep module-combine-sink.*cspeakers | awk '{print $1}' | xargs -r -n 1 pactl unload-module
-pactl load-module module-combine-sink sink_name=cspeakers sink_properties=device.description=cspeakers slaves=${speakers}
+pactl list short | grep module-remap-sink.*cspeakers | awk '{print $1}' | xargs -r -n 1 pactl unload-module
+pactl load-module module-remap-sink sink_name=cspeakers sink_properties=device.description=cspeakers master=${speakers}
 
 # connect from-desktop to speakers
-pactl load-module module-loopback source="from-desktop.monitor" sink="cspeakers" latency_msec=1 source_dont_move=true sink_dont_move=true rate=48000 adjust_time=0
+#pactl load-module module-loopback source="from-desktop.monitor" sink="cspeakers" latency_msec=1 source_dont_move=true sink_dont_move=true rate=48000 format=s32le  adjust_time=1
+
+# pacat -r --latency-msec=1 --rate=48000 --format=s32le  -d "from-desktop.monitor" | pacat -p --latency-msec=1 --rate=48000 --format=s32le -d "cspeakers"
 
 # connect from-caller to speakers
-pactl load-module module-loopback source="from-caller.monitor" sink="cspeakers" latency_msec=1 source_dont_move=true sink_dont_move=true rate=48000 adjust_time=0
+#pactl load-module module-loopback source="from-caller.monitor" sink="cspeakers" latency_msec=1 source_dont_move=true sink_dont_move=true rate=48000 format=s32le adjust_time=1
 
+pactl list short | grep module-combine-sink.*from-desktop | awk '{print $1}' | xargs -r -n 1 pactl unload-module
+pactl load-module module-combine-sink sink_name=from-desktop sink_properties=device.description=from-desktop slaves=cspeakers,to-caller-sink
+
+pactl list short | grep module-combine-sink.*from-caller | awk '{print $1}' | xargs -r -n 1 pactl unload-module
+pactl load-module module-combine-sink sink_name=from-caller sink_properties=device.description=from-caller slaves=cspeakers
 
 # split mic into 2
 pactl list short | grep module-remap-source.*mic01-processed | awk '{print $1}' | xargs -r -n 1 pactl unload-module
@@ -25,11 +32,15 @@ pactl load-module module-remap-source source_name=mic02-processed master=${mic} 
 pactl list short | grep module-remap-source.*mics-raw | awk '{print $1}' | xargs -r -n 1 pactl unload-module
 pactl load-module module-remap-source source_name=mics-raw master=${mic} source_properties=device.description="mics-raw"
 
-pactl load-module module-loopback source="mic01-processed" sink=to-caller-sink latency_msec=1 source_dont_move=true sink_dont_move=true rate=48000 adjust_time=0
-pactl load-module module-loopback source="mic02-processed" sink=to-caller-sink latency_msec=1 source_dont_move=true sink_dont_move=true rate=48000 adjust_time=0
+pactl load-module module-loopback source="mic01-processed" sink=to-caller-sink latency_msec=1 source_dont_move=true sink_dont_move=true rate=48000 format=s32le adjust_time=1
+pactl set-source-volume mic01-processed 100%
+pactl load-module module-loopback source="mic02-processed" sink=to-caller-sink latency_msec=1 source_dont_move=true sink_dont_move=true rate=48000 format=s32le adjust_time=1
+pactl set-source-volume mic02-processed 100%
+# set default mic apps
+pactl set-default-source to-caller
 
-# set default mic
-pactl set-default-source mic01-processed
+# set default output for apps
+pactl set-default-sink from-desktop
 
 # set physical volumes
 pactl set-sink-volume $speakers 100%

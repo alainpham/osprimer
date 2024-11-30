@@ -593,6 +593,7 @@ mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/
 cat << 'EOF' >> ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/picom.conf
 backend = "xr_glx_hybrid";
 vsync = true;
+use-damage = false
 EOF
 
 chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/$TARGET_USERNAME/.config
@@ -654,8 +655,8 @@ EOF
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/dunst
 cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.config/dunst/dunstrc
 [global]
-monitor = 0
-follow = keyboard
+monitor = 2
+# follow = keyboard
 font = Noto Sans 11
 frame_width = 2
 frame_color = "#4e9a06"
@@ -694,6 +695,16 @@ done
 
 # pulseaudio podcast setup
 
+# create alsa loopback
+lineinfile ${ROOTFS}/etc/modules ".*snd-aloop.*" "snd-aloop"
+cat << 'EOF' | tee ${ROOTFS}/etc/modprobe.d/alsa-loopback.conf
+options snd-aloop index=10 id=loop
+EOF
+
+# avoid crackling
+# lineinfile ${ROOTFS}/etc/pulse/default.pa ".*load-module module-suspend-on-idle.*" "#load-module module-suspend-on-idle"
+# lineinfile ${ROOTFS}/etc/pulse/system.pa ".*load-module module-suspend-on-idle.*" "#load-module module-suspend-on-idle"
+
 cat << 'EOF' | tee ${ROOTFS}/etc/pulse/default.pa.d/pulsepod.pa
 # audio sink from desktop
 load-module module-null-sink sink_name=from-desktop sink_properties=device.description="from-desktop"
@@ -717,8 +728,8 @@ load-module module-loopback source=from-desktop.monitor sink=to-caller-sink late
 EOF
 
 lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-sample-rate.*" "default-sample-rate = 48000"
-lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-fragments.*" "default-fragments = 2"
-lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-fragment-size-msec.*" "default-fragment-size-msec = 10"
+lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-fragments.*" "default-fragments = 4"
+lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-fragment-size-msec.*" "default-fragment-size-msec = 20"
 
 curl -Lo ${ROOTFS}/usr/local/bin/sndsel https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/sndsel
 chmod 755 ${ROOTFS}/usr/local/bin/sndsel
