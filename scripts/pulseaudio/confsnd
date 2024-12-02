@@ -1,43 +1,34 @@
 #!/bin/bash
 
-#comma separated list of sinks
+# comma separated list of sinks
 speakers=$1
 
 mic=$2
 
-pactl list short | grep module-remap-sink.*cspeakers | awk '{print $1}' | xargs -r -n 1 pactl unload-module
-pactl load-module module-remap-sink sink_name=cspeakers sink_properties=device.description=cspeakers master=${speakers}
+# 
+echo "hookup cspeaker to physical speakers"
+cspeaker_module_id=$(pactl list short modules | grep "sink_name=cspeakers" | awk '{print $1}')
+cspeaker_sink_input_id=$(pactl -f json list sink-inputs | jq -r ".[] | select(.owner_module == \"$cspeaker_module_id\") | .index")
+pacmd move-sink-input $cspeaker_sink_input_id $speakers
 
-# connect from-desktop to speakers
-#pactl load-module module-loopback source="from-desktop.monitor" sink="cspeakers" latency_msec=1 source_dont_move=true sink_dont_move=true rate=48000 format=s32le  adjust_time=1
 
-# pacat -r --latency-msec=1 --rate=48000 --format=s32le  -d "from-desktop.monitor" | pacat -p --latency-msec=1 --rate=48000 --format=s32le -d "cspeakers"
+echo "hookup mics_raw to physical mic"
+mics_raw_module_id=$(pactl list short modules | grep "source_name=mics-raw" | awk '{print $1}')
+mics_raw_source_output_id=$(pactl -f json list source-outputs | jq -r ".[] | select(.owner_module == \"$mics_raw_module_id\") | .index")
+pacmd move-source-output $mics_raw_source_output_id $mic
 
-# connect from-caller to speakers
-#pactl load-module module-loopback source="from-caller.monitor" sink="cspeakers" latency_msec=1 source_dont_move=true sink_dont_move=true rate=48000 format=s32le adjust_time=1
+echo "hookup mic01 to physical mic"
+mic01_module_id=$(pactl list short modules | grep "source_name=mic01-processed" | awk '{print $1}')
+mic01_source_output_id=$(pactl -f json list source-outputs | jq -r ".[] | select(.owner_module == \"$mic01_module_id\") | .index")
+pacmd move-source-output $mic01_source_output_id $mic
 
-pactl list short | grep module-combine-sink.*from-desktop | awk '{print $1}' | xargs -r -n 1 pactl unload-module
-pactl load-module module-combine-sink sink_name=from-desktop sink_properties=device.description=from-desktop slaves=cspeakers,to-caller-sink
+echo "hookup mic02 to physical mic"
+mic02_module_id=$(pactl list short modules | grep "source_name=mic02-processed" | awk '{print $1}')
+mic02_source_output_id=$(pactl -f json list source-outputs | jq -r ".[] | select(.owner_module == \"$mic02_module_id\") | .index")
+pacmd move-source-output $mic02_source_output_id $mic
 
-pactl list short | grep module-combine-sink.*from-caller | awk '{print $1}' | xargs -r -n 1 pactl unload-module
-pactl load-module module-combine-sink sink_name=from-caller sink_properties=device.description=from-caller slaves=cspeakers
-
-# split mic into 2
-pactl list short | grep module-remap-source.*mic01-processed | awk '{print $1}' | xargs -r -n 1 pactl unload-module
-pactl load-module module-remap-source source_name=mic01-processed master=${mic} master_channel_map="front-left" channel_map="mono" source_properties=device.description="mic01-processed"
-
-pactl list short | grep module-remap-source.*mic02-processed | awk '{print $1}' | xargs -r -n 1 pactl unload-module
-pactl load-module module-remap-source source_name=mic02-processed master=${mic} master_channel_map="front-right" channel_map="mono" source_properties=device.description="mic02-processed"
-
-pactl list short | grep module-remap-source.*mics-raw | awk '{print $1}' | xargs -r -n 1 pactl unload-module
-pactl load-module module-remap-source source_name=mics-raw master=${mic} source_properties=device.description="mics-raw"
-
-pactl load-module module-loopback source="mic01-processed" sink=to-caller-sink latency_msec=1 source_dont_move=true sink_dont_move=true rate=48000 format=s32le adjust_time=1
-pactl set-source-volume mic01-processed 100%
-pactl load-module module-loopback source="mic02-processed" sink=to-caller-sink latency_msec=1 source_dont_move=true sink_dont_move=true rate=48000 format=s32le adjust_time=1
-pactl set-source-volume mic02-processed 100%
 # set default mic apps
-pactl set-default-source to-caller
+pactl set-default-source mic01-processed
 
 # set default output for apps
 pactl set-default-sink from-desktop

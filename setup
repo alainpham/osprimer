@@ -622,7 +622,7 @@ done
  
 echo "additional gui packages"
 cat << EOF | chroot ${ROOTFS}
-    apt install -y ntfs-3g ifuse mpv haruna vlc cmatrix nmon mesa-utils neofetch feh network-manager dnsmasq acpitool lm-sensors fonts-noto libnotify-bin dunst ffmpeg python3-mutagen imagemagick mediainfo-gui arandr picom brightnessctl
+    apt install -y ntfs-3g ifuse mpv haruna vlc cmatrix nmon mesa-utils neofetch feh network-manager dnsmasq acpitool lm-sensors fonts-noto libnotify-bin dunst ffmpeg python3-mutagen imagemagick mediainfo-gui arandr picom brightnessctl cups xsane libsane sane-utils
 EOF
 
 cat << EOF | chroot ${ROOTFS}
@@ -695,21 +695,37 @@ done
 
 # pulseaudio podcast setup
 
+# asoundrc
+cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.asoundrc
+pcm.pulse {
+    type pulse
+}
+
+ctl.pulse {
+    type pulse
+}
+EOF
+
 # create alsa loopback
 lineinfile ${ROOTFS}/etc/modules ".*snd-aloop.*" "snd-aloop"
+lineinfile ${ROOTFS}/etc/modules ".*snd-dummy.*" "snd-dummy"
+
 cat << 'EOF' | tee ${ROOTFS}/etc/modprobe.d/alsa-loopback.conf
 options snd-aloop index=10 id=loop
+options snd-dummy index=11 id=dummy
 EOF
 
 # avoid crackling
-# lineinfile ${ROOTFS}/etc/pulse/default.pa ".*load-module module-suspend-on-idle.*" "#load-module module-suspend-on-idle"
-# lineinfile ${ROOTFS}/etc/pulse/system.pa ".*load-module module-suspend-on-idle.*" "#load-module module-suspend-on-idle"
+lineinfile ${ROOTFS}/etc/pulse/default.pa ".*load-module module-suspend-on-idle.*" "#load-module module-suspend-on-idle"
+lineinfile ${ROOTFS}/etc/pulse/system.pa ".*load-module module-suspend-on-idle.*" "#load-module module-suspend-on-idle"
 
 wget -O ${ROOTFS}/etc/pulse/default.pa.d/pulsepod.pa https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/pulseaudio/pulsepod.pa
 
 lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-sample-rate.*" "default-sample-rate = 48000"
+lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-sample-format.*" "default-sample-format = s16le"
+lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-fragment-size-msec.*" "default-fragment-size-msec = 40"
 lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-fragments.*" "default-fragments = 4"
-lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-fragment-size-msec.*" "default-fragment-size-msec = 25"
+lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*resample-method.*" "resample-method = soxr-vhq"
 
 curl -Lo ${ROOTFS}/usr/local/bin/sndsel https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/sndsel
 chmod 755 ${ROOTFS}/usr/local/bin/sndsel
@@ -766,16 +782,10 @@ cat << EOF | tee ${ROOTFS}/home/$TARGET_USERNAME/.xsession
 setxkbmap ${KEYBOARD_LAYOUT}
 EOF
 
-if [ ! -f ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/picom.conf ] ; then
-mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/
-cat << 'EOF' >> ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/picom.conf
-# picom config
-EOF
-fi
-
 cat << 'EOF' >> ${ROOTFS}/home/$TARGET_USERNAME/.xsession
 numlockx
-
+echo 0 | tee ~/.rebootdwm
+export rebootdwm=$(cat ~/.rebootdwm)
 while true; do
     piddwmblocks=$(pgrep dwmblocks)
     if [ -z "$piddwmblocks" ]; then
@@ -791,13 +801,25 @@ while true; do
     dwm 2> ~/.dwm.log
     # No error logging
     #dwm >/dev/null 2>&1
+    rebootdwm=$(cat ~/.rebootdwm)
+    if [[ "$rebootdwm" = '0'  ]]; then
+            break
+    fi
 done
+
 EOF
 
 cat << EOF | chroot ${ROOTFS}
     chown $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.xsession
 EOF
 
+# picom initial config
+if [ ! -f ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/picom.conf ] ; then
+mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/
+cat << 'EOF' >> ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/picom.conf
+# picom config
+EOF
+fi
 
 # if inside virtual machine
 # video=Virtual-1:1600x900
