@@ -725,7 +725,7 @@ lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-sample-rate.*" "default-sa
 lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-sample-format.*" "default-sample-format = s16le"
 lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-fragment-size-msec.*" "default-fragment-size-msec = 40"
 lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-fragments.*" "default-fragments = 4"
-lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*resample-method.*" "resample-method = soxr-vhq"
+lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*resample-method.*" "resample-method = auto"
 
 curl -Lo ${ROOTFS}/usr/local/bin/sndsel https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/sndsel
 chmod 755 ${ROOTFS}/usr/local/bin/sndsel
@@ -1035,6 +1035,43 @@ cat << EOF | chroot ${ROOTFS}
     chown -R ${TARGET_USERNAME}:${TARGET_USERNAME} /home/workdrive
 EOF
 
+# first boot script
+cat <<EOF | tee ${ROOTFS}/usr/local/bin/firstboot-virt.sh
+#!/bin/bash
+echo "Setting up network for virtualization.."
+if [[ -z "\$(virsh net-list | grep default)" ]] then
+     virsh net-autostart default
+     virsh net-start default
+     echo "net autostart activated"
+     echo "default net autostart activated !">/var/log/firstboot-virt.log
+else
+     echo "net exists"
+     echo "default already autostarted ! ">/var/log/firstboot-virt.log
+fi
+EOF
+
+chmod 755 ${ROOTFS}/usr/local/bin/firstboot-virt.sh
+
+cat <<EOF | tee ${ROOTFS}/etc/systemd/system/firstboot-virt.service
+[Unit]
+Description=firstboot-virt
+Requires=network.target libvirtd.service
+After=network.target libvirtd.service
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=/usr/local/bin/firstboot-virt.sh
+RemainAfterExit=yes
+
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    systemctl enable firstboot-virt.service
+EOF
 }
 
 cleanupapt() {
