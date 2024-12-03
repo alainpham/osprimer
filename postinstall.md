@@ -27,3 +27,17 @@ echo "options  iwlwifi  enable_ini=0" > /etc/modprobe.d/iwlwifi.conf ;
 systemctl reboot;
 
 /etc/modprobe.d/iwlwifi.conf
+
+
+
+
+image=debian-12-genericcloud-amd64
+variant=debiantesting
+
+vmcr master 4096 4 $image 10 40G 1G $variant
+vmcr node01 2048 4 $image 11 40G 1G $variant
+vmcr node02 2048 4 $image 12 40G 1G $variant
+vmcr node03 2048 4 $image 13 40G 1G $variant
+
+vmcr splunk 6144 4  $image 40 40G 1G $variant
+vmcr vrbx 6144 4  $image 30 40G 1G $variant
