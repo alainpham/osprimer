@@ -611,8 +611,8 @@ igui() {
 echo "install gui"
 # if pulse replace by this apt install -y pulseaudio
 cat << EOF | chroot ${ROOTFS}
-    apt install -y make gcc libx11-dev libxft-dev libfreetype-dev libxinerama-dev xorg pavucontrol numlockx 
-    apt install -y  pipewire-audio wireplumber pipewire-pulse pipewire-alsa libspa-0.2-bluetooth pulseaudio-utils qpwgraph
+    apt install -y make gcc libx11-dev libxft-dev libfreetype-dev libxinerama-dev xorg numlockx 
+    apt install -y  pipewire-audio wireplumber pipewire-pulse pipewire-alsa libspa-0.2-bluetooth pulseaudio-utils qpwgraph pavucontrol
     apt remove -y xserver-xorg-video-intel
 EOF
 
