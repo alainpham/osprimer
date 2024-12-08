@@ -28,21 +28,33 @@ pw-link from-caller:monitor_FR cspeakers:playback_FR
 pw-link from-desktop:monitor_FL to-caller-sink:playback_FL
 pw-link from-desktop:monitor_FR to-caller-sink:playback_FR
 
-echo "hookup mics_raw to physical mic"
+echo "hookup to physical mic"
 channels=$(pw-link -o | grep $mic | grep -E "FL|FR" | wc -l)
+
+# if its stereo
 if [ $channels -eq 2 ]; then
-id=$(pw-link -lI | grep "|<-.*$mic.*FL" | awk '{print $1}')
-pw-link -d $id
-pw-link ${mic}:capture_FL mic01-processed:input_MONO
-pw-link mic01-processed:capture_MONO to-caller-sink:playback_FL
-pw-link mic01-processed:capture_MONO to-caller-sink:playback_FR
 
+    echo "hookup mics-raw to physical mic"
+    id=$(pw-link -lI | grep "|->.*mics-raw:input_FL" | awk '{print $1}')
+    pw-link -d $id
+    pw-link ${mic}:capture_FL mics-raw:input_FL
+    id=$(pw-link -lI | grep "|->.*mics-raw:input_FR" | awk '{print $1}')
+    pw-link -d $id
+    pw-link ${mic}:capture_FR mics-raw:input_FR
 
-id=$(pw-link -lI | grep "|<-.*$mic.*FR" | awk '{print $1}')
-pw-link -d $id
-pw-link ${mic}:capture_FR mic02-processed:input_MONO
-pw-link mic02-processed:capture_MONO to-caller-sink:playback_FL
-pw-link mic02-processed:capture_MONO to-caller-sink:playback_FR
+    echo "hookup mic01 to physical mic"
+    id=$(pw-link -lI | grep "|->.*mic01-processed:input_MONO" | awk '{print $1}')
+    pw-link -d $id
+    pw-link ${mic}:capture_FL mic01-processed:input_MONO
+    pw-link mic01-processed:capture_MONO to-caller-sink:playback_FL
+    pw-link mic01-processed:capture_MONO to-caller-sink:playback_FR
+
+    echo "hookup mic02 to physical mic"
+    id=$(pw-link -lI | grep "|->.*mic02-processed:input_MONO" | awk '{print $1}')
+    pw-link -d $id
+    pw-link ${mic}:capture_FR mic02-processed:input_MONO
+    pw-link mic02-processed:capture_MONO to-caller-sink:playback_FL
+    pw-link mic02-processed:capture_MONO to-caller-sink:playback_FR
 fi
 
 if [ $channels -eq 1 ]; then
@@ -51,9 +63,7 @@ pw-link -d $id
 pw-link ${mic}:capture_MONO mic01-processed:input_MONO
 fi
 
-echo "hookup mic01 to physical mic"
 
-echo "hookup mic02 to physical mic"
 
 # set default mic apps
 pactl set-default-source mic01-processed
