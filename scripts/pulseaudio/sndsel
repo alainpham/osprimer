@@ -47,4 +47,6 @@ exit 1
 fi
 
 #comma separated list of sinks
+speakers=$selected_output
+mic=$selected_input
 confpw $selected_output $selected_input
