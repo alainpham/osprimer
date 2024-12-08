@@ -41,3 +41,24 @@ vmcr node03 2048 4 $image 13 40G 1G $variant
 
 vmcr splunk 6144 4  $image 40 40G 1G $variant
 vmcr vrbx 6144 4  $image 30 40G 1G $variant
+
+
+
+
+rm -rf /home/${USER}/apps/tls
+mkdir -p /home/${USER}/apps/tls/cfg /home/${USER}/apps/tls/logs
+
+docker run --rm --name certbot  -v "/home/${USER}/apps/tls/cfg:/etc/letsencrypt" -v "/home/${USER}/apps/tls/logs:/var/log/letsencrypt" infinityofspace/certbot_dns_duckdns:${CERTBOT_DUCKDNS_VERSION} \
+   certonly \
+     --non-interactive \
+     --agree-tos \
+     --email ${EMAIL} \
+     --preferred-challenges dns \
+     --authenticator dns-duckdns \
+     --dns-duckdns-token ${DUCKDNS_TOKEN} \
+     --dns-duckdns-propagation-seconds 20 \
+     -d "*.${WILDCARD_DOMAIN}"
+
+sudo chown -R ${USER}:${USER} /home/${USER}/apps/tls/cfg
+
+openssl pkcs12 -export -out /home/${USER}/apps/tls/cfg/live/${WILDCARD_DOMAIN}/privkey.p12  -in /home/${USER}/apps/tls/cfg/live/${WILDCARD_DOMAIN}/fullchain.pem -inkey  /home/${USER}/apps/tls/cfg/live/${WILDCARD_DOMAIN}/privkey.pem -passin pass:password -passout pass:password

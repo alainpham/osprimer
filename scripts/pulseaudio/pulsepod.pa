@@ -18,7 +18,7 @@ load-module module-remap-sink sink_name=cspeakers sink_properties=device.descrip
 set-sink-volume cspeakers 29490
 
 # redirect from desktop to to-caller-sink and speakers
-load-module module-combine-sink sink_name=from-desktop sink_properties=device.description=from-desktop slaves=cspeakers,to-caller-sink rate=48000 
+load-module module-remap-sink sink_name=from-desktop sink_properties=device.description=from-desktop master=cspeakers rate=48000 
 set-sink-volume from-desktop 62259
 
 # redirect from-caller to speaker only

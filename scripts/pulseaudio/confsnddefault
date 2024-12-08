@@ -14,19 +14,19 @@ then
     selected_output=$usbspeaker
     selected_input=$usbmic
     echo $selected_output $selected_input
-    confsnd $selected_output $selected_input
+    confpw $selected_output $selected_input
 elif [ -n "$headmic" ]
 then
     echo "Logitech is present"
     selected_output=$headspeaker
     selected_input=$headmic
     echo $selected_output $selected_output
-    confsnd $selected_output $selected_input
+    confpw $selected_output $selected_input
 else
     echo "No external sound choosing internal devices"
     selected_output=$internalspeaker
     selected_input=$internalmic
     echo $selected_output $selected_output
-    confsnd $selected_output $selected_input
+    confpw $selected_output $selected_input
 fi
 

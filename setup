@@ -287,6 +287,9 @@ echo "firstboot script activated"
 bashaliases() {
 
 lineinfile ${ROOTFS}/etc/bash.bashrc ".*alias.*ll.*=.*" 'alias ll="ls -larth"'
+lineinfile ${ROOTFS}/etc/bash.bashrc ".*alias.*ap=.*" 'alias ap=ansible-playbook'
+
+
 lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*ROOTFS*=.*" 'export ROOTFS=\/'
 lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*TARGET_USERNAME*=.*" "export TARGET_USERNAME=${TARGET_USERNAME}"
 lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*DOCKER_BUILDX_VERSION*=.*" "export DOCKER_BUILDX_VERSION=${DOCKER_BUILDX_VERSION}"
@@ -301,6 +304,8 @@ lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*FREAC_VERSION*=.*" "export FREAC
 lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*FREAC_VERSION*=.*" "export FREAC_VERSION=${FREAC_VERSION}"
 lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*TEAMS_VERSION*=.*" "export TEAMS_VERSION=${TEAMS_VERSION}"
 lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*CAPRINE_VERSION*=.*" "export CAPRINE_VERSION=${CAPRINE_VERSION}"
+
+
 echo "bash aliases setup finished"
 }
 
@@ -604,9 +609,10 @@ chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/$TARGET_USERNAME/.conf
 igui() {
 
 echo "install gui"
-
+# if pulse replace by this apt install -y pulseaudio
 cat << EOF | chroot ${ROOTFS}
-    apt install -y make gcc libx11-dev libxft-dev libfreetype-dev libxinerama-dev xorg pulseaudio pavucontrol numlockx 
+    apt install -y make gcc libx11-dev libxft-dev libfreetype-dev libxinerama-dev xorg pavucontrol numlockx 
+    apt install -y  pipewire-audio wireplumber pipewire-pulse pipewire-alsa libspa-0.2-bluetooth
     apt remove -y xserver-xorg-video-intel
 EOF
 
@@ -622,7 +628,7 @@ done
  
 echo "additional gui packages"
 cat << EOF | chroot ${ROOTFS}
-    apt install -y ntfs-3g ifuse mpv haruna vlc cmatrix nmon mesa-utils neofetch feh network-manager dnsmasq acpitool lm-sensors fonts-noto libnotify-bin dunst ffmpeg python3-mutagen imagemagick mediainfo-gui arandr picom brightnessctl cups xsane libsane sane-utils
+    apt install -y ntfs-3g ifuse mpv haruna vlc cmatrix nmon mesa-utils neofetch feh network-manager dnsmasq acpitool lm-sensors fonts-noto libnotify-bin dunst ffmpeg python3-mutagen imagemagick mediainfo-gui arandr picom brightnessctl cups xsane libsane sane-utils filezilla
 EOF
 
 cat << EOF | chroot ${ROOTFS}
@@ -647,8 +653,8 @@ EOF
 
 cat << 'EOF' | tee ${ROOTFS}/etc/NetworkManager/dnsmasq.d/dev.conf
 #/etc/NetworkManager/dnsmasq.d/dev.conf
-local=/zrz.duckdns.org/
-address=/zrz.duckdns.org/127.0.0.1
+local=/zez.duckdns.org/
+address=/zez.duckdns.org/127.0.0.1
 EOF
 
 # dunst notification
@@ -715,24 +721,45 @@ options snd-aloop index=10 id=loop
 options snd-dummy index=11 id=dummy
 EOF
 
-# avoid crackling
-lineinfile ${ROOTFS}/etc/pulse/default.pa ".*load-module module-suspend-on-idle.*" "#load-module module-suspend-on-idle"
-lineinfile ${ROOTFS}/etc/pulse/system.pa ".*load-module module-suspend-on-idle.*" "#load-module module-suspend-on-idle"
+# avoid crackling with pulse
+# lineinfile ${ROOTFS}/etc/pulse/default.pa ".*load-module module-suspend-on-idle.*" "#load-module module-suspend-on-idle"
+# lineinfile ${ROOTFS}/etc/pulse/system.pa ".*load-module module-suspend-on-idle.*" "#load-module module-suspend-on-idle"
 
-wget -O ${ROOTFS}/etc/pulse/default.pa.d/pulsepod.pa https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/pulseaudio/pulsepod.pa
+# wget -O ${ROOTFS}/etc/pulse/default.pa.d/pulsepod.pa https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/pulseaudio/pulsepod.pa
 
-lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-sample-rate.*" "default-sample-rate = 48000"
-lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-sample-format.*" "default-sample-format = s16le"
-lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-fragment-size-msec.*" "default-fragment-size-msec = 40"
-lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-fragments.*" "default-fragments = 4"
-lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*resample-method.*" "resample-method = auto"
+# lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-sample-rate.*" "default-sample-rate = 48000"
+# lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-sample-format.*" "default-sample-format = s16le"
+# lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-fragment-size-msec.*" "default-fragment-size-msec = 40"
+# lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-fragments.*" "default-fragments = 4"
+# lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*resample-method.*" "resample-method = auto"
+
+# install scripts
 
 curl -Lo ${ROOTFS}/usr/local/bin/sndsel https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/sndsel
 chmod 755 ${ROOTFS}/usr/local/bin/sndsel
 curl -Lo ${ROOTFS}/usr/local/bin/confsnd https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/confsnd
-chmod 755 ${ROOTFS}/usr/local/bin/confsnd
+chmod 755 ${ROOTFS}/usr/local/bin/confpw
+curl -Lo ${ROOTFS}/usr/local/bin/confsnd https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/confpw
+chmod 755 ${ROOTFS}/usr/local/bin/confpw
 curl -Lo ${ROOTFS}/usr/local/bin/confsnddefault https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/confsnddefault
 chmod 755 ${ROOTFS}/usr/local/bin/confsnddefault
+
+
+# wireplumber and pipewire
+curl -Lo ${ROOTFS}/etc/udev/rules.d/89-pulseaudio-udev.rules https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/89-pulseaudio-udev.rules
+
+cat << EOF | chroot ${ROOTFS}
+cp -R /usr/share/pipewire /home/${TARGET_USERNAME}/.config/
+cp -R /usr/share/wireplumber /home/${TARGET_USERNAME}/.config/
+
+mkdir -p /home/${TARGET_USERNAME}/.config/pipewire/pipewire.conf.d/
+curl -Lo /home/$TARGET_USERNAME/.config/pipewire/pipewire.conf.d/podcast.conf https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/podcast.conf
+curl -Lo /home/$TARGET_USERNAME/.config/pipewire/pipewire-pulse.conf https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/pipewire-pulse.conf
+
+chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/pipewire
+chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/wireplumber
+EOF
+
 
 # install chrome browser
 mkdir -p ${ROOTFS}/opt/debs/
@@ -997,7 +1024,6 @@ EOF
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm
 cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm/autostart.sh
 slack &
-zoom &
 confsnddefault &
 EOF
 

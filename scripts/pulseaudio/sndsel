@@ -47,4 +47,4 @@ exit 1
 fi
 
 #comma separated list of sinks
-confsnd $selected_output $selected_input
+confpw $selected_output $selected_input
