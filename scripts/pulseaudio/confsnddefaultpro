@@ -1,0 +1,35 @@
+#!/bin/bash
+usbspeaker=$(pactl list short sinks | grep alsa_output.usb-Focusrite_Scarlett_2i2_USB_Y8QWAQ69B26B58-00.pro-output-0 | awk '{print $2}')
+usbmic=$(pactl list short sources | grep alsa_input.usb-Focusrite_Scarlett_2i2_USB_Y8QWAQ69B26B58-00.pro-input-0 | awk '{print $2}')
+
+headspeaker=$(pactl list short sinks | grep alsa_output.usb-Logitech_Zone_Vibe_125_2216MH00LMF8-00.pro-output-0 | awk '{print $2}')
+headmic=$(pactl list short sources | grep alsa_input.usb-Logitech_Zone_Vibe_125_2216MH00LMF8-00.pro-input-0 | awk '{print $2}')
+
+internalspeaker=$(pactl list short sinks | grep alsa_output.pci-0000_00_1f.3-platform-skl_hda_dsp_generic.pro-output-0 | awk '{print $2}')
+internalmic=$(pactl list short sources | grep alsa_input.pci-0000_00_1f.3-platform-skl_hda_dsp_generic.pro-input-6 | awk '{print $2}')
+
+
+
+if [ -n "$usbmic" ]
+then
+    echo "Focusrite is present"
+    selected_output=$usbspeaker
+    selected_input=$usbmic
+    echo $selected_output $selected_input
+elif [ -n "$headmic" ]
+then
+    echo "Logitech is present"
+    selected_output=$headspeaker
+    selected_input=$headmic
+    echo $selected_output $selected_output
+else
+    echo "No external sound choosing internal devices"
+    selected_output=$internalspeaker
+    selected_input=$internalmic
+    echo $selected_output $selected_output
+fi
+
+speakers=$selected_output
+mic=$selected_input
+
+confpw $selected_output $selected_input

@@ -32,4 +32,4 @@ fi
 speakers=$selected_output
 mic=$selected_input
 
-confpw $selected_output $selected_input
+confsnd $selected_output $selected_input

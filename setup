@@ -596,14 +596,25 @@ EOF
 
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/
 cat << 'EOF' >> ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/picom.conf
-backend = "xr_glx_hybrid";
+backend = "glx";
 vsync = true;
 use-damage = false
 EOF
 
 chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/$TARGET_USERNAME/.config
 
+echo 'GRUB_CMDLINE_LINUX="$GRUB_CMDLINE_LINUX nvidia-drm.modeset=1"' > ${ROOTFS}/etc/default/grub.d/nvidia-modeset.cfg
 
+cat << EOF | chroot ${ROOTFS}
+    update-grub
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    systemctl enable nvidia-suspend.service
+    systemctl enable nvidia-hibernate.service
+    systemctl enable nvidia-resume.service
+EOF
+echo 'options nvidia NVreg_PreserveVideoMemoryAllocations=1' > ${ROOTFS}/etc/modprobe.d/nvidia-power-management.conf
 }
 
 igui() {
@@ -612,7 +623,8 @@ echo "install gui"
 # if pulse replace by this apt install -y pulseaudio
 cat << EOF | chroot ${ROOTFS}
     apt install -y make gcc libx11-dev libxft-dev libfreetype-dev libxinerama-dev xorg numlockx 
-    apt install -y  pipewire-audio wireplumber pipewire-pulse pipewire-alsa libspa-0.2-bluetooth pulseaudio-utils qpwgraph pavucontrol
+    # apt install -y  pipewire-audio wireplumber pipewire-pulse pipewire-alsa libspa-0.2-bluetooth pulseaudio-utils qpwgraph pavucontrol
+    apt install -y pulseaudio libspa-0.2-bluetooth pulseaudio-utils pavucontrol
     apt remove -y xserver-xorg-video-intel
 EOF
 
@@ -722,13 +734,13 @@ options snd-dummy index=11 id=dummy
 EOF
 
 # avoid crackling with pulse
-# lineinfile ${ROOTFS}/etc/pulse/default.pa ".*load-module module-suspend-on-idle.*" "#load-module module-suspend-on-idle"
-# lineinfile ${ROOTFS}/etc/pulse/system.pa ".*load-module module-suspend-on-idle.*" "#load-module module-suspend-on-idle"
+lineinfile ${ROOTFS}/etc/pulse/default.pa ".*load-module module-suspend-on-idle.*" "#load-module module-suspend-on-idle"
+lineinfile ${ROOTFS}/etc/pulse/system.pa ".*load-module module-suspend-on-idle.*" "#load-module module-suspend-on-idle"
 
-# wget -O ${ROOTFS}/etc/pulse/default.pa.d/pulsepod.pa https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/pulseaudio/pulsepod.pa
+wget -O ${ROOTFS}/etc/pulse/default.pa.d/pulsepod.pa https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/pulseaudio/pulsepod.pa
 
-# lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-sample-rate.*" "default-sample-rate = 48000"
-# lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-sample-format.*" "default-sample-format = s16le"
+lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-sample-rate.*" "default-sample-rate = 48000"
+lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-sample-format.*" "default-sample-format = s16le"
 # lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-fragment-size-msec.*" "default-fragment-size-msec = 40"
 # lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-fragments.*" "default-fragments = 4"
 # lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*resample-method.*" "resample-method = auto"
@@ -738,8 +750,8 @@ EOF
 curl -Lo ${ROOTFS}/usr/local/bin/sndsel https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/sndsel
 chmod 755 ${ROOTFS}/usr/local/bin/sndsel
 curl -Lo ${ROOTFS}/usr/local/bin/confsnd https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/confsnd
-chmod 755 ${ROOTFS}/usr/local/bin/confpw
-curl -Lo ${ROOTFS}/usr/local/bin/confsnd https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/confpw
+chmod 755 ${ROOTFS}/usr/local/bin/confsnd
+curl -Lo ${ROOTFS}/usr/local/bin/confpw https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/confpw
 chmod 755 ${ROOTFS}/usr/local/bin/confpw
 curl -Lo ${ROOTFS}/usr/local/bin/confsnddefault https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/confsnddefault
 chmod 755 ${ROOTFS}/usr/local/bin/confsnddefault

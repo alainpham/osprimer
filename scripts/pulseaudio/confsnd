@@ -7,15 +7,17 @@ mic=$2
 
 # 
 echo "hookup cspeaker to physical speakers"
-cspeaker_module_id=$(pactl list short modules | grep "sink_name=cspeakers" | awk '{print $1}')
+cspeaker_module_id=$(pactl list short modules | grep "sink_name=from-desktop" | awk '{print $1}')
+cspeaker_sink_input_id=$(pactl -f json list sink-inputs | jq -r ".[] | select(.owner_module == \"$cspeaker_module_id\") | .index")
+pacmd move-sink-input $cspeaker_sink_input_id $speakers
+cspeaker_module_id=$(pactl list short modules | grep "sink_name=from-caller" | awk '{print $1}')
 cspeaker_sink_input_id=$(pactl -f json list sink-inputs | jq -r ".[] | select(.owner_module == \"$cspeaker_module_id\") | .index")
 pacmd move-sink-input $cspeaker_sink_input_id $speakers
 
-
-echo "hookup mics_raw to physical mic"
-mics_raw_module_id=$(pactl list short modules | grep "source_name=mics-raw" | awk '{print $1}')
-mics_raw_source_output_id=$(pactl -f json list source-outputs | jq -r ".[] | select(.owner_module == \"$mics_raw_module_id\") | .index")
-pacmd move-source-output $mics_raw_source_output_id $mic
+# echo "hookup mics_raw to physical mic"
+# mics_raw_module_id=$(pactl list short modules | grep "source_name=mics-raw" | awk '{print $1}')
+# mics_raw_source_output_id=$(pactl -f json list source-outputs | jq -r ".[] | select(.owner_module == \"$mics_raw_module_id\") | .index")
+# pacmd move-source-output $mics_raw_source_output_id $mic
 
 echo "hookup mic01 to physical mic"
 mic01_module_id=$(pactl list short modules | grep "source_name=mic01-processed" | awk '{print $1}')
@@ -28,13 +30,13 @@ mic02_source_output_id=$(pactl -f json list source-outputs | jq -r ".[] | select
 pacmd move-source-output $mic02_source_output_id $mic
 
 # set default mic apps
-pactl set-default-source mic01-processed
+pactl set-default-source $mic
 
 # set default output for apps
-pactl set-default-sink from-desktop
+pactl set-default-sink $speakers
 
 # set physical volumes
-pactl set-sink-volume $speakers 100%
+pactl set-sink-volume $speakers 45%
 pactl set-sink-mute $speakers 0
 
 pactl set-source-volume $mic 100%
@@ -50,14 +52,14 @@ pactl set-sink-mute from-caller 0
 pactl set-sink-volume to-caller-sink 100%
 pactl set-sink-mute to-caller-sink 0
 
-pactl set-sink-volume cspeakers 45%
-pactl set-sink-mute cspeakers 0
+# pactl set-sink-volume cspeakers 45%
+# pactl set-sink-mute cspeakers 0
 
 pactl set-source-volume to-caller 100%
 pactl set-source-mute to-caller 0
 
-pactl set-source-volume mics-raw 100%
-pactl set-source-mute mics-raw 0
+# pactl set-source-volume mics-raw 100%
+# pactl set-source-mute mics-raw 0
 
 pactl set-source-volume mic01-processed 100%
 pactl set-source-mute mic01-processed 0

@@ -1,0 +1,42 @@
+#mic to caller
+load-module module-alsa-source device_id=loop,0,7 source_name=to-caller source_properties=device.description=to-caller rate=48000 
+set-source-volume to-caller 65536
+
+#sink/speaker that loops back to mic on device_id=loop,0,7 
+load-module module-alsa-sink device_id=loop,1,7 sink_name=to-caller-sink sink_properties=device.description=to-caller-sink rate=48000 
+set-sink-volume to-caller-sink 65536
+
+#dummy default sink and source for initial setup
+load-module module-alsa-source device_id=dummy,0,7 source_name=alsa_input.dummy-source source_properties=device.description=dummy-source rate=48000 
+set-source-volume alsa_input.dummy-source 65536
+
+load-module module-alsa-sink device_id=dummy,0,7 sink_name=alsa_output.dummy-sink sink_properties=device.description=dummy-sink rate=48000 
+set-sink-volume alsa_output.dummy-sink 65536
+
+# cspeakers by default will be connected to dummy as placeholder
+load-module module-remap-sink sink_name=cspeakers sink_properties=device.description=cspeakers master=alsa_output.dummy-sink rate=48000 
+set-sink-volume cspeakers 29490
+
+# redirect from desktop to to-caller-sink and speakers
+load-module module-remap-sink sink_name=from-desktop sink_properties=device.description=from-desktop master=cspeakers rate=48000 
+set-sink-volume from-desktop 62259
+
+# redirect from-caller to speaker only
+load-module module-remap-sink sink_name=from-caller sink_properties=device.description=from-caller master=cspeakers rate=48000 
+set-sink-volume from-caller 62259
+
+# remap mic01
+load-module module-remap-source source_name=mic01-processed master=alsa_input.dummy-source master_channel_map="front-left" channel_map="mono" source_properties=device.description="mic01-processed" rate=48000 
+set-source-volume mic01-processed 65536
+
+# remap mic02
+load-module module-remap-source source_name=mic02-processed master=alsa_input.dummy-source master_channel_map="front-right" channel_map="mono" source_properties=device.description="mic02-processed" rate=48000 
+set-source-volume mic02-processed 65536
+
+# remap mics-raw
+load-module module-remap-source source_name=mics-raw master=alsa_input.dummy-source source_properties=device.description="mics-raw" rate=48000 
+set-source-volume mics-raw 65536
+
+# loopback
+load-module module-loopback source="mic01-processed" sink=to-caller-sink latency_msec=60 source_dont_move=true sink_dont_move=true rate=48000  adjust_time=3
+load-module module-loopback source="mic02-processed" sink=to-caller-sink latency_msec=60 source_dont_move=true sink_dont_move=true rate=48000  adjust_time=3
