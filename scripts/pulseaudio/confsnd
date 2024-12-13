@@ -6,10 +6,12 @@ speakers=$1
 mic=$2
 
 # 
-echo "hookup cspeaker to physical speakers"
+echo "hookup from-desktop to physical speakers"
 cspeaker_module_id=$(pactl list short modules | grep "sink_name=from-desktop" | awk '{print $1}')
 cspeaker_sink_input_id=$(pactl -f json list sink-inputs | jq -r ".[] | select(.owner_module == \"$cspeaker_module_id\") | .index")
 pacmd move-sink-input $cspeaker_sink_input_id $speakers
+
+echo "hookup from-desktop to physical speakers"
 cspeaker_module_id=$(pactl list short modules | grep "sink_name=from-caller" | awk '{print $1}')
 cspeaker_sink_input_id=$(pactl -f json list sink-inputs | jq -r ".[] | select(.owner_module == \"$cspeaker_module_id\") | .index")
 pacmd move-sink-input $cspeaker_sink_input_id $speakers
@@ -30,10 +32,10 @@ mic02_source_output_id=$(pactl -f json list source-outputs | jq -r ".[] | select
 pacmd move-source-output $mic02_source_output_id $mic
 
 # set default mic apps
-pactl set-default-source $mic
+pactl set-default-source mic01-processed
 
 # set default output for apps
-pactl set-default-sink $speakers
+pactl set-default-sink from-desktop
 
 # set physical volumes
 pactl set-sink-volume $speakers 45%
