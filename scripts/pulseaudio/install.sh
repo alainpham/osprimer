@@ -5,6 +5,8 @@ sudo cp confpw /usr/local/bin/confpw
 sudo cp confpa /usr/local/bin/confpa
 sudo cp confsnddefault /usr/local/bin/confsnddefault
 sudo cp sndsel /usr/local/bin/sndsel
+sudo cp clrmix /usr/local/bin/clrmix
+sudo cp clrmixoff /usr/local/bin/clrmixoff
 sudo cp pulsepod.pa /etc/pulse/default.pa.d/pulsepod.pa 
 sudo cp 89-pulseaudio-udev.rules /etc/udev/rules.d/89-pulseaudio-udev.rules
 
