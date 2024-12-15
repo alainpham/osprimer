@@ -5,6 +5,15 @@ speakers=$1
 
 mic=$2
 
+if [ -z "$speakers" ]; then
+    echo "No speakers selected. Exiting."
+    exit 1
+fi
+if [ -z "$mic" ]; then
+    echo "No mic selected. Exiting."
+    exit 1
+fi
+
 # 
 echo "hookup from-desktop to physical speakers"
 cspeaker_module_id=$(pactl list short modules | grep "sink_name=from-desktop" | awk '{print $1}')

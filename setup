@@ -746,15 +746,12 @@ lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-sample-format.*" "default-
 lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*resample-method.*" "resample-method = soxr-hq"
 
 # install scripts
-
-curl -Lo ${ROOTFS}/usr/local/bin/sndsel https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/sndsel
-chmod 755 ${ROOTFS}/usr/local/bin/sndsel
-curl -Lo ${ROOTFS}/usr/local/bin/confsnd https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/confsnd
-chmod 755 ${ROOTFS}/usr/local/bin/confsnd
-curl -Lo ${ROOTFS}/usr/local/bin/confpw https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/confpw
-chmod 755 ${ROOTFS}/usr/local/bin/confpw
-curl -Lo ${ROOTFS}/usr/local/bin/confsnddefault https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/confsnddefault
-chmod 755 ${ROOTFS}/usr/local/bin/confsnddefault
+gitroot=https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/
+files="snd asnd asnddef csndfoczv csndzv csndh6 csndint clrmix clrmixoff"
+for file in $files ; do
+curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
+chmod 755 ${ROOTFS}/usr/local/bin/$file
+done
 
 
 # wireplumber and pipewire
@@ -1036,7 +1033,7 @@ EOF
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm
 cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm/autostart.sh
 slack &
-confsnddefault &
+asnddef &
 EOF
 
 cat << EOF | chroot ${ROOTFS}
