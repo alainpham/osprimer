@@ -43,6 +43,9 @@ inputversions() {
 
     export CAPRINE_VERSION=2.60.3
     echo "export CAPRINE_VERSION=${CAPRINE_VERSION}"
+
+    export DRAWIO_VERSION=26.0.3
+    echo "export DRAWIO_VERSION=${DRAWIO_VERSION}"
 }
 
 inputkeyboard() {
@@ -302,7 +305,7 @@ lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*FREAC_VERSION*=.*" "export FREAC
 lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*FREAC_VERSION*=.*" "export FREAC_VERSION=${FREAC_VERSION}"
 lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*TEAMS_VERSION*=.*" "export TEAMS_VERSION=${TEAMS_VERSION}"
 lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*CAPRINE_VERSION*=.*" "export CAPRINE_VERSION=${CAPRINE_VERSION}"
-
+lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*DRAWIO_VERSION*=.*" "export DRAWIO_VERSION=${DRAWIO_VERSION}"
 
 echo "bash aliases setup finished"
 }
@@ -756,17 +759,17 @@ done
 # wireplumber and pipewire
 curl -Lo ${ROOTFS}/etc/udev/rules.d/89-pulseaudio-udev.rules https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/89-pulseaudio-udev.rules
 
-cat << EOF | chroot ${ROOTFS}
-cp -R /usr/share/pipewire /home/${TARGET_USERNAME}/.config/
-cp -R /usr/share/wireplumber /home/${TARGET_USERNAME}/.config/
+# cat << EOF | chroot ${ROOTFS}
+# cp -R /usr/share/pipewire /home/${TARGET_USERNAME}/.config/
+# cp -R /usr/share/wireplumber /home/${TARGET_USERNAME}/.config/
 
-mkdir -p /home/${TARGET_USERNAME}/.config/pipewire/pipewire.conf.d/
-curl -Lo /home/$TARGET_USERNAME/.config/pipewire/pipewire.conf.d/podcast.conf https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/podcast.conf
-curl -Lo /home/$TARGET_USERNAME/.config/pipewire/pipewire-pulse.conf https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/pipewire-pulse.conf
+# mkdir -p /home/${TARGET_USERNAME}/.config/pipewire/pipewire.conf.d/
+# curl -Lo /home/$TARGET_USERNAME/.config/pipewire/pipewire.conf.d/podcast.conf https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/podcast.conf
+# curl -Lo /home/$TARGET_USERNAME/.config/pipewire/pipewire-pulse.conf https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/pipewire-pulse.conf
 
-chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/pipewire
-chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/wireplumber
-EOF
+# chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/pipewire
+# chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/wireplumber
+# EOF
 
 
 # install chrome browser
@@ -903,6 +906,7 @@ mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/Thunar/
 cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.config/Thunar/uca.xml
 <?xml version="1.0" encoding="UTF-8"?>
 <actions>
+
 <action>
         <icon>utilities-terminal</icon>
         <name>Open Terminal Here</name>
@@ -991,6 +995,14 @@ cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/mlvapp.AppImage
     ln -s /opt/appimages/mlvapp.AppImage /usr/local/bin/mlvapp
 EOF
+
+# Drawio
+wget -O ${ROOTFS}/opt/appimages/drawio.AppImage https://github.com/jgraph/drawio-desktop/releases/download/v${DRAWIO_VERSION}/drawio-x86_64-${DRAWIO_VERSION}.AppImage
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /opt/appimages/drawio.AppImage
+    ln -s /opt/appimages/drawio.AppImage /usr/local/bin/drawio
+EOF
+
 
 #viber
 wget -O ${ROOTFS}/opt/appimages/viber.AppImage https://download.cdn.viber.com/desktop/Linux/viber.AppImage
