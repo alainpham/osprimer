@@ -1,6 +1,7 @@
 #!/bin/bash
+source /usr/local/bin/asndenv
 
-speakers=alsa_output.usb-sky_wing_EKSA_PC_Adapter_20211221100133-01.analog-stereo
-mic=alsa_input.usb-sky_wing_EKSA_PC_Adapter_20211221100133-01.mono-fallback
+speakers=$h6speakerid
+mic=$h6micid
 
 asnd $speakers $mic

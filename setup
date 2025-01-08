@@ -626,7 +626,7 @@ echo "install gui"
 
 cat << EOF | chroot ${ROOTFS}
     apt install -y make gcc libx11-dev libxft-dev libfreetype-dev libxinerama-dev xorg numlockx 
-    apt install -y pulseaudio pulseaudio-utils pavucontrol alsa-utils
+    apt install -y pulseaudio pulseaudio-module-bluetooth pulseaudio-utils pavucontrol alsa-utils
     apt remove -y xserver-xorg-video-intel
 EOF
 

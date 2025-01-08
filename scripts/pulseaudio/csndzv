@@ -1,6 +1,7 @@
 #!/bin/bash
+source /usr/local/bin/asndenv
 
-speakers=alsa_output.usb-Logitech_Zone_Vibe_125_2216MH00LMF8-00.analog-stereo
-mic=alsa_input.usb-Logitech_Zone_Vibe_125_2216MH00LMF8-00.mono-fallback
+speakers=$zvspeakerid
+mic=$zvmicid
 
 asnd $speakers $mic

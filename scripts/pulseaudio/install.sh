@@ -1,6 +1,6 @@
 #!/bin/bash
 
-files="snd asnd asnddef csndfoczv csndzv csndh6 csndint clrmix clrmixoff"
+files="snd asnd asndenv asnddef csndfoczv csndzv csndh6 csndint clrmix clrmixoff"
 for file in $files; do
     sudo cp $file /usr/local/bin/$file
 done

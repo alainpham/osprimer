@@ -1,29 +1,33 @@
 #!/bin/bash
-usbspeaker=$(pactl list short sinks | grep alsa_output.usb-Focusrite_Scarlett_2i2_USB_Y8QWAQ69B26B58-00.analog-stereo | awk '{print $2}')
-usbmic=$(pactl list short sources | grep alsa_input.usb-Focusrite_Scarlett_2i2_USB_Y8QWAQ69B26B58-00.analog-stereo | awk '{print $2}')
 
-headspeaker=$(pactl list short sinks | grep alsa_output.usb-Logitech_Zone_Vibe_125_2216MH00LMF8-00.analog-stereo | awk '{print $2}')
-headmic=$(pactl list short sources | grep alsa_input.usb-Logitech_Zone_Vibe_125_2216MH00LMF8-00.mono-fallback | awk '{print $2}')
+source /usr/local/bin/asndenv
 
-h6speaker=$(pactl list short sinks | grep alsa_output.usb-sky_wing_EKSA_PC_Adapter_20211221100133-01.analog-stereo | awk '{print $2}')
-h6mic=$(pactl list short sources | grep alsa_input.usb-sky_wing_EKSA_PC_Adapter_20211221100133-01.mono-fallback | awk '{print $2}')
+internalspeaker=$(pactl list short sinks | grep ${internalspeakerid} | awk '{print $2}')
+internalmic=$(pactl list short sources | grep ${internalmicid} | awk '{print $2}')
 
-internalspeaker=$(pactl list short sinks | grep alsa_output.pci-0000_00_1f.3-platform-skl_hda_dsp_generic.HiFi__hw_sofhdadsp__sink | awk '{print $2}')
-internalmic=$(pactl list short sources | grep alsa_input.pci-0000_00_1f.3-platform-skl_hda_dsp_generic.HiFi__hw_sofhdadsp_6__source | awk '{print $2}')
+focspeaker=$(pactl list short sinks | grep ${focspeakerid} | awk '{print $2}')
+focmic=$(pactl list short sources | grep ${focmicid} | awk '{print $2}')
 
+zvspeaker=$(pactl list short sinks | grep ${zvspeakerid} | awk '{print $2}')
+zvmic=$(pactl list short sources | grep ${zvmicid} | awk '{print $2}')
 
+h6speaker=$(pactl list short sinks | grep ${h6speakerid} | awk '{print $2}')
+h6mic=$(pactl list short sources | grep ${h6micid} | awk '{print $2}')
 
-if [ -n "$usbmic" ]
+dummyspeaker=$(pactl list short sinks | grep ${dummyspeakerid} | awk '{print $2}')
+dummymic=$(pactl list short sources | grep ${dummymicid} | awk '{print $2}')
+
+if [ -n "$focmic" ]
 then
     echo "Focusrite is present"
-    selected_output=$usbspeaker
-    selected_input=$usbmic
+    selected_output=$focspeaker
+    selected_input=$focmic
     echo $selected_output $selected_input
-elif [ -n "$headmic" ]
+elif [ -n "$zvmic" ]
 then
     echo "Logitech is present"
-    selected_output=$headspeaker
-    selected_input=$headmic
+    selected_output=$zvspeaker
+    selected_input=$zvmic
     echo $selected_output $selected_output
 elif [ -n "$h6mic" ]
 then
@@ -31,10 +35,16 @@ then
     selected_output=$h6speaker
     selected_input=$h6mic
     echo $selected_output $selected_output
-else
-    echo "No external sound choosing internal devices"
+elif [ -n "$internalmic" ]
+then
+    echo "Internal mic is present"
     selected_output=$internalspeaker
     selected_input=$internalmic
+    echo $selected_output $selected_output
+else
+    echo "No sound device found choosing dummy devices"
+    selected_output=$dummyspeaker
+    selected_input=$dummymic
     echo $selected_output $selected_output
 fi
 
