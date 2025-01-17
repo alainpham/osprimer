@@ -2,6 +2,8 @@ Connect to VScode
 Connect to chrome
 Setup OBS using scripts
 check for screen tearing.
+LX theme : breeze-dark , noto sans nerdfont 10
+select icon themes breeze-dark
 Set default pulse select
 
 Add bluetooth mouse.

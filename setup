@@ -749,11 +749,14 @@ lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*resample-method.*" "resample-metho
 
 # install scripts
 gitroot=https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/
-files="snd asnd asnddef csndfoczv csndzv csndh6 csndint clrmix clrmixoff"
+files="snd asnd asndenv asnddef csndfoczv csndzv csndh6 csndint clrmix clrmixoff"
 for file in $files ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
 chmod 755 ${ROOTFS}/usr/local/bin/$file
 done
+
+
+
 
 
 # wireplumber and pipewire
@@ -771,6 +774,13 @@ curl -Lo ${ROOTFS}/etc/udev/rules.d/89-pulseaudio-udev.rules https://raw.githubu
 # chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/wireplumber
 # EOF
 
+# install scripts for webcam
+gitroot=https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/camera/
+files="cint c920"
+for file in $files ; do
+curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
+chmod 755 ${ROOTFS}/usr/local/bin/$file
+done
 
 # install chrome browser
 mkdir -p ${ROOTFS}/opt/debs/
@@ -856,6 +866,9 @@ if [ ! -f ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/picom.conf ] ; then
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/
 cat << 'EOF' >> ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/picom.conf
 # picom config
+backend = "glx";
+vsync = true;
+use-damage = false
 EOF
 fi
 
