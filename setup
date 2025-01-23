@@ -1345,7 +1345,7 @@ elif [ "$1" = "debianserver" ]; then
     debianserver $@
 elif [ "$1" = "ubuntuserver" ]; then
     ubuntuserver $@
-elif [ "$1" = "gcpdebianvm" ]; then
+elif [ "$1" = "gcpvm" ]; then
     gcpvm $@
 else 
     echo "Invalid command"

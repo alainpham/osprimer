@@ -54,3 +54,13 @@ qemu-img convert -f raw -O vpc usb.raw usb.vhd
 
 ```
 
+
+# installing on machine
+
+```
+wget https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/setup
+chmod 755 setup
+sudo setup 
+
+
+```
