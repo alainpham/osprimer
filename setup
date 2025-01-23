@@ -511,6 +511,35 @@ echo "docker network and buildx on first boot service configured"
 
 }
 
+ikubectl(){
+echo "install kubectl"
+cat << EOF | chroot ${ROOTFS}
+    curl -fsSL https://pkgs.k8s.io/core:/stable:/$MAJOR_KUBE_VERSION/deb/Release.key | gpg --batch --yes --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/$MAJOR_KUBE_VERSION/deb/ /' | tee /etc/apt/sources.list.d/kubernetes.list
+
+    apt update
+    apt install -y kubectl
+    kubectl completion bash | tee /etc/bash_completion.d/kubectl > /dev/null
+EOF
+
+echo "install helm"
+cat << EOF | chroot ${ROOTFS}
+    curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | tee /usr/share/keyrings/helm.gpg > /dev/null
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | tee /etc/apt/sources.list.d/helm-stable-debian.list
+    apt update
+    apt install helm -y
+    helm completion bash | tee /etc/bash_completion.d/helm > /dev/null
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    curl -LO https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/k9s_Linux_amd64.tar.gz
+    tar -xzvf k9s_Linux_amd64.tar.gz  -C /usr/local/bin/ k9s
+    chown root:root /usr/local/bin/k9s
+    rm k9s_Linux_amd64.tar.gz
+EOF
+
+}
+
 ikube() {
  
 
@@ -539,30 +568,16 @@ cat << EOF | chroot ${ROOTFS}
     sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
 EOF
 
-echo "install kube bins"
+ikubectl
+
+echo "install kube server"
 cat << EOF | chroot ${ROOTFS}
     curl -fsSL https://pkgs.k8s.io/core:/stable:/$MAJOR_KUBE_VERSION/deb/Release.key | gpg --batch --yes --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
     echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/$MAJOR_KUBE_VERSION/deb/ /' | tee /etc/apt/sources.list.d/kubernetes.list
 
     apt update
-    apt install -y kubelet kubeadm kubectl
+    apt install -y kubelet kubeadm
     kubectl completion bash | tee /etc/bash_completion.d/kubectl > /dev/null
-EOF
-
-echo "install helm"
-cat << EOF | chroot ${ROOTFS}
-    curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | tee /usr/share/keyrings/helm.gpg > /dev/null
-    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | tee /etc/apt/sources.list.d/helm-stable-debian.list
-    apt update
-    apt install helm -y
-    helm completion bash | tee /etc/bash_completion.d/helm > /dev/null
-EOF
-
-cat << EOF | chroot ${ROOTFS}
-    curl -LO https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/k9s_Linux_amd64.tar.gz
-    tar -xzvf k9s_Linux_amd64.tar.gz  -C /usr/local/bin/ k9s
-    chown root:root /usr/local/bin/k9s
-    rm k9s_Linux_amd64.tar.gz
 EOF
 
 }

@@ -57,10 +57,17 @@ qemu-img convert -f raw -O vpc usb.raw usb.vhd
 
 # installing on machine
 
-```
+```sh
 wget https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/setup
 chmod 755 setup
-sudo setup 
 
+# debian on gcp
+sudo ./setup gcpvm apham
+
+# workstation with virtualisation deactivate nouveau
+sudo ./setup wkstatvrt apham
+
+# 
+sudo ./setup wkstatvrt apham
 
 ```
