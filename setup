@@ -3,7 +3,7 @@ set -e
 
 inputversions() {
     # https://github.com/docker/buildx/releases
-    export DOCKER_BUILDX_VERSION=v0.19.3
+    export DOCKER_BUILDX_VERSION=v0.20.0
     echo "export DOCKER_BUILDX_VERSION=${DOCKER_BUILDX_VERSION}"
     
     # https://kubernetes.io/releases/  https://cloud.google.com/kubernetes-engine/docs/release-notes
@@ -22,7 +22,7 @@ inputversions() {
     echo "export NERDFONTS=${NERDFONTS}"
 
     # https://zoom.us/download?os=linux
-    export ZOOM_VERSION=6.3.1.5673
+    export ZOOM_VERSION=6.3.6.6315
     echo "export ZOOM_VERSION=${ZOOM_VERSION}"
     
     # https://mlv.app/
@@ -41,10 +41,12 @@ inputversions() {
     export TEAMS_VERSION=1.12.5
     echo "export TEAMS_VERSION=${TEAMS_VERSION}"
 
+    # https://github.com/sindresorhus/caprine/releases/tag/v2.60.3
     export CAPRINE_VERSION=2.60.3
     echo "export CAPRINE_VERSION=${CAPRINE_VERSION}"
 
-    export DRAWIO_VERSION=26.0.3
+    # https://github.com/jgraph/drawio-desktop/releases
+    export DRAWIO_VERSION=26.0.4
     echo "export DRAWIO_VERSION=${DRAWIO_VERSION}"
 }
 
@@ -1217,7 +1219,7 @@ aptsrc
 iessentials
 isudo
 allowsshpwd
-ikeyboard
+# ikeyboard
 idocker
 ikube
 igui
@@ -1243,7 +1245,7 @@ aptsrc
 iessentials
 isudo
 allowsshpwd
-ikeyboard
+# ikeyboard
 idocker
 ikube
 igui
@@ -1315,6 +1317,21 @@ ikube
 sudo reboot now
 }
 
+gcpvm(){
+if ! [ $# -eq 2 ]; then
+    echo "Usage: sudo $0 <1_OPERATION> <2_TARGET_USERNAME>"
+    echo "sudo $0 debianserver apham"
+    return
+fi
+init $1 $2 "ps" "authorized_keys" "NA" "NA" "NA"
+bashaliases
+smalllogs
+iessentials
+idocker
+sudo reboot now
+}
+
+
 
 if [ "$1" = "all" ]; then
     all $@
@@ -1328,6 +1345,8 @@ elif [ "$1" = "debianserver" ]; then
     debianserver $@
 elif [ "$1" = "ubuntuserver" ]; then
     ubuntuserver $@
+elif [ "$1" = "gcpdebianvm" ]; then
+    gcpvm $@
 else 
     echo "Invalid command"
 fi
