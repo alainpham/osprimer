@@ -1343,9 +1343,24 @@ bashaliases
 smalllogs
 iessentials
 idocker
+ikubectl
 sudo reboot now
 }
 
+gcpkube(){
+if ! [ $# -eq 2 ]; then
+    echo "Usage: sudo $0 <1_OPERATION> <2_TARGET_USERNAME>"
+    echo "sudo $0 debianserver apham"
+    return
+fi
+init $1 $2 "ps" "authorized_keys" "NA" "NA" "NA"
+bashaliases
+smalllogs
+iessentials
+idocker
+ikube
+sudo reboot now
+}
 
 
 if [ "$1" = "all" ]; then
@@ -1362,6 +1377,8 @@ elif [ "$1" = "ubuntuserver" ]; then
     ubuntuserver $@
 elif [ "$1" = "gcpvm" ]; then
     gcpvm $@
+elif [ "$1" = "gcpkube" ]; then
+    gcpkube $@
 else 
     echo "Invalid command"
 fi
