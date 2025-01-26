@@ -48,6 +48,9 @@ inputversions() {
     # https://github.com/jgraph/drawio-desktop/releases
     export DRAWIO_VERSION=26.0.4
     echo "export DRAWIO_VERSION=${DRAWIO_VERSION}"
+
+    export CERTBOT_DUCKDNS_VERSION=v1.3
+    echo "export CERTBOT_DUCKDNS_VERSION=${CERTBOT_DUCKDNS_VERSION}"
 }
 
 inputkeyboard() {
@@ -308,6 +311,7 @@ lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*FREAC_VERSION*=.*" "export FREAC
 lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*TEAMS_VERSION*=.*" "export TEAMS_VERSION=${TEAMS_VERSION}"
 lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*CAPRINE_VERSION*=.*" "export CAPRINE_VERSION=${CAPRINE_VERSION}"
 lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*DRAWIO_VERSION*=.*" "export DRAWIO_VERSION=${DRAWIO_VERSION}"
+lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*CERTBOT_DUCKDNS_VERSION*=.*" "export CERTBOT_DUCKDNS_VERSION=${CERTBOT_DUCKDNS_VERSION}"
 
 echo "bash aliases setup finished"
 }

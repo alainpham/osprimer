@@ -64,6 +64,10 @@ chmod 755 setup
 # debian on gcp
 sudo ./setup gcpvm apham
 
+# debian with kube on gcp
+sudo ./setup gcpkube apham
+
+
 # workstation with virtualisation deactivate nouveau
 sudo ./setup wkstatvrt apham
 
