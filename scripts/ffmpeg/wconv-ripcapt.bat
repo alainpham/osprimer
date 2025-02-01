@@ -1,15 +1,19 @@
 @echo off
 setlocal
 
-:: Set the filename with date and time
+SET HOUR=%time:~0,2%
+SET dtStamp9=%date:~-4%%date:~4,2%%date:~7,2%_0%time:~1,1%%time:~3,2%%time:~6,2% 
+SET dtStamp24=%date:~-4%%date:~4,2%%date:~7,2%_%time:~0,2%%time:~3,2%%time:~6,2%
 
-set dt=%DATE:~6,4%_%DATE:~3,2%_%DATE:~0,2%__%TIME:~0,2%_%TIME:~3,2%_%TIME:~6,2%
-set dt=%dt: =0%
-set filename=%dt%.mkv
+if "%HOUR:~0,1%" == " " (SET dtStamp=%dtStamp9%) else (SET dtStamp=%dtStamp24%)
+
+ECHO %dtStamp%
+
+set filename=%dtStamp%.mkv
 
 :: Set default values for the arguments (preset, crf, ab)
 set preset=%1
-if "%preset%"=="" set preset=veryfast
+if "%preset%"=="" set preset=faster
 
 set crf=%2
 if "%crf%"=="" set crf=23
