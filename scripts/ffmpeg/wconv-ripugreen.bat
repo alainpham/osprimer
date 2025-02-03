@@ -26,11 +26,20 @@ if "%ab%"=="" set ab=160
 
 :: -max_interleave_delta 0 if cluster error
 
+:: set vdevice="Game Capture HD60 S+"
+:: set adevice="Digital Audio Interface (Game Capture HD60 S+)"
+:: set pxformat="yuv420p"
+set vdevice="UGREEN 25773"
+set adevice="Digital Audio Interface (UGREEN 25773)"
+set pxformat="yuyv422"
+
 ffmpeg -y ^
     -t %duration% ^
     -f dshow -rtbufsize 512M ^
-        -pixel_format yuv420p ^
+        -pixel_format %pxformat% ^
+        -video_size 1920x1080 ^
+        -framerate 60000/1001 ^
         -channels 2 -sample_rate 48000 -sample_size 16 ^
-        -i video="Game Capture HD60 S+":audio="Digital Audio Interface (Game Capture HD60 S+)" ^
-    -f matroska -max_interleave_delta 0 -preset %preset% -pix_fmt yuv420p -c:v libx264 -crf %crf% -g 24 -c:a aac -b:a %ab%k %filename%
+        -i video=%vdevice%:audio=%adevice% ^
+    -f matroska -preset %preset% -r 24000/1001 -pix_fmt yuv420p -c:v libx264 -crf %crf% -g 24 -c:a aac -b:a %ab%k %filename%
 endlocal

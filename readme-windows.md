@@ -21,6 +21,7 @@ winget install -e --id Zoom.Zoom
 winget install -e --id 7zip.7zip
 winget install -e --id GIMP.GIMP
 winget install -e --id VideoLAN.VLC
+winget install -e --id=Avidemux.Avidemux  
 vs code from official website 
 kate from store
 
