@@ -1,18 +1,18 @@
 
 #!/bin/bash
-gain=${1:-8}
+gain=${1:-1}
 wb=${2:-3500}
 exp=${3:-200}
 device=$(v4l2-ctl --list-devices | grep -A 1 "Integrate" | awk 'NR==2 {gsub(/^[ \t]+|[ \t]+$/, ""); print}')
 
-v4l2-ctl -d $device -c auto_exposure=1
+v4l2-ctl -d $device -c auto_exposure=3
 v4l2-ctl -d $device -c exposure_time_absolute=$exp
 v4l2-ctl -d $device -c exposure_dynamic_framerate=0
 v4l2-ctl -d $device -c gain=$gain
-v4l2-ctl -d $device -c sharpness=150
+v4l2-ctl -d $device -c sharpness=2
 v4l2-ctl -d $device -c white_balance_automatic=0
 v4l2-ctl -d $device -c white_balance_temperature=$wb
 v4l2-ctl -d $device -c power_line_frequency=1
 
-v4l2-ctl -d $device -c brightness=64
+v4l2-ctl -d $device -c brightness=0
 v4l2-ctl -d $device -c gamma=100

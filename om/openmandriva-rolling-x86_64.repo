@@ -1,0 +1,50 @@
+[rolling-x86_64]
+name="OpenMandriva Rolling - x86_64"
+baseurl=http://mirror.openmandriva.org/rolling/repository/x86_64/main/release/
+        http://abf-downloads.openmandriva.org/rolling/repository/x86_64/main/release/
+gpgcheck=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-OpenMandriva
+type=rpm-md
+enabled=1
+
+[rolling-x86_64-extra]
+name="OpenMandriva Rolling - Extra - x86_64"
+baseurl=http://mirror.openmandriva.org/rolling/repository/x86_64/extra/release/
+        http://abf-downloads.openmandriva.org/rolling/repository/x86_64/extra/release/
+gpgcheck=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-OpenMandriva
+type=rpm-md
+enabled=1
+
+[rolling-x86_64-restricted]
+name="OpenMandriva Rolling - Restricted - x86_64"
+baseurl=http://mirror.openmandriva.org/rolling/repository/x86_64/restricted/release/
+        http://abf-downloads.openmandriva.org/rolling/repository/x86_64/restricted/release/
+gpgcheck=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-OpenMandriva
+type=rpm-md
+enabled=1
+
+[rolling-x86_64-non-free]
+name="OpenMandriva Rolling - Non-free - x86_64"
+baseurl=http://mirror.openmandriva.org/rolling/repository/x86_64/non-free/release/
+        http://abf-downloads.openmandriva.org/rolling/repository/x86_64/non-free/release/
+gpgcheck=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-OpenMandriva
+type=rpm-md
+enabled=1
+
+[google-chrome]
+name=google-chrome
+baseurl=https://dl.google.com/linux/chrome/rpm/stable/x86_64
+enabled=1
+gpgcheck=0
+gpgkey=https://dl.google.com/linux/linux_signing_key.pub
+
+[vscode]
+name=vscode
+baseurl=https://packages.microsoft.com/yumrepos/vscode/
+enabled=1
+type=rpm-md
+gpgcheck=0
+gpgkey=https://packages.microsoft.com/keys/microsoft.asc

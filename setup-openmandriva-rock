@@ -198,7 +198,11 @@ rmnouveau() {
 # deactivate nouveau drivers 
 sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/ {/modprobe.blacklist=nouveau/! s/"$/ modprobe.blacklist=nouveau"/}' ${ROOTFS}/etc/default/grub
 cat << EOF | chroot ${ROOTFS}
-    update-grub
+    if [ -d /sys/firmware/efi ]; then 
+        sudo grub2-mkconfig -o /boot/efi/EFI/openmandriva/grub.cfg
+    else 
+        sudo grub2-mkconfig -o /boot/grub2/grub.cfg
+    fi
 EOF
 echo "Deactivated nouveau drivers"
 
@@ -207,10 +211,13 @@ echo "Deactivated nouveau drivers"
 fastboot() {
 
 # accelerate grub startup
-mkdir -p ${ROOTFS}/etc/default/grub.d/
-echo 'GRUB_TIMEOUT=0' | tee ${ROOTFS}/etc/default/grub.d/15_timeout.cfg
+lineinfile ${ROOTFS}/etc/default/grub ".*GRUB_TIMEOUT=.*" 'GRUB_TIMEOUT=0'
 cat << EOF | chroot ${ROOTFS}
-    update-grub
+    if [ -d /sys/firmware/efi ]; then 
+        sudo grub2-mkconfig -o /boot/efi/EFI/openmandriva/grub.cfg
+    else 
+        sudo grub2-mkconfig -o /boot/grub2/grub.cfg
+    fi
 EOF
 
 echo "fastboot activated"
@@ -293,26 +300,26 @@ echo "firstboot script activated"
 
 bashaliases() {
 
-lineinfile ${ROOTFS}/etc/bash.bashrc ".*alias.*ll.*=.*" 'alias ll="ls -larth"'
-lineinfile ${ROOTFS}/etc/bash.bashrc ".*alias.*ap=.*" 'alias ap=ansible-playbook'
+lineinfile ${ROOTFS}/etc/bashrc ".*alias.*ll.*=.*" 'alias ll="ls -larth"'
+lineinfile ${ROOTFS}/etc/bashrc ".*alias.*ap=.*" 'alias ap=ansible-playbook'
 
 
-lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*ROOTFS*=.*" 'export ROOTFS=\/'
-lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*TARGET_USERNAME*=.*" "export TARGET_USERNAME=${TARGET_USERNAME}"
-lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*DOCKER_BUILDX_VERSION*=.*" "export DOCKER_BUILDX_VERSION=${DOCKER_BUILDX_VERSION}"
-lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*MAJOR_KUBE_VERSION*=.*" "export MAJOR_KUBE_VERSION=${MAJOR_KUBE_VERSION}"
-lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*K9S_VERSION*=.*" "export K9S_VERSION=${K9S_VERSION}"
-lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*MVN_VERSION*=.*" "export MVN_VERSION=${MVN_VERSION}"
-lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*NERDFONTS*=.*" "export NERDFONTS=${NERDFONTS}"
-lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*ZOOM_VERSION*=.*" "export ZOOM_VERSION=${ZOOM_VERSION}"
-lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*MLVAPP_VERSION*=.*" "export MLVAPP_VERSION=${MLVAPP_VERSION}"
-lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*BEEREF_VERSION*=.*" "export BEEREF_VERSION=${BEEREF_VERSION}"
-lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*FREAC_VERSION*=.*" "export FREAC_VERSION=${FREAC_VERSION}"
-lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*FREAC_VERSION*=.*" "export FREAC_VERSION=${FREAC_VERSION}"
-lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*TEAMS_VERSION*=.*" "export TEAMS_VERSION=${TEAMS_VERSION}"
-lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*CAPRINE_VERSION*=.*" "export CAPRINE_VERSION=${CAPRINE_VERSION}"
-lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*DRAWIO_VERSION*=.*" "export DRAWIO_VERSION=${DRAWIO_VERSION}"
-lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*CERTBOT_DUCKDNS_VERSION*=.*" "export CERTBOT_DUCKDNS_VERSION=${CERTBOT_DUCKDNS_VERSION}"
+lineinfile ${ROOTFS}/etc/bashrc ".*export.*ROOTFS*=.*" 'export ROOTFS=\/'
+lineinfile ${ROOTFS}/etc/bashrc ".*export.*TARGET_USERNAME*=.*" "export TARGET_USERNAME=${TARGET_USERNAME}"
+lineinfile ${ROOTFS}/etc/bashrc ".*export.*DOCKER_BUILDX_VERSION*=.*" "export DOCKER_BUILDX_VERSION=${DOCKER_BUILDX_VERSION}"
+lineinfile ${ROOTFS}/etc/bashrc ".*export.*MAJOR_KUBE_VERSION*=.*" "export MAJOR_KUBE_VERSION=${MAJOR_KUBE_VERSION}"
+lineinfile ${ROOTFS}/etc/bashrc ".*export.*K9S_VERSION*=.*" "export K9S_VERSION=${K9S_VERSION}"
+lineinfile ${ROOTFS}/etc/bashrc ".*export.*MVN_VERSION*=.*" "export MVN_VERSION=${MVN_VERSION}"
+lineinfile ${ROOTFS}/etc/bashrc ".*export.*NERDFONTS*=.*" "export NERDFONTS=${NERDFONTS}"
+lineinfile ${ROOTFS}/etc/bashrc ".*export.*ZOOM_VERSION*=.*" "export ZOOM_VERSION=${ZOOM_VERSION}"
+lineinfile ${ROOTFS}/etc/bashrc ".*export.*MLVAPP_VERSION*=.*" "export MLVAPP_VERSION=${MLVAPP_VERSION}"
+lineinfile ${ROOTFS}/etc/bashrc ".*export.*BEEREF_VERSION*=.*" "export BEEREF_VERSION=${BEEREF_VERSION}"
+lineinfile ${ROOTFS}/etc/bashrc ".*export.*FREAC_VERSION*=.*" "export FREAC_VERSION=${FREAC_VERSION}"
+lineinfile ${ROOTFS}/etc/bashrc ".*export.*FREAC_VERSION*=.*" "export FREAC_VERSION=${FREAC_VERSION}"
+lineinfile ${ROOTFS}/etc/bashrc ".*export.*TEAMS_VERSION*=.*" "export TEAMS_VERSION=${TEAMS_VERSION}"
+lineinfile ${ROOTFS}/etc/bashrc ".*export.*CAPRINE_VERSION*=.*" "export CAPRINE_VERSION=${CAPRINE_VERSION}"
+lineinfile ${ROOTFS}/etc/bashrc ".*export.*DRAWIO_VERSION*=.*" "export DRAWIO_VERSION=${DRAWIO_VERSION}"
+lineinfile ${ROOTFS}/etc/bashrc ".*export.*CERTBOT_DUCKDNS_VERSION*=.*" "export CERTBOT_DUCKDNS_VERSION=${CERTBOT_DUCKDNS_VERSION}"
 
 echo "bash aliases setup finished"
 }
@@ -320,6 +327,7 @@ echo "bash aliases setup finished"
 smalllogs() {
 
 lineinfile ${ROOTFS}/etc/systemd/journald.conf ".*SystemMaxUse=.*" "SystemMaxUse=50M"
+lineinfile ${ROOTFS}/etc/systemd/journald.conf ".*RuntimeMaxUse=.*" "RuntimeMaxUse=50M"
 
 echo "lower log volume activated"
 
@@ -328,13 +336,102 @@ echo "lower log volume activated"
 aptsrc() {
 
 echo "setup apt"
-cat <<EOF > ${ROOTFS}/etc/apt/sources.list
-deb http://deb.debian.org/debian bookworm main contrib non-free non-free-firmware
-deb http://deb.debian.org/debian-security/ bookworm-security main contrib non-free non-free-firmware
-deb http://deb.debian.org/debian bookworm-updates main contrib non-free non-free-firmware
+cat <<EOF > ${ROOTFS}/etc/yum.repos.d/vscode.repo
+[vscode]
+name=vscode
+baseurl=https://packages.microsoft.com/yumrepos/vscode/
+enabled=1
+type=rpm-md
+gpgcheck=0
+gpgkey=https://packages.microsoft.com/keys/microsoft.asc
 EOF
 
-echo "apt sources setup finished"
+cat <<EOF > ${ROOTFS}/etc/yum.repos.d/google-chrome.repo
+[google-chrome]
+name=google-chrome
+baseurl=https://dl.google.com/linux/chrome/rpm/stable/x86_64
+enabled=1
+gpgcheck=0
+gpgkey=https://dl.google.com/linux/linux_signing_key.pub
+EOF
+
+cat <<EOF > ${ROOTFS}/etc/yum.repos.d/openmandriva-rock-x86_64.repo
+[rock-x86_64]
+name="OpenMandriva Rock - x86_64"
+baseurl=http://mirror.openmandriva.org/rock/repository/x86_64/main/release/
+        http://abf-downloads.openmandriva.org/rock/repository/x86_64/main/release/
+gpgcheck=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-OpenMandriva
+type=rpm-md
+enabled=1
+
+[rock-updates-x86_64]
+name="OpenMandriva Rock - x86_64 - Updates"
+baseurl=http://mirror.openmandriva.org/rock/repository/x86_64/main/updates/
+        http://abf-downloads.openmandriva.org/rock/repository/x86_64/main/updates/
+gpgcheck=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-OpenMandriva
+type=rpm-md
+enabled=1
+
+[rock-x86_64-unsupported]
+name="OpenMandriva Rock - Unsupported - x86_64"
+baseurl=http://mirror.openmandriva.org/rock/repository/x86_64/unsupported/release/
+        http://abf-downloads.openmandriva.org/rock/repository/x86_64/unsupported/release/
+gpgcheck=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-OpenMandriva
+type=rpm-md
+enabled=1
+
+[rock-updates-x86_64-unsupported]
+name="OpenMandriva Rock - Unsupported - x86_64 - Updates"
+baseurl=http://mirror.openmandriva.org/rock/repository/x86_64/unsupported/updates/
+        http://abf-downloads.openmandriva.org/rock/repository/x86_64/unsupported/updates/
+gpgcheck=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-OpenMandriva
+enabled=1
+type=rpm-md
+
+[rock-x86_64-restricted]
+name="OpenMandriva Rock - Restricted - x86_64"
+baseurl=http://mirror.openmandriva.org/rock/repository/x86_64/restricted/release/
+        http://abf-downloads.openmandriva.org/rock/repository/x86_64/restricted/release/
+gpgcheck=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-OpenMandriva
+enabled=1
+type=rpm-md
+
+[rock-updates-x86_64-restricted]
+name="OpenMandriva Rock - Restricted - x86_64 - Updates"
+baseurl=http://mirror.openmandriva.org/rock/repository/x86_64/restricted/updates/
+        http://abf-downloads.openmandriva.org/rock/repository/x86_64/restricted/updates/
+gpgcheck=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-OpenMandriva
+enabled=1
+type=rpm-md
+
+[rock-x86_64-non-free]
+name="OpenMandriva Rock - Non-free - x86_64"
+baseurl=http://mirror.openmandriva.org/rock/repository/x86_64/non-free/release/
+        http://abf-downloads.openmandriva.org/rock/repository/x86_64/non-free/release/
+gpgcheck=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-OpenMandriva
+enabled=1
+type=rpm-md
+
+[rock-updates-x86_64-non-free]
+name="OpenMandriva Rock - Non-free - x86_64 - Updates"
+baseurl=http://mirror.openmandriva.org/rock/repository/x86_64/non-free/updates/
+        http://abf-downloads.openmandriva.org/rock/repository/x86_64/non-free/updates/
+gpgcheck=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-OpenMandriva
+enabled=1
+type=rpm-md
+
+EOF
+
+
+echo "dnf sources setup finished"
 
 
 }
@@ -343,9 +440,10 @@ iessentials() {
 # Essentials packages
 echo "install essentials"
 cat << EOF | chroot ${ROOTFS}
-    apt update && apt upgrade -y
-    apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon systemd-timesyncd htop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq
-    DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup iperf3
+    dnf clean all ; dnf repolist
+    dnf upgrade
+    dnf install -y sudo git tmux vim curl wget rsync ncdu bind-utils htop bash-completion gnupg2 whois zip unzip virt-what wireguard-tools iptables jq
+    dnf install -y openssh-server console-setup
 EOF
 echo "essentials installed"
 
@@ -404,8 +502,8 @@ idocker () {
 
 echo "install docker"
 cat << EOF | chroot ${ROOTFS}
-    apt install -y docker.io python3-docker docker-compose skopeo
-    apt install -y ansible openjdk-17-jdk-headless npm golang-go
+    dnf install -y docker python-docker docker-compose skopeo
+    dnf install -y java-17-openjdk-devel npm golang
 EOF
 
 
@@ -428,8 +526,8 @@ cat << EOF | chroot ${ROOTFS}
     adduser $TARGET_USERNAME docker
 EOF
 echo "docker build x installed"
-export JAVA_HOME_TARGET=$(echo 'readlink -f /usr/bin/javac | sed "s:/bin/javac::"' | chroot ${ROOTFS})
-lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*JAVA_HOME*=.*" "export JAVA_HOME=${JAVA_HOME_TARGET}"
+export JAVA_HOME_TARGET="/usr/lib/jvm/java-17-openjdk"
+lineinfile ${ROOTFS}/etc/bashrc ".*export.*JAVA_HOME*=.*" "export JAVA_HOME=${JAVA_HOME_TARGET}"
 
 echo "java home setup finished"
 # cat << EOF | chroot ${ROOTFS}
@@ -443,7 +541,7 @@ tar xzvf /tmp/maven.tar.gz  -C ${ROOTFS}/opt/appimages/
 cat << EOF | chroot ${ROOTFS}
     ln -sf /opt/appimages/apache-maven-${MVN_VERSION}/bin/mvn /usr/local/bin/mvn
 EOF
-rm /tmp/maven.tar.gz
+rm -f /tmp/maven.tar.gz
 echo "maven installed"
 
 cat <<EOF | tee ${ROOTFS}/usr/local/bin/firstboot-dockernet.sh
@@ -647,7 +745,7 @@ echo "install gui"
     # apt install -y  pipewire-audio wireplumber pipewire-pulse pipewire-alsa libspa-0.2-bluetooth pulseaudio-utils qpwgraph pavucontrol
 
 cat << EOF | chroot ${ROOTFS}
-    apt install -y make gcc libx11-dev libxft-dev libxrandr-dev libfreetype-dev libxinerama-dev xorg numlockx 
+    apt install -y make gcc libx11-dev libxft-dev libfreetype-dev libxinerama-dev xorg numlockx 
     apt install -y pulseaudio pulseaudio-module-bluetooth pulseaudio-utils pavucontrol alsa-utils
     apt remove -y xserver-xorg-video-intel
 EOF
