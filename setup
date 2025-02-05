@@ -647,7 +647,7 @@ echo "install gui"
     # apt install -y  pipewire-audio wireplumber pipewire-pulse pipewire-alsa libspa-0.2-bluetooth pulseaudio-utils qpwgraph pavucontrol
 
 cat << EOF | chroot ${ROOTFS}
-    apt install -y make gcc libx11-dev libxft-dev libxrandr-dev libfreetype-dev libxinerama-dev xorg numlockx 
+    apt install -y make gcc libx11-dev libxft-dev libxrandr-dev libimlib2-dev libfreetype-dev libxinerama-dev xorg numlockx 
     apt install -y pulseaudio pulseaudio-module-bluetooth pulseaudio-utils pavucontrol alsa-utils
     apt remove -y xserver-xorg-video-intel
 EOF
@@ -822,11 +822,13 @@ cat << EOF | chroot ${ROOTFS}
     git clone https://github.com/alainpham/st-flexipatch.git
     git clone https://github.com/alainpham/dmenu-flexipatch.git
     git clone https://github.com/alainpham/dwmblocks.git
+    git clone https://github.com/alainpham/slock-flexipatch.git
 
     cd /home/$TARGET_USERNAME/wm/dwm-flexipatch && make clean install
     cd /home/$TARGET_USERNAME/wm/st-flexipatch && make clean install
     cd /home/$TARGET_USERNAME/wm/dmenu-flexipatch && make clean install
     cd /home/$TARGET_USERNAME/wm/dwmblocks && make clean install
+    cd /home/$TARGET_USERNAME/wm/slock-flexipatch && make clean install
 
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/wm
 EOF
