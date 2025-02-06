@@ -380,6 +380,7 @@ fi
 
 if [ $OSNAME="openmandriva" ]; then
 rm -f ${ROOTFS}/etc/yum.repos.d/*
+curl -Lo ${ROOTFS}/etc/yum.repos.d/openmandriva-rolling-x86_64.repo https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/om/openmandriva-rolling-x86_64.repo
 fi
 
 }
@@ -387,23 +388,35 @@ fi
 iessentials() {
 # Essentials packages
 echo "install essentials"
+
+if [ $OSNAME="debian" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt update && apt upgrade -y
     apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon systemd-timesyncd htop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup iperf3
 EOF
+fi
+
+if [ $OSNAME="openmandriva" ]; then
+cat << EOF | chroot ${ROOTFS}
+    dnf clean all ; dnf repolist
+    dnf --allowerasing distro-sync
+    dnf install -y sudo git tmux vim curl wget rsync ncdu bind-utils htop bash-completion gnupg2 whois zip unzip virt-what wireguard-tools iptables jq
+    dnf install -y cloud-utils openssh-server console-setup iperf
+EOF
+fi
+
 echo "essentials installed"
 
 cat << EOF | chroot ${ROOTFS}
     git config --global core.editor "vim"
 EOF
 
-
 }
 
 isudo() {
 cat << EOF | chroot ${ROOTFS}
-    echo '${TARGET_USERNAME} ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo -f /etc/sudoers.d/nopwd
+    echo '${TARGET_USERNAME} ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee' visudo -f /etc/sudoers.d/nopwd
 EOF
 
 echo "sudo setup finished"
@@ -412,7 +425,7 @@ echo "sudo setup finished"
 allowsshpwd() {
     
 cat << EOF | chroot ${ROOTFS}
-    sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
+    sed -i 's/.*PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
 EOF
 
 }
