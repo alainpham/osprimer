@@ -201,13 +201,13 @@ rmnouveau() {
 # deactivate nouveau drivers 
 sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/ {/modprobe.blacklist=nouveau/! s/"$/ modprobe.blacklist=nouveau"/}' ${ROOTFS}/etc/default/grub
 
-if [ $OSNAME="debian" ]; then
+if [ $OSNAME == "debian" ]; then
 cat << EOF | chroot ${ROOTFS}
     update-grub
 EOF
 fi
 
-if [ $OSNAME="openmandriva" ]; then
+if [ $OSNAME == "openmandriva" ]; then
 cat << EOF | chroot ${ROOTFS}
     if [ -d /sys/firmware/efi ]; then 
         sudo grub2-mkconfig -o /boot/efi/EFI/openmandriva/grub.cfg
@@ -223,7 +223,7 @@ echo "Deactivated nouveau drivers"
 
 fastboot() {
 
-if [ $OSNAME="debian" ]; then
+if [ $OSNAME == "debian" ]; then
 # accelerate grub startup
 mkdir -p ${ROOTFS}/etc/default/grub.d/
 echo 'GRUB_TIMEOUT=0' | tee ${ROOTFS}/etc/default/grub.d/15_timeout.cfg
@@ -232,7 +232,7 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 fi
 
-if [ $OSNAME="openmandriva" ]; then
+if [ $OSNAME == "openmandriva" ]; then
 lineinfile ${ROOTFS}/etc/default/grub ".*GRUB_TIMEOUT=.*" 'GRUB_TIMEOUT=0'
 cat << EOF | chroot ${ROOTFS}
     if [ -d /sys/firmware/efi ]; then 
@@ -324,11 +324,11 @@ echo "firstboot script activated"
 
 bashaliases() {
 
-if [ $OSNAME="debian" ]; then
+if [ $OSNAME == "debian" ]; then
     export BASHRC="/etc/bash.bashrc"
 fi
 
-if [ $OSNAME="openmandriva" ]; then
+if [ $OSNAME == "openmandriva" ]; then
     export BASHRC="/etc/bashrc"
 fi
 
@@ -367,7 +367,7 @@ echo "lower log volume activated"
 
 reposrc() {
 
-if [ $OSNAME="debian" ]; then
+if [ $OSNAME == "debian" ]; then
 echo "setup apt"
 cat <<EOF > ${ROOTFS}/etc/apt/sources.list
 deb http://deb.debian.org/debian bookworm main contrib non-free non-free-firmware
@@ -378,7 +378,7 @@ EOF
 echo "apt sources setup finished"
 fi
 
-if [ $OSNAME="openmandriva" ]; then
+if [ $OSNAME == "openmandriva" ]; then
 rm -f ${ROOTFS}/etc/yum.repos.d/*
 curl -Lo ${ROOTFS}/etc/yum.repos.d/openmandriva-rolling-x86_64.repo https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/om/openmandriva-rolling-x86_64.repo
 fi
@@ -389,7 +389,7 @@ iessentials() {
 # Essentials packages
 echo "install essentials"
 
-if [ $OSNAME="debian" ]; then
+if [ $OSNAME == "debian" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt update && apt upgrade -y
     apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon systemd-timesyncd htop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq
@@ -397,7 +397,7 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 fi
 
-if [ $OSNAME="openmandriva" ]; then
+if [ $OSNAME == "openmandriva" ]; then
 cat << EOF | chroot ${ROOTFS}
     dnf clean all ; dnf repolist
     dnf --allowerasing distro-sync
