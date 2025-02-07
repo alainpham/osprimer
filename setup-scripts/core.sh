@@ -385,7 +385,7 @@ fi
 
 if [ "$OSNAME" = "openmandriva" ]; then
 rm -f ${ROOTFS}/etc/yum.repos.d/*
-curl -Lo ${ROOTFS}/etc/yum.repos.d/openmandriva-rolling-x86_64.repo https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/om/openmandriva-rolling-x86_64.repo
+curl -Lo ${ROOTFS}/etc/yum.repos.d/openmandriva-rock-x86_64.repo https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/om/openmandriva-rock-x86_64.repo
 fi
 
 }
@@ -703,11 +703,13 @@ fi
 
 echo "containerd setup"
 
+if [ "$OSNAME" = "debian" ]; then
 cat << EOF | chroot ${ROOTFS}
     mkdir -p /etc/containerd
     containerd config default | tee /etc/containerd/config.toml >/dev/null 2>&1
     sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
 EOF
+fi
 
 ikubectl
 
@@ -724,6 +726,7 @@ cat << EOF | chroot ${ROOTFS}
     dnf install -y kubelet kubeadm --disableexcludes=kubernetes
     systemctl enable kubelet
     systemctl enable containerd
+    systemctl mask systemd-zram-setup@zram0.service
 EOF
 fi
 
