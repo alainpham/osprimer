@@ -1,6 +1,4 @@
-#!/bin/sh
-set -e
-
+#!/bin/bash
 inputversions() {
     # https://github.com/docker/buildx/releases
     export DOCKER_BUILDX_VERSION=v0.20.1
@@ -53,7 +51,7 @@ inputversions() {
     export CERTBOT_DUCKDNS_VERSION=v1.5
     echo "export CERTBOT_DUCKDNS_VERSION=${CERTBOT_DUCKDNS_VERSION}"
 
-    export OSNAME=$(cat /etc/os-release | grep '^ID='  | cut -d'=' -f2)
+    export OSNAME=$(awk -F= '/^ID=/ {gsub(/"/, "", $2); print $2}' /etc/os-release)
     echo "export OSNAME=${OSNAME}"
 }
 
@@ -201,13 +199,15 @@ rmnouveau() {
 # deactivate nouveau drivers 
 sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/ {/modprobe.blacklist=nouveau/! s/"$/ modprobe.blacklist=nouveau"/}' ${ROOTFS}/etc/default/grub
 
-if [ $OSNAME == "debian" ]; then
+echo $OSNAME
+
+if [ "$OSNAME" = "debian" ]; then
 cat << EOF | chroot ${ROOTFS}
     update-grub
 EOF
 fi
 
-if [ $OSNAME == "openmandriva" ]; then
+if [ "$OSNAME" = "openmandriva" ]; then
 cat << EOF | chroot ${ROOTFS}
     if [ -d /sys/firmware/efi ]; then 
         sudo grub2-mkconfig -o /boot/efi/EFI/openmandriva/grub.cfg
@@ -223,7 +223,8 @@ echo "Deactivated nouveau drivers"
 
 fastboot() {
 
-if [ $OSNAME == "debian" ]; then
+if [ "$OSNAME" = "debian" ]; then
+echo debian
 # accelerate grub startup
 mkdir -p ${ROOTFS}/etc/default/grub.d/
 echo 'GRUB_TIMEOUT=0' | tee ${ROOTFS}/etc/default/grub.d/15_timeout.cfg
@@ -232,7 +233,8 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 fi
 
-if [ $OSNAME == "openmandriva" ]; then
+if [ "$OSNAME" = "openmandriva" ]; then
+echo openmandriva
 lineinfile ${ROOTFS}/etc/default/grub ".*GRUB_TIMEOUT=.*" 'GRUB_TIMEOUT=0'
 cat << EOF | chroot ${ROOTFS}
     if [ -d /sys/firmware/efi ]; then 
@@ -324,12 +326,15 @@ echo "firstboot script activated"
 
 bashaliases() {
 
-if [ $OSNAME == "debian" ]; then
+if [ "$OSNAME" = "debian" ]; then
     export BASHRC="/etc/bash.bashrc"
 fi
 
-if [ $OSNAME == "openmandriva" ]; then
+if [ "$OSNAME" = "openmandriva" ]; then
     export BASHRC="/etc/bashrc"
+cat << EOF | chroot ${ROOTFS}
+    ln -sf /usr/bin/vim /usr/bin/vi
+EOF
 fi
 
 lineinfile ${ROOTFS}${BASHRC} ".*alias.*ll.*=.*" 'alias ll="ls -larth"'
@@ -367,7 +372,7 @@ echo "lower log volume activated"
 
 reposrc() {
 
-if [ $OSNAME == "debian" ]; then
+if [ "$OSNAME" = "debian" ]; then
 echo "setup apt"
 cat <<EOF > ${ROOTFS}/etc/apt/sources.list
 deb http://deb.debian.org/debian bookworm main contrib non-free non-free-firmware
@@ -378,7 +383,7 @@ EOF
 echo "apt sources setup finished"
 fi
 
-if [ $OSNAME == "openmandriva" ]; then
+if [ "$OSNAME" = "openmandriva" ]; then
 rm -f ${ROOTFS}/etc/yum.repos.d/*
 curl -Lo ${ROOTFS}/etc/yum.repos.d/openmandriva-rolling-x86_64.repo https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/om/openmandriva-rolling-x86_64.repo
 fi
@@ -389,7 +394,7 @@ iessentials() {
 # Essentials packages
 echo "install essentials"
 
-if [ $OSNAME == "debian" ]; then
+if [ "$OSNAME" = "debian" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt update && apt upgrade -y
     apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon systemd-timesyncd htop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq
@@ -397,12 +402,14 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 fi
 
-if [ $OSNAME == "openmandriva" ]; then
+if [ "$OSNAME" = "openmandriva" ]; then
+
 cat << EOF | chroot ${ROOTFS}
-    dnf clean all ; dnf repolist
-    dnf --allowerasing distro-sync
+    dnf clean -y all ; dnf -y repolist
+    dnf -y --allowerasing distro-sync
     dnf install -y sudo git tmux vim curl wget rsync ncdu bind-utils htop bash-completion gnupg2 whois zip unzip virt-what wireguard-tools iptables jq
     dnf install -y cloud-utils openssh-server console-setup iperf
+    dnf install -y ncurses-extraterms
 EOF
 fi
 
@@ -423,11 +430,7 @@ echo "sudo setup finished"
 }
 
 allowsshpwd() {
-    
-cat << EOF | chroot ${ROOTFS}
-    sed -i 's/.*PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config
-EOF
-
+sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' ${ROOTFS}/etc/ssh/sshd_config
 }
 
 ikeyboard() {
@@ -458,15 +461,15 @@ EOF
 
 }
 
-idocker () {
+idocker() {
 
 echo "install docker"
+
+if [ "$OSNAME" = "debian" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt install -y docker.io python3-docker docker-compose skopeo
     apt install -y ansible openjdk-17-jdk-headless npm golang-go
 EOF
-
-
 
 cat <<EOF | tee ${ROOTFS}/etc/docker/daemon.json
 {
@@ -478,18 +481,51 @@ cat <<EOF | tee ${ROOTFS}/etc/docker/daemon.json
 EOF
 echo "docker logs configured"
 
+cat << EOF | chroot ${ROOTFS}
+    adduser $TARGET_USERNAME docker
+EOF
+
+export JAVA_HOME_TARGET=/usr/lib/jvm/java-17-openjdk-amd64
+lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*JAVA_HOME*=.*" "export JAVA_HOME=${JAVA_HOME_TARGET}"
+
+echo "java home setup finished"
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y docker python-docker docker-compose skopeo
+    dnf install -y ansible java-17-openjdk-devel npm golang
+    systemctl enable docker
+EOF
+
+cat <<EOF | tee ${ROOTFS}/etc/docker/daemon.json
+{
+  "iptables": true
+}
+EOF
+echo "docker logs configured"
+
+cat << EOF | chroot ${ROOTFS}
+    usermod -aG docker $TARGET_USERNAME
+EOF
+
+export JAVA_HOME_TARGET=/usr/lib/jvm/java-17-openjdk
+lineinfile ${ROOTFS}/etc/bashrc ".*export.*JAVA_HOME*=.*" "export JAVA_HOME=${JAVA_HOME_TARGET}"
+lineinfile ${ROOTFS}/etc/bashrc ".*export.*PATH*=.*" "export PATH=\$PATH:${JAVA_HOME_TARGET}/bin"
+
+fi
+
+
+
+
+
 mkdir -p ${ROOTFS}/usr/lib/docker/cli-plugins
 curl -SL https://github.com/docker/buildx/releases/download/${DOCKER_BUILDX_VERSION}/buildx-${DOCKER_BUILDX_VERSION}.linux-amd64 -o ${ROOTFS}/usr/lib/docker/cli-plugins/docker-buildx
 chmod 755 ${ROOTFS}/usr/lib/docker/cli-plugins/docker-buildx
 
-cat << EOF | chroot ${ROOTFS}
-    adduser $TARGET_USERNAME docker
-EOF
 echo "docker build x installed"
-export JAVA_HOME_TARGET=$(echo 'readlink -f /usr/bin/javac | sed "s:/bin/javac::"' | chroot ${ROOTFS})
-lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*JAVA_HOME*=.*" "export JAVA_HOME=${JAVA_HOME_TARGET}"
 
-echo "java home setup finished"
 # cat << EOF | chroot ${ROOTFS}
 #     echo "export JAVA_HOME=${JAVA_HOME_TARGET}" | tee /etc/profile.d/java_home.sh
 # EOF
@@ -501,7 +537,7 @@ tar xzvf /tmp/maven.tar.gz  -C ${ROOTFS}/opt/appimages/
 cat << EOF | chroot ${ROOTFS}
     ln -sf /opt/appimages/apache-maven-${MVN_VERSION}/bin/mvn /usr/local/bin/mvn
 EOF
-rm /tmp/maven.tar.gz
+rm -f /tmp/maven.tar.gz
 echo "maven installed"
 
 cat <<EOF | tee ${ROOTFS}/usr/local/bin/firstboot-dockernet.sh
@@ -523,7 +559,7 @@ cat <<EOF | tee ${ROOTFS}/usr/local/bin/firstboot-dockerbuildx.sh
 echo "Setting up builder"
 if [[ -z "\$(docker buildx ls | grep multibuilder.*linux)" ]] then
      docker buildx create --name multibuilder --platform linux/amd64,linux/arm/v7,linux/arm64/v8 --use
-     echo "✅ multibuilder docker buildx created !">~/firstboot-dockerbuildx.log
+     echo "✅ multibuilder docker buildx created !">/var/log/firstboot-dockerbuildx.log
 else
      echo "build exists"
      echo "✅ multibuilder already exisits ! ">~/firstboot-dockerbuildx.log
@@ -576,13 +612,14 @@ echo "docker network and buildx on first boot service configured"
 
 ikubectl(){
 echo "install kubectl"
+
+if [ "$OSNAME" = "debian" ]; then
 cat << EOF | chroot ${ROOTFS}
     curl -fsSL https://pkgs.k8s.io/core:/stable:/$MAJOR_KUBE_VERSION/deb/Release.key | gpg --batch --yes --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
     echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/$MAJOR_KUBE_VERSION/deb/ /' | tee /etc/apt/sources.list.d/kubernetes.list
 
     apt update
     apt install -y kubectl
-    kubectl completion bash | tee /etc/bash_completion.d/kubectl > /dev/null
 EOF
 
 echo "install helm"
@@ -591,6 +628,37 @@ cat << EOF | chroot ${ROOTFS}
     echo "deb [arch=amd64 signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | tee /etc/apt/sources.list.d/helm-stable-debian.list
     apt update
     apt install helm -y
+EOF
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+
+cat <<EOF | tee ${ROOTFS}/etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://pkgs.k8s.io/core:/stable:/${MAJOR_KUBE_VERSION}/rpm/
+enabled=1
+gpgcheck=1
+gpgkey=https://pkgs.k8s.io/core:/stable:/${MAJOR_KUBE_VERSION}/rpm/repodata/repomd.xml.key
+exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
+EOF
+
+
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y kubectl --disableexcludes=kubernetes
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    curl -fsSL -o /tmp/get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+    chmod 755 /tmp/get_helm.sh
+    /tmp/get_helm.sh
+EOF
+
+
+fi
+
+cat << EOF | chroot ${ROOTFS}
+    kubectl completion bash | tee /etc/bash_completion.d/kubectl > /dev/null
     helm completion bash | tee /etc/bash_completion.d/helm > /dev/null
 EOF
 
@@ -601,11 +669,12 @@ cat << EOF | chroot ${ROOTFS}
     rm k9s_Linux_amd64.tar.gz
 EOF
 
+
+
 }
 
 ikube() {
  
-
 echo "install kube readiness"
 
 cat <<EOF | tee ${ROOTFS}/etc/modules-load.d/containerd.conf 
@@ -619,9 +688,18 @@ net.ipv4.ip_forward = 1
 net.bridge.bridge-nf-call-ip6tables = 1 
 EOF
 echo "kube readiness setup finished"
+
+if [ "$OSNAME" = "debian" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt install -y containerd
 EOF
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y containerd
+EOF
+fi
 
 echo "containerd setup"
 
@@ -634,14 +712,20 @@ EOF
 ikubectl
 
 echo "install kube server"
-cat << EOF | chroot ${ROOTFS}
-    curl -fsSL https://pkgs.k8s.io/core:/stable:/$MAJOR_KUBE_VERSION/deb/Release.key | gpg --batch --yes --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
-    echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/$MAJOR_KUBE_VERSION/deb/ /' | tee /etc/apt/sources.list.d/kubernetes.list
 
-    apt update
+if [ "$OSNAME" = "debian" ]; then
+cat << EOF | chroot ${ROOTFS}
     apt install -y kubelet kubeadm
-    kubectl completion bash | tee /etc/bash_completion.d/kubectl > /dev/null
 EOF
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y kubelet kubeadm --disableexcludes=kubernetes
+    systemctl enable kubelet
+    systemctl enable containerd
+EOF
+fi
 
 }
 
@@ -1425,4 +1509,18 @@ iessentials
 idocker
 ikube
 sudo reboot now
+}
+
+runtest(){
+init runtest apham "NA" "authorized_keys" "NA" "NA" "NA"
+rmnouveau
+fastboot
+disableturbo
+bashaliases
+smalllogs
+reposrc
+iessentials
+isudo
+allowsshpwd
+idocker
 }
