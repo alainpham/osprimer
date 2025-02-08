@@ -418,7 +418,7 @@ EOF
 cat << EOF | chroot ${ROOTFS}
     dnf install -y sudo git tmux vim curl wget rsync ncdu bind-utils htop bash-completion gnupg2 whois zip unzip virt-what wireguard-tools iptables jq
     dnf install -y cloud-utils openssh-server console-setup
-    dnf install -y ncurses-extraterms
+    dnf install -y ncurses-extraterms gettext
 EOF
 fi
 
@@ -675,7 +675,7 @@ cat << EOF | chroot ${ROOTFS}
     curl -LO https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/k9s_Linux_amd64.tar.gz
     tar -xzvf k9s_Linux_amd64.tar.gz  -C /usr/local/bin/ k9s
     chown root:root /usr/local/bin/k9s
-    rm k9s_Linux_amd64.tar.gz
+    rm -f k9s_Linux_amd64.tar.gz
 EOF
 
 
@@ -718,6 +718,7 @@ cat << EOF | chroot ${ROOTFS}
     containerd config default | tee /etc/containerd/config.toml >/dev/null 2>&1
     sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
 EOF
+
 fi
 
 ikubectl
@@ -736,6 +737,8 @@ cat << EOF | chroot ${ROOTFS}
     systemctl enable kubelet
     systemctl enable containerd
     systemctl mask systemd-zram-setup@zram0.service
+
+    sed -i 's/^\(MountFlags=slave\)/#\1/' /usr/lib/systemd/system/docker.service
 EOF
 fi
 
@@ -1535,4 +1538,6 @@ iessentials
 isudo
 allowsshpwd
 idocker
+ikube
+sudo reboot now
 }

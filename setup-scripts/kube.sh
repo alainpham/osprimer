@@ -10,6 +10,9 @@ export NGINX_INGRESS_KUBE_WEBHOOK_CERTGEN_VERSION=v1.5.0
 # https://github.com/kubernetes-sigs/metrics-server
 export METRICS_SERVER_VERSION=v0.7.2
 
+# sudo kubeadm init --control-plane-endpoint=v8s.duckdns.org  --pod-network-cidr=10.244.0.0/16
+
+
 kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
 kubectl taint node ${HOSTNAME} node-role.kubernetes.io/control-plane:NoSchedule-
 
