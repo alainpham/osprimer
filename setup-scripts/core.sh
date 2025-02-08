@@ -385,7 +385,8 @@ fi
 
 if [ "$OSNAME" = "openmandriva" ]; then
 rm -f ${ROOTFS}/etc/yum.repos.d/*
-curl -Lo ${ROOTFS}/etc/yum.repos.d/openmandriva-rock-x86_64.repo https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/om/openmandriva-rock-x86_64.repo
+curl -Lo ${ROOTFS}/etc/yum.repos.d/openmandriva-rolling-x86_64.repo https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/om/openmandriva-rolling-x86_64.repo
+# curl -Lo ${ROOTFS}/etc/yum.repos.d/openmandriva-rock-x86_64.repo https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/om/openmandriva-rock-x86_64.repo
 fi
 
 }
@@ -407,8 +408,16 @@ if [ "$OSNAME" = "openmandriva" ]; then
 cat << EOF | chroot ${ROOTFS}
     dnf clean -y all ; dnf -y repolist
     dnf -y --allowerasing distro-sync
+EOF
+
+# cat << EOF | chroot ${ROOTFS}
+#     dnf clean all ; dnf repolist
+#     dnf upgrade
+# EOF
+
+cat << EOF | chroot ${ROOTFS}
     dnf install -y sudo git tmux vim curl wget rsync ncdu bind-utils htop bash-completion gnupg2 whois zip unzip virt-what wireguard-tools iptables jq
-    dnf install -y cloud-utils openssh-server console-setup iperf
+    dnf install -y cloud-utils openssh-server console-setup
     dnf install -y ncurses-extraterms
 EOF
 fi
