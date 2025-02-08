@@ -14,8 +14,7 @@ VMS_DIR=/home/workdrive/virt/runtime
 # Location of cloud image
 IMAGE=$DIR/$4.qcow2
 
-# Amount of RAM in MB
-MEM=$2
+ MEM=$2
 
 # Number of virtual CPUs
 CPUS=$3

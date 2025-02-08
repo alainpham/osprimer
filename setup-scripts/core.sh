@@ -360,7 +360,7 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*CERTBOT_DUCKDNS_VERSION*=.*" "export CE
 lineinfile ${ROOTFS}${BASHRC} ".*export.*OSNAME*=.*" "export OSNAME=${OSNAME}"
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*WILDCARD_DOMAIN*=.*" "export WILDCARD_DOMAIN=zez.duckdns.org"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*EMAIL*=.*" "export WILDCARD_DOMAIN=admin@zez.duckdns.org"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*EMAIL*=.*" "export EMAIL=admin@zez.duckdns.org"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*DUCKDNS_TOKEN*=.*" "export DUCKDNS_TOKEN=xxxx-xxxx-xxxx-xxxx-xxxx"
 
 
@@ -742,9 +742,10 @@ cat << EOF | chroot ${ROOTFS}
     systemctl enable kubelet
     systemctl enable containerd
     systemctl mask systemd-zram-setup@zram0.service
-
-    sed -i 's/^\(MountFlags=slave\)/#\1/' /usr/lib/systemd/system/docker.service
 EOF
+lineinfile ${ROOTFS}/usr/lib/systemd/system/docker.service ".*MountFlags.*=.*slave" "# MountFlags=slave"
+lineinfile ${ROOTFS}/usr/lib/systemd/system/docker.service ".*After.*=.*" "After=network.target containerd.service"
+
 fi
 
 }
