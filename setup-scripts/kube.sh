@@ -10,7 +10,27 @@ export NGINX_INGRESS_KUBE_WEBHOOK_CERTGEN_VERSION=v1.5.0
 # https://github.com/kubernetes-sigs/metrics-server
 export METRICS_SERVER_VERSION=v0.7.2
 
-# sudo kubeadm init --control-plane-endpoint=v8s.duckdns.org  --pod-network-cidr=10.244.0.0/16
+
+rm -rf /home/${USER}/apps/tls
+mkdir -p /home/${USER}/apps/tls/cfg /home/${USER}/apps/tls/logs
+
+docker run --rm --name certbot  -v "/home/${USER}/apps/tls/cfg:/etc/letsencrypt" -v "/home/${USER}/apps/tls/logs:/var/log/letsencrypt" infinityofspace/certbot_dns_duckdns:${CERTBOT_DUCKDNS_VERSION} \
+   certonly \
+     --non-interactive \
+     --agree-tos \
+     --email ${EMAIL} \
+     --preferred-challenges dns \
+     --authenticator dns-duckdns \
+     --dns-duckdns-token ${DUCKDNS_TOKEN} \
+     --dns-duckdns-propagation-seconds 20 \
+     -d "*.${WILDCARD_DOMAIN}"
+
+sudo chown -R ${USER}:${USER} /home/${USER}/apps/tls/cfg
+
+openssl pkcs12 -export -out /home/${USER}/apps/tls/cfg/live/${WILDCARD_DOMAIN}/privkey.p12  -in /home/${USER}/apps/tls/cfg/live/${WILDCARD_DOMAIN}/fullchain.pem -inkey  /home/${USER}/apps/tls/cfg/live/${WILDCARD_DOMAIN}/privkey.pem -passin pass:password -passout pass:password
+
+
+sudo kubeadm init --control-plane-endpoint=v8s.duckdns.org  --pod-network-cidr=10.244.0.0/16
 
 
 kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
