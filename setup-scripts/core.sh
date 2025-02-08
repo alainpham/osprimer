@@ -717,14 +717,12 @@ fi
 
 echo "containerd setup"
 
-if [ "$OSNAME" = "debian" ]; then
 cat << EOF | chroot ${ROOTFS}
     mkdir -p /etc/containerd
     containerd config default | tee /etc/containerd/config.toml >/dev/null 2>&1
     sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
 EOF
 
-fi
 
 ikubectl
 
