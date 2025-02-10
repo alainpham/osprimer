@@ -1,5 +1,5 @@
 #!/bin/bash
-
+set -e
 # https://github.com/rancher/local-path-provisioner
 export LOCAL_PATH_PROVISIONER_VERSION=v0.0.31
 
