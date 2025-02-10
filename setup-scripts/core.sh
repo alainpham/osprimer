@@ -1,4 +1,7 @@
 #!/bin/bash
+
+# this is a script to install raw vm images, baremetal machines/laptops or cloud vms
+
 inputversions() {
     # https://github.com/docker/buildx/releases
     export DOCKER_BUILDX_VERSION=v0.20.1
@@ -68,19 +71,17 @@ inputtasks() {
     echo "export ROOTFS=${ROOTFS}"
 
     # Map input parameters
-    export OPERATION=$1
-    echo "export OPERATION=${OPERATION}"
-    export TARGET_USERNAME=${2:-apham}
+    export TARGET_USERNAME=${1:-apham}
     echo "export TARGET_USERNAME=${TARGET_USERNAME}"
-    export TARGET_PASSWD=$3
+    export TARGET_PASSWD=$2
     echo "export TARGET_PASSWD=${TARGET_PASSWD}"
-    export AUTHSSHFILE=$4
+    export AUTHSSHFILE=$3
     echo "export AUTHSSHFILE=${AUTHSSHFILE}"
-    export INPUT_IMG=$5
+    export INPUT_IMG=$4
     echo "export INPUT_IMG=${INPUT_IMG}"
-    export OUTPUT_IMAGE=$6
+    export OUTPUT_IMAGE=$5
     echo "export OUTPUT_IMAGE=${OUTPUT_IMAGE}"
-    export DISK_SIZE=$7
+    export DISK_SIZE=$6
     echo "export DISK_SIZE=${DISK_SIZE}"
     
 
@@ -463,6 +464,9 @@ XKBLAYOUT="${KEYBOARD_LAYOUT}"
 EOF
 echo "keyboard setup finished"
 
+}
+
+itouchpad(){
 mkdir -p ${ROOTFS}/etc/X11/xorg.conf.d/
 
 cat <<EOF | tee ${ROOTFS}/etc/X11/xorg.conf.d/30-touchpad.conf
@@ -472,7 +476,6 @@ Section "InputClass"
     Option "Tapping" "on"
 EndSection
 EOF
-
 }
 
 idocker() {
@@ -1340,6 +1343,12 @@ init() {
     inputtasks $@
 }
 
+
+
+###############################
+##### MAIN FUNCTIONS ##########
+###############################
+
 # Model to run all the script
 all(){
 
@@ -1347,11 +1356,8 @@ if ! [ $# -eq 7 ]; then
 
     echo "make sure to download debian cloud image : rm debian-12-nocloud-amd64.raw && wget https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw"
 
-    echo "Usage: sudo $0 <1_OPERATION> <2_TARGET_USERNAME> <3_TARGET_PASSWD> <4_AUTHSSHFILE> <5_INPUT_IMG> <6_OUTPUT_IMAGE> <7_DISK_SIZE>"
-    echo "cloud fullgui:        sudo $0 all apham ps authorized_keys debian-12-nocloud-amd64.raw d12-fgui.raw 5G"
-    echo "cloud full:           sudo $0 all apham ps authorized_keys debian-12-nocloud-amd64.raw d12-full.raw 5G"
-    echo "cloud image min:      sudo $0 all apham ps authorized_keys debian-12-nocloud-amd64.raw d12-mini.raw 3G"
-    echo "cloud image kube:     sudo $0 all apham ps authorized_keys debian-12-nocloud-amd64.raw d12-kube.raw 4G"
+    echo "Usage: sudo $0 <1_TARGET_USERNAME> <2_TARGET_PASSWD> <3AUTHSSHFILE> <4_INPUT_IMG> <5_OUTPUT_IMAGE> <6_DISK_SIZE>"
+    echo "sudo $0 apham ps authorized_keys debian-12-nocloud-amd64.raw d12-fgui.raw 5G"
 
     return
 fi
@@ -1372,6 +1378,7 @@ iessentials
 isudo
 allowsshpwd
 ikeyboard
+itouchpad
 idocker
 ikube
 idlkubeimg
@@ -1386,13 +1393,13 @@ sudo reboot now
 
 # baremetal workstation with virtualization and without nvidia cards
 wkstatvrt(){
-if ! [ $# -eq 2 ]; then
-    echo "Usage: sudo $0 <1_OPERATION> <2_TARGET_USERNAME>"
-    echo "sudo $0 wkstatvrt apham"
+if ! [ $# -eq 1 ]; then
+    echo "Usage: sudo $0 <1_TARGET_USERNAME>"
+    echo "sudo $0 apham"
     return
 fi
 
-init $1 $2 "ps" "authorized_keys" "NA" "NA" "NA"
+init $1 "ps" "authorized_keys" "NA" "NA" "NA"
 rmnouveau
 fastboot
 disableturbo
@@ -1402,7 +1409,7 @@ reposrc
 iessentials
 isudo
 allowsshpwd
-# ikeyboard
+itouchpad
 idocker
 ikube
 igui
@@ -1413,12 +1420,12 @@ sudo reboot now
 
 # baremetal workstation without virtualization & nvidia
 wkstation(){
-if ! [ $# -eq 2 ]; then
-    echo "Usage: sudo $0 <1_OPERATION> <2_TARGET_USERNAME>"
-    echo "sudo $0 wkstation apham"
+if ! [ $# -eq 1 ]; then
+    echo "Usage: sudo $0 <1_TARGET_USERNAME>"
+    echo "sudo $0 apham"
     return
 fi
-init $1 $2 "ps" "authorized_keys" "NA" "NA" "NA"
+init $1 "ps" "authorized_keys" "NA" "NA" "NA"
 rmnouveau
 fastboot
 disableturbo
@@ -1428,7 +1435,7 @@ reposrc
 iessentials
 isudo
 allowsshpwd
-# ikeyboard
+itouchpad
 idocker
 ikube
 igui
@@ -1438,12 +1445,12 @@ sudo reboot now
 
 #full gui server
 fullgui(){
-if ! [ $# -eq 2 ]; then
-    echo "Usage: sudo $0 <1_OPERATION> <2_TARGET_USERNAME>"
-    echo "sudo $0 fullgui apham"
+if ! [ $# -eq 1 ]; then
+    echo "Usage: sudo $0 <1_TARGET_USERNAME>"
+    echo "sudo $0 apham"
     return
 fi
-init $1 $2 "ps" "authorized_keys" "NA" "NA" "NA"
+init $1 "ps" "authorized_keys" "NA" "NA" "NA"
 rmnouveau
 fastboot
 disableturbo
@@ -1453,7 +1460,6 @@ reposrc
 iessentials
 isudo
 allowsshpwd
-ikeyboard
 idocker
 ikube
 igui
@@ -1463,12 +1469,12 @@ sudo reboot now
 # for cloud servers like on oci, aws, gcp
 
 debianserver(){
-if ! [ $# -eq 2 ]; then
-    echo "Usage: sudo $0 <1_OPERATION> <2_TARGET_USERNAME>"
-    echo "sudo $0 debianserver apham"
+if ! [ $# -eq 1 ]; then
+    echo "Usage: sudo $0 <1_TARGET_USERNAME>"
+    echo "sudo $0 apham"
     return
 fi
-init $1 $2 "ps" "authorized_keys" "NA" "NA" "NA"
+init $1 "ps" "authorized_keys" "NA" "NA" "NA"
 createuser
 authkeys
 bashaliases
@@ -1481,47 +1487,13 @@ ikube
 sudo reboot now
 }
 
-
-ubuntuserver(){
-if ! [ $# -eq 2 ]; then
-    echo "Usage: sudo $0 <1_OPERATION> <2_TARGET_USERNAME>"
-    echo "sudo $0 ubuntuserver apham"
-    return
-fi
-init $1 $2 "ps" "authorized_keys" "NA" "NA" "NA"
-createuser
-authkeys
-bashaliases
-smalllogs
-iessentials
-isudo
-idocker
-ikube
-sudo reboot now
-}
-
-gcpvm(){
-if ! [ $# -eq 2 ]; then
-    echo "Usage: sudo $0 <1_OPERATION> <2_TARGET_USERNAME>"
-    echo "sudo $0 debianserver apham"
-    return
-fi
-init $1 $2 "ps" "authorized_keys" "NA" "NA" "NA"
-bashaliases
-smalllogs
-iessentials
-idocker
-ikubectl
-sudo reboot now
-}
-
 gcpkube(){
-if ! [ $# -eq 2 ]; then
-    echo "Usage: sudo $0 <1_OPERATION> <2_TARGET_USERNAME>"
-    echo "sudo $0 debianserver apham"
+if ! [ $# -eq 1 ]; then
+    echo "Usage: sudo $0 <1_TARGET_USERNAME>"
+    echo "sudo $0 apham"
     return
 fi
-init $1 $2 "ps" "authorized_keys" "NA" "NA" "NA"
+init $1 "ps" "authorized_keys" "NA" "NA" "NA"
 bashaliases
 smalllogs
 iessentials
@@ -1529,9 +1501,10 @@ idocker
 ikube
 sudo reboot now
 }
+
 
 runtest(){
-init runtest apham "NA" "authorized_keys" "NA" "NA" "NA"
+init apham "NA" "authorized_keys" "NA" "NA" "NA"
 rmnouveau
 fastboot
 disableturbo
