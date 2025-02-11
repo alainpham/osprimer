@@ -19,7 +19,7 @@ inputversions() {
     export MVN_VERSION=3.9.9
     echo "export MVN_VERSION=${MVN_VERSION}"
 
-    export NERDFONTS="ComicShannsMono FiraMono JetBrainsMono Overpass Noto "
+    export NERDFONTS="Noto "
     echo "export NERDFONTS=${NERDFONTS}"
 
     # https://zoom.us/download?os=linux
@@ -804,6 +804,11 @@ EOF
 echo 'options nvidia NVreg_PreserveVideoMemoryAllocations=1' > ${ROOTFS}/etc/modprobe.d/nvidia-power-management.conf
 }
 
+
+##############################################
+########### GUI setup ########################
+##############################################
+
 igui() {
 
 echo "install gui"
@@ -821,7 +826,10 @@ fi
 if [ "$OSNAME" = "openmandriva" ]; then
 cat << EOF | chroot ${ROOTFS}
     dnf install -y make gcc libx11-devel libxft-devel libxrandr-devel lib64imlib2 freetype-devel libxinerama-devel x11-server-xorg
-    dnf install -y pulseaudio pulseaudio-module-bluetooth pulseaudio-utils pavucontrol alsa-utils
+    dnf remove -y pipewire-pulse
+    dnf install -y pulseaudio-server pulseaudio-module-bluetooth pulseaudio-utils pavucontrol alsa-utils
+    
+    sudo systemctl --machine=apham@.host --user enable pulseaudio.service
 EOF
 fi
 
