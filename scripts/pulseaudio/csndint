@@ -3,5 +3,6 @@ source /usr/local/bin/asndenv
 
 speakers=$internalspeakerid
 mic=$internalmicid
+micvolume=$internalmicvolume
 
-asnd $speakers $mic
+asnd $speakers $mic $micvolume

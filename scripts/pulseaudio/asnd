@@ -5,6 +5,8 @@ speakers=$1
 
 mic=$2
 
+micvolume=${3:-100}
+
 if [ -z "$speakers" ]; then
     echo "No speakers selected. Exiting."
     exit 1
@@ -50,7 +52,7 @@ pactl set-default-sink from-desktop
 pactl set-sink-volume $speakers 45%
 pactl set-sink-mute $speakers 0
 
-pactl set-source-volume $mic 100%
+pactl set-source-volume $mic ${micvolume}%
 pactl set-source-mute $mic 0
 
 # set vitual volumes

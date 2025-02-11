@@ -22,33 +22,43 @@ then
     echo "Focusrite is present"
     selected_output=$focspeaker
     selected_input=$focmic
+    selected_microphone_volume=$focmicvolume
+
     echo $selected_output $selected_input
 elif [ -n "$zvmic" ]
 then
     echo "Logitech is present"
     selected_output=$zvspeaker
     selected_input=$zvmic
+    selected_microphone_volume=$zvmicvolume
+
     echo $selected_output $selected_output
 elif [ -n "$h6mic" ]
 then
     echo "H6 is present"
     selected_output=$h6speaker
     selected_input=$h6mic
+    selected_microphone_volume=$h6micvolume
+
     echo $selected_output $selected_output
 elif [ -n "$internalmic" ]
 then
     echo "Internal mic is present"
     selected_output=$internalspeaker
     selected_input=$internalmic
+    selected_microphone_volume=$internalmicvolume
+
     echo $selected_output $selected_output
 else
     echo "No sound device found choosing dummy devices"
     selected_output=$dummyspeaker
     selected_input=$dummymic
+    selected_microphone_volume=$dummymicvolume
+
     echo $selected_output $selected_output
 fi
 
 speakers=$selected_output
 mic=$selected_input
 
-asnd $selected_output $selected_input
+asnd $selected_output $selected_input $selected_microphone_volume

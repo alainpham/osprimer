@@ -3,5 +3,6 @@ source /usr/local/bin/asndenv
 
 speakers=$h6speakerid
 mic=$h6micid
+micvolume=$h6micvolume
 
-asnd $speakers $mic
+asnd $speakers $mic $micvolume
