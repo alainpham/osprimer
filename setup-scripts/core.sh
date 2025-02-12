@@ -825,7 +825,8 @@ fi
 
 if [ "$OSNAME" = "openmandriva" ]; then
 cat << EOF | chroot ${ROOTFS}
-    dnf install -y make gcc libx11-devel libxft-devel libxrandr-devel lib64imlib2 freetype-devel libxinerama-devel x11-server-xorg
+    dnf install -y make gcc libx11-devel libxft-devel libxrandr-devel lib64imlib2-devel freetype-devel libxinerama-devel x11-server-xorg
+    dnf install -y meson cmake lib64ev-devel glibc-devel libpixman-devel libx11-devel lib64xcb-util-image-devel lib64xcb-util-renderutil-devel libxcb-util-devel uthash-devel libpcre2-devel libepoxy-devel libdbus-1-devel
     dnf remove -y pipewire-pulse
     dnf install -y pulseaudio-server pulseaudio-module-bluetooth pulseaudio-utils pavucontrol alsa-utils
     
@@ -854,8 +855,21 @@ fi
 if [ "$OSNAME" = "openmandriva" ]; then
 cat << EOF | chroot ${ROOTFS}
     dnf install -y ntfs-3g ifuse mpv haruna vlc nmon neofetch feh NetworkManager dnsmasq acpitool lm_sensors noto-sans-fonts noto-serif-fonts fonts-ttf-awesome fonts-otf-awesome libnotify dunst ffmpeg mutagen imagemagick mediainfo arandr  cups xsane sane-backends filezilla lxappearance plasma6-breeze
+    cd /tmp/
+    wget -O picom.zip "https://github.com/yshui/picom/archive/refs/tags/v12.5.zip"
+    unzip picom.zip
+    cd picom-12.5
+    meson setup --buildtype=release build
+    ninja -C build install
+
+    cd /tmp/
+    wget -O brightnessctl.zip https://github.com/Hummer12007/brightnessctl/archive/refs/tags/0.5.1.zip
+    unzip brightnessctl.zip
+    cd brightnessctl-0.5.1
+    make install
 EOF
 #     picom brightnessctl
+
 
 fi
 
@@ -863,6 +877,7 @@ cat << EOF | chroot ${ROOTFS}
     systemctl disable dnsmasq
 EOF
 
+if [ "$OSNAME" = "debian" ]; then
 cat << 'EOF' | tee ${ROOTFS}/etc/network/interfaces
 # This file describes the network interfaces available on your system
 # and how to activate them. For more information, see interfaces(5).
@@ -873,6 +888,12 @@ source /etc/network/interfaces.d/*
 auto lo
 iface lo inet loopback
 EOF
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+    systemctl disable systemd-resolved
+    rm -f ${ROOTFS}/etc/resolv.conf
+fi
 
 cat << 'EOF' | tee ${ROOTFS}/etc/NetworkManager/conf.d/00-use-dnsmasq.conf
 [main]
@@ -971,8 +992,6 @@ done
 
 
 
-
-
 # wireplumber and pipewire
 curl -Lo ${ROOTFS}/etc/udev/rules.d/89-pulseaudio-udev.rules https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/89-pulseaudio-udev.rules
 
@@ -997,11 +1016,19 @@ chmod 755 ${ROOTFS}/usr/local/bin/$file
 done
 
 # install chrome browser
+if [ "$OSNAME" = "debian" ]; then
 mkdir -p ${ROOTFS}/opt/debs/
 wget -O /opt/debs/google-chrome-stable_current_amd64.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb 
 cat << EOF | chroot ${ROOTFS}
     apt install -y /opt/debs/google-chrome-stable_current_amd64.deb
 EOF
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y google-chrome-stable
+EOF
+fi
 
 #begin dwm
 if [ ! -d ${ROOTFS}/home/$TARGET_USERNAME/wm ] ; then
@@ -1014,16 +1041,29 @@ cat << EOF | chroot ${ROOTFS}
     git clone https://github.com/alainpham/st-flexipatch.git
     git clone https://github.com/alainpham/dmenu-flexipatch.git
     git clone https://github.com/alainpham/dwmblocks.git
-    git clone https://github.com/alainpham/slock-flexipatch.git
 
     cd /home/$TARGET_USERNAME/wm/dwm-flexipatch && make clean install
     cd /home/$TARGET_USERNAME/wm/st-flexipatch && make clean install
     cd /home/$TARGET_USERNAME/wm/dmenu-flexipatch && make clean install
     cd /home/$TARGET_USERNAME/wm/dwmblocks && make clean install
-    cd /home/$TARGET_USERNAME/wm/slock-flexipatch && make clean install
 
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/wm
 EOF
+
+if [ "$OSNAME" = "debian" ]; then
+cat << EOF | chroot ${ROOTFS}
+    git clone https://github.com/alainpham/slock-flexipatch.git
+    cd /home/$TARGET_USERNAME/wm/slock-flexipatch && make clean install
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/wm
+EOF
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y slock
+EOF
+fi
+
 # end dwm
 fi 
 
@@ -1096,9 +1136,21 @@ export hypervisor=$(echo "virt-what" | chroot ${ROOTFS})
 # Hyperv
 if [ "$hypervisor" = "hyperv" ]; then
 sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/ {/video=Virtual-1:1600x900/! s/"$/ video=Virtual-1:1600x900"/}' ${ROOTFS}/etc/default/grub
+if [ "$OSNAME" = "debian" ]; then
 cat << EOF | chroot ${ROOTFS}
     update-grub
 EOF
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+cat << EOF | chroot ${ROOTFS}
+    if [ -d /sys/firmware/efi ]; then 
+        sudo grub2-mkconfig -o /boot/efi/EFI/openmandriva/grub.cfg
+    else 
+        sudo grub2-mkconfig -o /boot/grub2/grub.cfg
+    fi
+EOF
+fi
 
 cat <<EOF | tee ${ROOTFS}/etc/X11/xorg.conf.d/30-hyperv.conf
 Section "Device"
