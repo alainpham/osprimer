@@ -825,12 +825,12 @@ fi
 
 if [ "$OSNAME" = "openmandriva" ]; then
 cat << EOF | chroot ${ROOTFS}
-    dnf install -y make gcc libx11-devel libxft-devel libxrandr-devel lib64imlib2-devel freetype-devel libxinerama-devel x11-server-xorg
-    dnf install -y meson cmake lib64ev-devel glibc-devel libpixman-devel libx11-devel lib64xcb-util-image-devel lib64xcb-util-renderutil-devel libxcb-util-devel uthash-devel libpcre2-devel libepoxy-devel libdbus-1-devel
+    dnf install -y make gcc libx11-devel libxft-devel libxrandr-devel lib64imlib2-devel freetype-devel libxinerama-devel x11-server-xorg numlock x11-util-macros
+    dnf install -y meson cmake autoconf automake libtool lib64ev-devel glibc-devel libpixman-devel libx11-devel lib64xcb-util-image-devel lib64xcb-util-renderutil-devel libxcb-util-devel uthash-devel libpcre2-devel libepoxy-devel libdbus-1-devel
     dnf remove -y pipewire-pulse
     dnf install -y pulseaudio-server pulseaudio-module-bluetooth pulseaudio-utils pavucontrol alsa-utils
     
-    sudo systemctl --machine=apham@.host --user enable pulseaudio.service
+    systemctl --machine=${TARGET_USERNAME}@.host --user enable pulseaudio.service
 EOF
 fi
 
@@ -848,13 +848,14 @@ done
 echo "additional gui packages"
 if [ "$OSNAME" = "debian" ]; then
 cat << EOF | chroot ${ROOTFS}
-    apt install -y ntfs-3g ifuse mpv haruna vlc cmatrix nmon mesa-utils neofetch feh network-manager dnsmasq acpitool lm-sensors fonts-noto libnotify-bin dunst ffmpeg python3-mutagen imagemagick mediainfo-gui arandr picom brightnessctl cups xsane libsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze-gtk-theme 
+    apt install -y ntfs-3g ifuse mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv network-manager dnsmasq acpitool lm-sensors fonts-noto libnotify-bin dunst ffmpeg python3-mutagen imagemagick mediainfo-gui arandr picom brightnessctl cups xsane libsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze-gtk-theme 
 EOF
 fi
 
 if [ "$OSNAME" = "openmandriva" ]; then
 cat << EOF | chroot ${ROOTFS}
-    dnf install -y ntfs-3g ifuse mpv haruna vlc nmon neofetch feh NetworkManager dnsmasq acpitool lm_sensors noto-sans-fonts noto-serif-fonts fonts-ttf-awesome fonts-otf-awesome libnotify dunst ffmpeg mutagen imagemagick mediainfo arandr  cups xsane sane-backends filezilla lxappearance plasma6-breeze
+    dnf install -y libgtk+3.0-devel python-gobject3-devel
+    dnf install -y ntfs-3g ifuse mpv haruna vlc nmon neofetch feh qimgv NetworkManager dnsmasq acpitool lm_sensors noto-sans-fonts noto-serif-fonts fonts-ttf-awesome fonts-otf-awesome libnotify dunst ffmpeg mutagen imagemagick mediainfo arandr  cups xsane sane-backends filezilla lxappearance plasma6-breeze
     cd /tmp/
     wget -O picom.zip "https://github.com/yshui/picom/archive/refs/tags/v12.5.zip"
     unzip picom.zip
@@ -962,8 +963,18 @@ ctl.pulse {
 EOF
 
 # create alsa loopback
+
+if [ "$OSNAME" = "debian" ]; then
 lineinfile ${ROOTFS}/etc/modules ".*snd-aloop.*" "snd-aloop"
 lineinfile ${ROOTFS}/etc/modules ".*snd-dummy.*" "snd-dummy"
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+cat << 'EOF' | tee ${ROOTFS}/etc/modules-load.d/alsa.conf
+snd-aloop
+snd-dummy
+EOF
+fi
 
 cat << 'EOF' | tee ${ROOTFS}/etc/modprobe.d/alsa-loopback.conf
 options snd-aloop index=10 id=loop
@@ -974,6 +985,7 @@ EOF
 lineinfile ${ROOTFS}/etc/pulse/default.pa ".*load-module module-suspend-on-idle.*" "load-module module-suspend-on-idle"
 lineinfile ${ROOTFS}/etc/pulse/system.pa ".*load-module module-suspend-on-idle.*" "load-module module-suspend-on-idle"
 
+mkdir -p ${ROOTFS}/etc/pulse/default.pa.d/
 wget -O ${ROOTFS}/etc/pulse/default.pa.d/pulsepod.pa https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/pulseaudio/pulsepod.pa
 
 lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-sample-rate.*" "default-sample-rate = 48000"
@@ -1030,6 +1042,12 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 fi
 
+if [ "$OSNAME" = "openmandriva" ]; then
+cat << EOF | chroot ${ROOTFS}
+    systemctl disable sddm
+EOF
+fi
+
 #begin dwm
 if [ ! -d ${ROOTFS}/home/$TARGET_USERNAME/wm ] ; then
 
@@ -1069,25 +1087,56 @@ fi
 
 # wallpaper
 mkdir -p ${ROOTFS}/usr/share/backgrounds/
-wget -O ${ROOTFS}/usr/share/backgrounds/01.jpg https://free-images.com/or/8606/canyon_antelope_canyon_usa_1.jpg
-wget -O ${ROOTFS}/usr/share/backgrounds/02.jpg https://free-images.com/or/9cf1/city_overcast_buildings_skyline.jpg
-wget -O ${ROOTFS}/usr/share/backgrounds/03.jpg https://free-images.com/lg/f1b3/sunset_on_seine.jpg
-wget -O ${ROOTFS}/usr/share/backgrounds/04.jpg https://free-images.com/lg/e216/parrots_macaw_bird_parrot.jpg
-wget -O ${ROOTFS}/usr/share/backgrounds/05.jpg https://free-images.com/lg/ac18/city_night_light_bokeh.jpg
-wget -O ${ROOTFS}/usr/share/backgrounds/06.jpg https://free-images.com/lg/5cc4/lights_night_city_night.jpg
-wget -O ${ROOTFS}/usr/share/backgrounds/07.jpg https://free-images.com/lg/64e0/heavens_peek.jpg
-wget -O ${ROOTFS}/usr/share/backgrounds/08.jpg https://free-images.com/lg/5d7d/painting_watercolor_wax_stains.jpg
-wget -O ${ROOTFS}/usr/share/backgrounds/09.jpg https://raw.githubusercontent.com/simple-sunrise/Light-and-Dark-Wallpapers-for-Gnome/main/Wallpapers/LakesideDeer/LakesideDeer-1.png
-wget -O ${ROOTFS}/usr/share/backgrounds/10.jpg https://raw.githubusercontent.com/simple-sunrise/Light-and-Dark-Wallpapers-for-Gnome/main/Wallpapers/LakesideDeer/LakesideDeer-2.png
 
+# Define a list of backend files to be downloaded
+backend_files=(
+    "https://free-images.com/or/8606/canyon_antelope_canyon_usa_1.jpg"
+    "https://free-images.com/lg/ac18/city_night_light_bokeh.jpg"
+    "https://free-images.com/lg/5cc4/lights_night_city_night.jpg"
+    "https://raw.githubusercontent.com/simple-sunrise/Light-and-Dark-Wallpapers-for-Gnome/main/Wallpapers/LakesideDeer/LakesideDeer-1.png"
+    "https://raw.githubusercontent.com/simple-sunrise/Light-and-Dark-Wallpapers-for-Gnome/main/Wallpapers/LakesideDeer/LakesideDeer-2.png"
+)
+
+
+# Loop through the list and download each file
+for i in "${!backend_files[@]}"; do
+    wget -O "${ROOTFS}/usr/share/backgrounds/$(printf "%02d" $((i+1))).jpg" "${backend_files[$i]}"
+done
+
+# switching backgounds
+cat << 'EOF' | tee ${ROOTFS}/usr/local/bin/sbg
+#!/bin/bash
+bgfile=$(ls /usr/share/backgrounds/ | shuf -n 1)
+feh --bg-fill /usr/share/backgrounds/${bgfile}
+EOF
+
+chmod 755 ${ROOTFS}/usr/local/bin/sbg
+
+
+if [ "$OSNAME" = "debian" ]; then
 cat << EOF | tee ${ROOTFS}/home/$TARGET_USERNAME/.xsession
 #!/bin/sh
 
 setxkbmap ${KEYBOARD_LAYOUT}
-EOF
-
-cat << 'EOF' >> ${ROOTFS}/home/$TARGET_USERNAME/.xsession
 numlockx
+EOF
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+cat << EOF | tee ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
+#!/bin/sh
+enable_X11_numlock
+EOF
+fi
+
+if [ "$OSNAME" = "debian" ]; then
+export XSESSIONFILE=.xsession
+fi
+if [ "$OSNAME" = "openmandriva" ]; then
+export XSESSIONFILE=.xinitrc
+fi
+
+cat << 'EOF' >> ${ROOTFS}/home/$TARGET_USERNAME/${XSESSIONFILE}
 echo 0 | tee ~/.rebootdwm
 export rebootdwm=$(cat ~/.rebootdwm)
 while true; do
@@ -1110,17 +1159,16 @@ while true; do
             break
     fi
 done
-
 EOF
 
 cat << EOF | chroot ${ROOTFS}
-    chown $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.xsession
+    chown $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/${XSESSIONFILE}
 EOF
 
 # picom initial config
 if [ ! -f ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/picom.conf ] ; then
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/
-cat << 'EOF' >> ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/picom.conf
+cat << 'EOF' | tee ${ROOTFS}/home/${TARGET_USERNAME}/.config/picom/picom.conf
 # picom config
 backend = "glx";
 vsync = true;
@@ -1128,13 +1176,25 @@ use-damage = false
 EOF
 fi
 
+cat << EOF | chroot ${ROOTFS}
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/${TARGET_USERNAME}/.config/picom/picom.conf
+EOF
+
 # if inside virtual machine
 # video=Virtual-1:1600x900
 
 export hypervisor=$(echo "virt-what" | chroot ${ROOTFS})
 
+if [ "$hypervisor" = "hyperv" ] || [ "$hypervisor" = "kvm" ]; then
+cat << 'EOF' | tee ${ROOTFS}/home/${TARGET_USERNAME}/.config/picom/picom.conf
+# picom config
+backend = "xrender";
+EOF
+fi
+
 # Hyperv
-if [ "$hypervisor" = "hyperv" ]; then
+if [ "$hypervisor" = "hyperv" ] ; then
+
 sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/ {/video=Virtual-1:1600x900/! s/"$/ video=Virtual-1:1600x900"/}' ${ROOTFS}/etc/default/grub
 if [ "$OSNAME" = "debian" ]; then
 cat << EOF | chroot ${ROOTFS}
@@ -1596,5 +1656,6 @@ isudo
 allowsshpwd
 idocker
 ikube
+igui
 sudo reboot now
 }
