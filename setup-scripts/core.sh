@@ -54,6 +54,14 @@ inputversions() {
     export CERTBOT_DUCKDNS_VERSION=v1.5
     echo "export CERTBOT_DUCKDNS_VERSION=${CERTBOT_DUCKDNS_VERSION}"
 
+    # https://www.onlyoffice.com/download-desktop.aspx
+    export ONLYOFFICE_VERSION=v8.2.2
+    echo "export ONLYOFFICE_VERSION=${ONLYOFFICE_VERSION}"
+
+    # https://slack.com/release-notes/linux
+    export SLACK_VERSION=4.41.105
+    echo "export SLACK_VERSION=${SLACK_VERSION}"
+
     export OSNAME=$(awk -F= '/^ID=/ {gsub(/"/, "", $2); print $2}' /etc/os-release)
     echo "export OSNAME=${OSNAME}"
 }
@@ -358,12 +366,13 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*TEAMS_VERSION*=.*" "export TEAMS_VERSIO
 lineinfile ${ROOTFS}${BASHRC} ".*export.*CAPRINE_VERSION*=.*" "export CAPRINE_VERSION=${CAPRINE_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*DRAWIO_VERSION*=.*" "export DRAWIO_VERSION=${DRAWIO_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*CERTBOT_DUCKDNS_VERSION*=.*" "export CERTBOT_DUCKDNS_VERSION=${CERTBOT_DUCKDNS_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*OSNAME*=.*" "export OSNAME=${OSNAME}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*ONLYOFFICE_VERSION*=.*" "export ONLYOFFICE_VERSION=${ONLYOFFICE_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*SLACK_VERSION*=.*" "export SLACK_VERSION=${SLACK_VERSION}"
 
+lineinfile ${ROOTFS}${BASHRC} ".*export.*OSNAME*=.*" "export OSNAME=${OSNAME}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*WILDCARD_DOMAIN*=.*" "export WILDCARD_DOMAIN=zez.duckdns.org"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*EMAIL*=.*" "export EMAIL=admin@zez.duckdns.org"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*DUCKDNS_TOKEN*=.*" "export DUCKDNS_TOKEN=xxxx-xxxx-xxxx-xxxx-xxxx"
-
 
 echo "bash aliases setup finished"
 }
@@ -909,6 +918,8 @@ EOF
 
 # dunst notification
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/dunst
+
+if [ "$OSNAME" = "debian" ]; then
 cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.config/dunst/dunstrc
 [global]
 monitor = 2
@@ -917,6 +928,23 @@ font = Noto Sans 11
 frame_width = 2
 frame_color = "#4e9a06"
 offset = 20x65
+EOF
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.config/dunst/dunstrc
+[global]
+monitor = 2
+# follow = keyboard
+font = Noto Sans 11
+frame_width = 2
+frame_color = "#4e9a06"
+geometry = 300x5-20+65
+icon_path = "/usr/share/icons/breeze-dark/status/16:/usr/share/icons/breeze-dark/devices/16"
+EOF
+fi
+
+cat << 'EOF' | tee -a ${ROOTFS}/home/$TARGET_USERNAME/.config/dunst/dunstrc
 [urgency_low]
     background = "#4e9a06"
     foreground = "#eeeeec"
@@ -1112,31 +1140,59 @@ EOF
 
 chmod 755 ${ROOTFS}/usr/local/bin/sbg
 
+# deactivate service for dunst to work
+
+if [ -f ${ROOTFS}/usr/share/dbus-1/services/org.knopwob.dunst.service ] ; then
+mv ${ROOTFS}/usr/share/dbus-1/services/org.knopwob.dunst.service ${ROOTFS}/usr/share/dbus-1/services/org.knopwob.dunst.service.disabled
+fi
+
+
+cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
+#!/bin/sh
+if [ -z "$DBUS_SESSION_BUS_ADDRESS" ] && [ -n "$XDG_RUNTIME_DIR" ] && \
+    [ "$XDG_RUNTIME_DIR" = "/run/user/`id -u`" ] && \
+    [ -S "$XDG_RUNTIME_DIR/bus" ]; then
+  DBUS_SESSION_BUS_ADDRESS="unix:path=$XDG_RUNTIME_DIR/bus"
+  export DBUS_SESSION_BUS_ADDRESS
+fi
+
+if [ -x "/usr/bin/dbus-update-activation-environment" ]; then
+  dbus-update-activation-environment --verbose --systemd \
+    DBUS_SESSION_BUS_ADDRESS \
+    DISPLAY \
+    XAUTHORITY \
+    XDG_CURRENT_DESKTOP \
+    ${NULL+}
+fi
+
+EOF
+
+# check if inside virtual machine
+export hypervisor=$(echo "virt-what" | chroot ${ROOTFS})
+
+if [ "$hypervisor" = "hyperv" ] || [ "$hypervisor" = "kvm" ]; then
+cat << 'EOF' | tee -a ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
+spice-vdagent
+
+EOF
+fi
 
 if [ "$OSNAME" = "debian" ]; then
-cat << EOF | tee ${ROOTFS}/home/$TARGET_USERNAME/.xsession
-#!/bin/sh
-
-setxkbmap ${KEYBOARD_LAYOUT}
+cat << EOF | tee -a ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
 numlockx
+
 EOF
 fi
 
 if [ "$OSNAME" = "openmandriva" ]; then
-cat << EOF | tee ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
-#!/bin/sh
+cat << 'EOF' | tee -a ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
 enable_X11_numlock
+
 EOF
 fi
 
-if [ "$OSNAME" = "debian" ]; then
-export XSESSIONFILE=.xsession
-fi
-if [ "$OSNAME" = "openmandriva" ]; then
-export XSESSIONFILE=.xinitrc
-fi
-
-cat << 'EOF' >> ${ROOTFS}/home/$TARGET_USERNAME/${XSESSIONFILE}
+cat << 'EOF' | tee -a ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
+dunst > ~/.dunst.log &
 echo 0 | tee ~/.rebootdwm
 export rebootdwm=$(cat ~/.rebootdwm)
 while true; do
@@ -1162,7 +1218,7 @@ done
 EOF
 
 cat << EOF | chroot ${ROOTFS}
-    chown $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/${XSESSIONFILE}
+    chown $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.xinitrc
 EOF
 
 # picom initial config
@@ -1176,25 +1232,24 @@ use-damage = false
 EOF
 fi
 
-cat << EOF | chroot ${ROOTFS}
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/${TARGET_USERNAME}/.config/picom/picom.conf
-EOF
-
 # if inside virtual machine
 # video=Virtual-1:1600x900
-
-export hypervisor=$(echo "virt-what" | chroot ${ROOTFS})
 
 if [ "$hypervisor" = "hyperv" ] || [ "$hypervisor" = "kvm" ]; then
 cat << 'EOF' | tee ${ROOTFS}/home/${TARGET_USERNAME}/.config/picom/picom.conf
 # picom config
 backend = "xrender";
+use-damage = false
 EOF
 fi
 
-# Hyperv
-if [ "$hypervisor" = "hyperv" ] ; then
+cat << EOF | chroot ${ROOTFS}
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/${TARGET_USERNAME}/.config/picom/picom.conf
+EOF
 
+
+# Hyperv set resolution
+if [ "$hypervisor" = "hyperv" ] ; then
 sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/ {/video=Virtual-1:1600x900/! s/"$/ video=Virtual-1:1600x900"/}' ${ROOTFS}/etc/default/grub
 if [ "$OSNAME" = "debian" ]; then
 cat << EOF | chroot ${ROOTFS}
@@ -1225,14 +1280,42 @@ fi
 
 iworkstation() {
 echo "additional workstation tools"
+
+if [ "$OSNAME" = "debian" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt install -y handbrake gimp rawtherapee krita mypaint inkscape blender obs-studio mgba-qt v4l2loopback-utils kdenlive flameshot maim xclip xdotool thunar thunar-archive-plugin easytag audacity
 EOF
+fi
 
-mkdir -p ${ROOTFS}/home/workdrive/recordings
+if [ "$OSNAME" = "openmandriva" ]; then
 cat << EOF | chroot ${ROOTFS}
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/workdrive
+    dnf install -y handbrake gimp rawtherapee krita python-numpy mypaint inkscape blender obs-studio v4l-utils flameshot xclip xdotool thunar thunar-archive-plugin easytag audacity
 EOF
+
+# compile maim
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y libglew-devel glm-devel lib64glu-devel libwebp-devel
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    cd /tmp/
+    wget https://github.com/naelstrof/slo/archive/refs/tags/v7.6.zip
+    unzip slop-7.6.zip
+    cd slop-7.6 
+    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="/usr" ./
+    make && sudo make install
+
+    cd /tmp/
+    wget https://github.com/naelstrof/maim/archive/refs/tags/v5.8.0.zip
+    unzip maim-5.8.0.zip
+    cd maim-5.8.0
+    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="/usr" ./
+    make && sudo make install
+EOF
+
+fi
+
+# install appimage of kdenlive
 
 cat << 'EOF' | tee ${ROOTFS}/usr/local/bin/winshot.sh
 maim -i $(xdotool getactivewindow) | xclip -selection clipboard -t image/png
@@ -1279,6 +1362,7 @@ cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config
 EOF
 
+if [ "$OSNAME" = "debian" ]; then
 cat << EOF | chroot ${ROOTFS}
     DEBIAN_FRONTEND=noninteractive apt install -y libdvd-pkg
 EOF
@@ -1287,6 +1371,13 @@ echo "dpkg libdvd-pkg"
 cat << EOF | chroot ${ROOTFS}
     DEBIAN_FRONTEND=noninteractive dpkg-reconfigure libdvd-pkg
 EOF
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y lib64dvdcss
+EOF
+fi
 
 # cat << EOF | chroot ${ROOTFS}
 #     apt install -y snapd
@@ -1295,12 +1386,12 @@ EOF
 # EOF
 
 #vscode
+if [ "$OSNAME" = "debian" ]; then
 mkdir -p ${ROOTFS}/opt/debs/
 wget -O ${ROOTFS}/opt/debs/vscode.deb "https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64"
 cat << EOF | chroot ${ROOTFS}
     DEBIAN_FRONTEND=noninteractive apt install -y /opt/debs/vscode.deb
 EOF
-
 
 # install zoom
 mkdir -p ${ROOTFS}/opt/debs/
@@ -1310,7 +1401,7 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 
 mkdir -p ${ROOTFS}/opt/debs/
-wget -O ${ROOTFS}/opt/debs/slack.deb https://downloads.slack-edge.com/desktop-releases/linux/x64/4.39.95/slack-desktop-4.39.95-amd64.deb
+wget -O ${ROOTFS}/opt/debs/slack.deb https://downloads.slack-edge.com/desktop-releases/linux/x64/${SLACK_VERSION}/slack-desktop-${SLACK_VERSION}-amd64.deb
 cat << EOF | chroot ${ROOTFS}
     apt install -y /opt/debs/slack.deb
 EOF
@@ -1328,6 +1419,43 @@ wget -O ${ROOTFS}/opt/debs/dbeaver.deb https://dbeaver.io/files/dbeaver-ce_lates
 cat << EOF | chroot ${ROOTFS}
     apt install -y /opt/debs/dbeaver.deb
 EOF
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+
+mkdir -p ${ROOTFS}/opt/debs/
+wget -O ${ROOTFS}/opt/debs/vscode.rpm "https://code.visualstudio.com/sha/download?build=stable&os=linux-rpm-x64"
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y /opt/debs/vscode.rpm
+EOF
+
+mkdir -p ${ROOTFS}/opt/debs/
+wget -O ${ROOTFS}/opt/debs/zoom.rpm "https://zoom.us/client/${ZOOM_VERSION}/zoom_x86_64.rpm"
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y /opt/debs/zoom.rpm
+EOF
+
+
+mkdir -p ${ROOTFS}/opt/debs/
+wget -O ${ROOTFS}/opt/debs/slack.rpm https://downloads.slack-edge.com/desktop-releases/linux/x64/${SLACK_VERSION}/slack-${SLACK_VERSION}-0.1.el8.x86_64.rpm
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y libxscrnsaver1 lib64appindicator3_1
+    rpm -ivh ${ROOTFS}/opt/debs/slack.rpm --nodeps
+EOF
+
+wget -O ${ROOTFS}/opt/appimages/onlyoffice.AppImage https://github.com/ONLYOFFICE/appimage-desktopeditors/releases/download/${ONLYOFFICE_VERSION}/DesktopEditors-x86_64.AppImage
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /opt/appimages/onlyoffice.AppImage
+    ln -s /opt/appimages/onlyoffice.AppImage /usr/local/bin/onlyoffice
+EOF
+
+mkdir -p ${ROOTFS}/opt/debs/
+wget -O ${ROOTFS}/opt/debs/dbeaver.rpm https://dbeaver.io/files/dbeaver-ce-latest-stable.x86_64.rpm
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y ${ROOTFS}/opt/debs/dbeaver.rpm
+EOF
+
+fi
 
 # APPimages
 # MLVP APP
@@ -1381,6 +1509,7 @@ cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/caprine.AppImage
     ln -sf /opt/appimages/caprine.AppImage /usr/local/bin/caprine
 EOF
+
 #autostart apps
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm
 cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm/autostart.sh
