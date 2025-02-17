@@ -22,6 +22,7 @@ winget install -e --id 7zip.7zip
 winget install -e --id GIMP.GIMP
 winget install -e --id VideoLAN.VLC
 winget install -e --id=Avidemux.Avidemux  
+winget install -e --id WinSCP.WinSCP
 vs code from official website 
 kate from store
 

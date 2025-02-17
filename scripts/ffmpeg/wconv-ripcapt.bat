@@ -29,6 +29,8 @@ if "%ab%"=="" set ab=160
 ffmpeg -y ^
     -t %duration% ^
     -f dshow -rtbufsize 512M ^
+		-use_wallclock_as_timestamps 1 ^
+		-probesize 1G ^
         -pixel_format yuv420p ^
         -channels 2 -sample_rate 48000 -sample_size 16 ^
         -i video="Game Capture HD60 S+":audio="Digital Audio Interface (Game Capture HD60 S+)" ^
