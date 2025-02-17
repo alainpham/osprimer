@@ -969,7 +969,7 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 
 # ffmpeg scripts
-ffmpegscripts="vconv-archive-lossless-h264-vaapi.sh vconv-extract-audio.sh vconv-h264-vaapi-qp.sh vconv-h264-vaapi-vbr.sh vconv-hevc-vaapi-qp.sh vconv-make-mkv.sh vconv-make-mp4.sh vconv-mp3-hq.sh vconv-ripcapt.sh vconv-ripscreen.sh vconv-vp9-vaapi-qp.sh vconv-x264-crf.sh vconv-x264-lowres-lowvbr-2pass.sh vconv-x264-lowres-vbr-2pass.sh vconv-x264-vbr-2pass.sh"
+ffmpegscripts="vconv-archive-lossless-h264-vaapi.sh vconv-extract-audio.sh vconv-h264-vaapi-qp.sh vconv-h264-vaapi-vbr.sh vconv-hevc-vaapi-qp.sh vconv-make-mkv.sh vconv-make-mp4.sh vconv-mp3-hq.sh vconv-ripcapt.sh vconv-ripscreen.sh vconv-vp9-vaapi-qp.sh vconv-x264-crf.sh vconv-x264-crf-576p.sh vconv-x264-lowres-lowvbr-2pass.sh vconv-x264-lowres-vbr-2pass.sh vconv-x264-vbr-2pass.sh"
 for script in $ffmpegscripts ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/ffmpeg/$script
 cat << EOF | chroot ${ROOTFS}
