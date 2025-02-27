@@ -210,7 +210,7 @@ sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/ {/modprobe.blacklist=nouveau/! s/"$/ modpro
 
 echo $OSNAME
 
-if [ "$OSNAME" = "debian" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 cat << EOF | chroot ${ROOTFS}
     update-grub
 EOF
@@ -232,7 +232,7 @@ echo "Deactivated nouveau drivers"
 
 fastboot() {
 
-if [ "$OSNAME" = "debian" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 echo debian
 # accelerate grub startup
 mkdir -p ${ROOTFS}/etc/default/grub.d/
@@ -267,17 +267,31 @@ cat <<'EOF' | tee ${ROOTFS}/usr/local/bin/turboboost.sh
 input=$1
 if [ "$input" = "no" ]; then
     state=1	
-else
+elif [ "$input" = "yes" ]; then
     state=0
+elif [ "$input" = "status" ]; then
+    if [ -f /sys/devices/system/cpu/intel_pstate/no_turbo ]; then
+        cat /sys/devices/system/cpu/intel_pstate/no_turbo
+    else
+        echo "no_turbo file not found"
+    fi
+    exit 0
+else
+    echo "Usage: turboboost.sh {no|yes|status}"
+    exit 1
 fi
 echo "no_turbo=$state"
 if [ -f /sys/devices/system/cpu/intel_pstate/no_turbo ]; then
     echo $state > /sys/devices/system/cpu/intel_pstate/no_turbo
+else
+    echo "did nothing, no_turbo file not found"
 fi
 EOF
 
 chmod 755 ${ROOTFS}/usr/local/bin/turboboost.sh
 
+
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ]; then
 
 cat <<EOF | tee ${ROOTFS}/etc/systemd/system/disable-intel-turboboost.service
 [Unit]
@@ -293,6 +307,56 @@ EOF
 cat << EOF | chroot ${ROOTFS}
     systemctl enable disable-intel-turboboost.service
 EOF
+fi
+
+
+if [ "$OSNAME" = "devuan" ]; then
+
+cat <<'EOF' | tee ${ROOTFS}/etc/init.d/disable-intel-turboboost
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          disable-intel-turboboost
+# Required-Start:    $all
+# Required-Stop:     $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Disable Intel Turbo Boost using pstate driver
+### END INIT INFO
+
+case "$1" in
+  start)
+    echo "Disabling Intel Turbo Boost..."
+    /usr/local/bin/turboboost.sh no
+    ;;
+  stop)
+    echo "Enabling Intel Turbo Boost..."
+    /usr/local/bin/turboboost.sh yes
+    ;;
+  restart)
+    $0 stop
+    $0 start
+    ;;
+  status)
+    echo "Turbo Boost control script : no_turbo state"
+    /usr/local/bin/turboboost.sh status
+    ;;
+  *)
+    echo "Usage: /etc/init.d/disable-intel-turboboost {start|stop|restart|status}"
+    exit 1
+    ;;
+esac
+
+exit 0
+EOF
+
+chmod 755 ${ROOTFS}/etc/init.d/disable-intel-turboboost
+
+cat << EOF | chroot ${ROOTFS}
+    update-rc.d disable-intel-turboboost defaults
+EOF
+
+
+fi
 
 }
 
@@ -310,6 +374,7 @@ EOF
 
 chmod 755 ${ROOTFS}/usr/local/bin/firstboot.sh
 
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ]; then
 cat <<EOF | tee ${ROOTFS}/etc/systemd/system/firstboot.service
 [Unit]
 Description=firstboot
@@ -330,12 +395,46 @@ EOF
 cat << EOF | chroot ${ROOTFS}
     systemctl enable firstboot.service
 EOF
+fi
+
+if [ "$OSNAME" = "devuan" ]; then
+cat <<'EOF' | tee ${ROOTFS}/etc/init.d/firstboot
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          firstboot
+# Required-Start:    $all
+# Required-Stop:     $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Expand filesystem on first boot
+### END INIT INFO
+
+case "$1" in
+  start)
+    /usr/local/bin/firstboot.sh
+    ;;
+  *)
+    echo "Usage: /etc/init.d/firstboot {start}"
+    exit 1
+    ;;
+esac
+
+exit 0
+EOF
+
+chmod 755 ${ROOTFS}/etc/init.d/firstboot
+
+cat << EOF | chroot ${ROOTFS}
+    update-rc.d firstboot defaults
+EOF
+fi
+
 echo "firstboot script activated"
 }
 
 bashaliases() {
 
-if [ "$OSNAME" = "debian" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] ; then
     export BASHRC="/etc/bash.bashrc"
 fi
 
@@ -379,10 +478,10 @@ echo "bash aliases setup finished"
 
 smalllogs() {
 
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ]; then
 lineinfile ${ROOTFS}/etc/systemd/journald.conf ".*SystemMaxUse=.*" "SystemMaxUse=50M"
-
 echo "lower log volume activated"
-
+fi
 }
 
 reposrc() {
@@ -397,6 +496,16 @@ EOF
 
 echo "apt sources setup finished"
 fi
+
+if [ "$OSNAME" = "devuan" ]; then
+echo "setup apt"
+cat <<EOF > ${ROOTFS}/etc/apt/sources.list
+deb http://deb.devuan.org/merged daedalus main non-free-firmware non-free contrib
+deb http://deb.devuan.org/merged daedalus-security main non-free-firmware non-free contrib
+deb http://deb.devuan.org/merged daedalus-updates main non-free-firmware non-free contrib
+EOF
+fi
+
 
 if [ "$OSNAME" = "openmandriva" ]; then
 rm -f ${ROOTFS}/etc/yum.repos.d/*
@@ -417,6 +526,15 @@ cat << EOF | chroot ${ROOTFS}
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup iperf3
 EOF
 fi
+
+if [ "$OSNAME" = "devuan" ]; then
+cat << EOF | chroot ${ROOTFS}
+    apt update && apt upgrade -y
+    apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon htop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq
+    DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup iperf3
+EOF
+fi
+
 
 if [ "$OSNAME" = "openmandriva" ]; then
 
@@ -491,7 +609,7 @@ idocker() {
 
 echo "install docker"
 
-if [ "$OSNAME" = "debian" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt install -y docker.io python3-docker docker-compose skopeo
     apt install -y ansible openjdk-17-jdk-headless npm golang-go
@@ -595,6 +713,7 @@ EOF
 chmod 755 ${ROOTFS}/usr/local/bin/firstboot-dockernet.sh
 chmod 755 ${ROOTFS}/usr/local/bin/firstboot-dockerbuildx.sh
 
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ]; then
 cat <<EOF | tee ${ROOTFS}/etc/systemd/system/firstboot-dockernet.service
 [Unit]
 Description=firstboot-dockernet
@@ -633,6 +752,65 @@ cat << EOF | chroot ${ROOTFS}
     systemctl enable firstboot-dockerbuildx.service
 EOF
 echo "docker network and buildx on first boot service configured"
+fi 
+
+if [ "$OSNAME" = "devuan" ]; then
+cat <<'EOF' | tee ${ROOTFS}/etc/init.d/firstboot-dockernet
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          firstboot-dockernet
+# Required-Start:    docker
+# Required-Stop:     $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Create docker network on first boot
+### END INIT INFO
+
+case "$1" in
+  start)
+    /usr/local/bin/firstboot-dockernet.sh
+    ;;
+  *)
+    echo "Usage: /etc/init.d/firstboot-dockernet {start}"
+    exit 1
+    ;;
+esac
+
+exit 0
+EOF
+
+cat <<'EOF' | tee ${ROOTFS}/etc/init.d/firstboot-dockerbuildx
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          firstboot-dockerbuildx
+# Required-Start:    docker
+# Required-Stop:     $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Create docker buildx on first boot
+### END INIT INFO
+EOF
+cat <<EOF | tee -a ${ROOTFS}/etc/init.d/firstboot-dockerbuildx
+case "\$1" in
+  start)
+    su - ${TARGET_USERNAME} -c /usr/local/bin/firstboot-dockerbuildx.sh
+    ;;
+  *)
+    echo "Usage: /etc/init.d/firstboot-dockerbuildx {start}"
+    exit 1
+    ;;
+esac
+EOF
+
+chmod 755 ${ROOTFS}/etc/init.d/firstboot-dockernet
+chmod 755 ${ROOTFS}/etc/init.d/firstboot-dockerbuildx
+
+cat << EOF | chroot ${ROOTFS}
+    update-rc.d firstboot-dockernet defaults
+    update-rc.d firstboot-dockerbuildx defaults
+EOF
+
+fi
 
 }
 
@@ -1773,6 +1951,23 @@ sudo reboot now
 
 
 runtest(){
+init apham "NA" "authorized_keys" "NA" "NA" "NA"
+rmnouveau
+fastboot
+disableturbo
+bashaliases
+smalllogs
+reposrc
+iessentials
+isudo
+allowsshpwd
+idocker
+ikube
+igui
+sudo reboot now
+}
+
+devuan(){
 init apham "NA" "authorized_keys" "NA" "NA" "NA"
 rmnouveau
 fastboot
