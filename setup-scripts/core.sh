@@ -686,13 +686,21 @@ echo "maven installed"
 
 cat <<EOF | tee ${ROOTFS}/usr/local/bin/firstboot-dockernet.sh
 #!/bin/bash
-echo "Setting up dedicated network bridge.."
+echo "firstboot-dockernet.sh: Setting up dedicated network bridge.."
+
+if ! pgrep -x "dockerd" > /dev/null; then
+    echo "firstboot-dockernet.sh : Docker daemon is not running."
+    exit 1
+else
+    echo "firstboot-dockernet.sh : Docker daemon is running ok"
+fi
+
 if [[ -z "\$(docker network ls | grep primenet)" ]] then
      docker network create --driver=bridge --subnet=172.18.0.0/16 --gateway=172.18.0.1 primenet
-     echo "net created"
+     echo "firstboot-dockernet.sh : docker primenet created"
      echo "✅ primenet docker network created !">/var/log/firstboot-dockernet.log
 else
-     echo "net exists"
+     echo "firstboot-dockernet.sh : docker primenet exists already"
      echo "✅ primenet already exisits ! ">/var/log/firstboot-dockernet.log
 fi
 EOF
@@ -700,12 +708,20 @@ EOF
 cat <<EOF | tee ${ROOTFS}/usr/local/bin/firstboot-dockerbuildx.sh
 #!/bin/bash
 
+if ! pgrep -x "dockerd" > /dev/null; then
+    echo "firstboot-dockerbuildx.sh : Docker daemon is not running."
+    exit 1
+else
+    echo "firstboot-dockerbuildx.sh : Docker daemon is running ok"
+fi
+
 echo "Setting up builder"
 if [[ -z "\$(docker buildx ls | grep multibuilder.*linux)" ]] then
      docker buildx create --name multibuilder --platform linux/amd64,linux/arm/v7,linux/arm64/v8 --use
+     echo "firstboot-dockerbuildx.sh : docker multibuilder created"
      echo "✅ multibuilder docker buildx created !">/var/log/firstboot-dockerbuildx.log
 else
-     echo "build exists"
+     echo "firstboot-dockerbuildx.sh : docker multibuilder exists alread"
      echo "✅ multibuilder already exisits ! ">~/firstboot-dockerbuildx.log
 fi
 EOF
@@ -1454,12 +1470,45 @@ EOF
 #end hyperv
 fi
 
+
+#enable numlock tty
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME"  = "openmandriva" ]; then
+cat <<'EOF' | tee ${ROOTFS}/usr/local/bin/nlock
+#!/bin/bash
+for tty in /dev/tty{1..6}
+do
+    /usr/bin/setleds -D +num < "$tty";
+done
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /usr/local/bin/nlock
+EOF
+
+cat <<EOF | tee ${ROOTFS}/etc/systemd/system/nlock.service
+[Unit]
+Description=nlock
+
+[Service]
+ExecStart=/usr/local/bin/nlock
+StandardInput=tty
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    systemctl enable nlock
+EOF
+
+fi
 }
 
 iworkstation() {
 echo "additional workstation tools"
 
-if [ "$OSNAME" = "debian" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt install -y handbrake gimp rawtherapee krita mypaint inkscape blender obs-studio mgba-qt v4l2loopback-utils kdenlive flameshot maim xclip xdotool thunar thunar-archive-plugin easytag audacity
 EOF
@@ -1493,7 +1542,7 @@ EOF
 
 fi
 
-# install appimage of kdenlive
+# /!\TODO install appimage of kdenlive
 
 cat << 'EOF' | tee ${ROOTFS}/usr/local/bin/winshot.sh
 maim -i $(xdotool getactivewindow) | xclip -selection clipboard -t image/png
