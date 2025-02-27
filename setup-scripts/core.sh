@@ -1855,6 +1855,27 @@ cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.local
 EOF
 
+# configure OBS
+mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/obs-studio/
+cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.config/obs-studio/global.ini
+[General]
+Pre19Defaults=false
+Pre21Defaults=false
+Pre23Defaults=false
+Pre24.1Defaults=false
+FirstRun=true
+LastVersion=486539266
+AutomaticCollectionSearch=false
+AutoSearchPrompt=true
+
+[Basic]
+Profile=nvenc-lq
+ProfileDir=nvenclq
+SceneCollection=screen-multi
+SceneCollectionFile=screenmulti
+EOF
+
+
 }
 
 ivirt(){
