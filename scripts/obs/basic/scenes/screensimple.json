@@ -1,6 +1,6 @@
 {
-    "current_program_scene": "desktop",
-    "current_scene": "desktop",
+    "current_program_scene": "main",
+    "current_scene": "main",
     "current_transition": "Fade",
     "groups": [
         {
@@ -166,7 +166,7 @@
     "scaling_off_y": 0.0,
     "scene_order": [
         {
-            "name": "desktop"
+            "name": "main"
         }
     ],
     "sources": [
@@ -175,18 +175,18 @@
             "deinterlace_field_order": 0,
             "deinterlace_mode": 0,
             "enabled": true,
-            "flags": 0,
+            "flags": 2,
             "hotkeys": {
                 "libobs.mute": [],
                 "libobs.push-to-mute": [],
                 "libobs.push-to-talk": [],
                 "libobs.unmute": []
             },
-            "id": "pulse_output_capture",
+            "id": "pulse_input_capture",
             "mixers": 193,
             "monitoring_type": 0,
             "muted": false,
-            "name": "dtop",
+            "name": "mic",
             "prev_ver": 486539266,
             "private_settings": {},
             "push-to-mute": false,
@@ -197,32 +197,7 @@
                 "device_id": "default"
             },
             "sync": 0,
-            "versioned_id": "pulse_output_capture",
-            "volume": 1.0
-        },
-        {
-            "balance": 0.5,
-            "deinterlace_field_order": 0,
-            "deinterlace_mode": 0,
-            "enabled": true,
-            "flags": 0,
-            "hotkeys": {},
-            "id": "xshm_input",
-            "mixers": 0,
-            "monitoring_type": 0,
-            "muted": false,
-            "name": "screen",
-            "prev_ver": 486539266,
-            "private_settings": {},
-            "push-to-mute": false,
-            "push-to-mute-delay": 0,
-            "push-to-talk": false,
-            "push-to-talk-delay": 0,
-            "settings": {
-                "screen": 1
-            },
-            "sync": 0,
-            "versioned_id": "xshm_input",
+            "versioned_id": "pulse_input_capture",
             "volume": 1.0
         },
         {
@@ -242,7 +217,7 @@
             "mixers": 0,
             "monitoring_type": 0,
             "muted": false,
-            "name": "desktop",
+            "name": "main",
             "prev_ver": 486539266,
             "private_settings": {},
             "push-to-mute": false,
@@ -414,18 +389,43 @@
             "deinterlace_field_order": 0,
             "deinterlace_mode": 0,
             "enabled": true,
-            "flags": 2,
+            "flags": 0,
+            "hotkeys": {},
+            "id": "xshm_input",
+            "mixers": 0,
+            "monitoring_type": 0,
+            "muted": false,
+            "name": "screen",
+            "prev_ver": 486539266,
+            "private_settings": {},
+            "push-to-mute": false,
+            "push-to-mute-delay": 0,
+            "push-to-talk": false,
+            "push-to-talk-delay": 0,
+            "settings": {
+                "screen": 1
+            },
+            "sync": 0,
+            "versioned_id": "xshm_input",
+            "volume": 1.0
+        },
+        {
+            "balance": 0.5,
+            "deinterlace_field_order": 0,
+            "deinterlace_mode": 0,
+            "enabled": true,
+            "flags": 0,
             "hotkeys": {
                 "libobs.mute": [],
                 "libobs.push-to-mute": [],
                 "libobs.push-to-talk": [],
                 "libobs.unmute": []
             },
-            "id": "pulse_input_capture",
+            "id": "pulse_output_capture",
             "mixers": 193,
             "monitoring_type": 0,
             "muted": false,
-            "name": "mic",
+            "name": "dtop",
             "prev_ver": 486539266,
             "private_settings": {},
             "push-to-mute": false,
@@ -436,7 +436,7 @@
                 "device_id": "default"
             },
             "sync": 0,
-            "versioned_id": "pulse_input_capture",
+            "versioned_id": "pulse_output_capture",
             "volume": 1.0
         }
     ],
