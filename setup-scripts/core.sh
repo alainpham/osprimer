@@ -413,8 +413,11 @@ case "$1" in
   start)
     /usr/local/bin/firstboot.sh
     ;;
+  stop)
+    echo "Firstboot script has run"
+    ;;
   *)
-    echo "Usage: /etc/init.d/firstboot {start}"
+    echo "Usage: /etc/init.d/firstboot {start|stop}"
     exit 1
     ;;
 esac
@@ -684,15 +687,26 @@ EOF
 rm -f /tmp/maven.tar.gz
 echo "maven installed"
 
-cat <<EOF | tee ${ROOTFS}/usr/local/bin/firstboot-dockernet.sh
+cat <<'EOF' | tee ${ROOTFS}/usr/local/bin/firstboot-dockernet.sh
 #!/bin/bash
-echo "firstboot-dockernet.sh: Setting up dedicated network bridge.."
+echo "firstboot-dockernet.sh : Setting up dedicated network bridge.."
 
-if ! pgrep -x "dockerd" > /dev/null; then
-    echo "firstboot-dockernet.sh : Docker daemon is not running."
+retry=0
+max_retries=5
+while [ $retry -lt $max_retries ]; do
+    if curl -s --unix-socket /var/run/docker.sock http/_ping 2>&1; then
+        echo "Docker is running."
+        break
+    else
+        echo "Docker is not running. Retrying in 1 seconds..."
+        sleep 1
+        retry=$((retry + 1))
+    fi
+done
+
+if [ $retry -eq $max_retries ]; then
+    echo "Docker failed to start after $max_retries attempts."
     exit 1
-else
-    echo "firstboot-dockernet.sh : Docker daemon is running ok"
 fi
 
 if [[ -z "\$(docker network ls | grep primenet)" ]] then
@@ -703,19 +717,34 @@ else
      echo "firstboot-dockernet.sh : docker primenet exists already"
      echo "✅ primenet already exisits ! ">/var/log/firstboot-dockernet.log
 fi
+
+exit 0
+
 EOF
 
-cat <<EOF | tee ${ROOTFS}/usr/local/bin/firstboot-dockerbuildx.sh
+cat <<'EOF' | tee ${ROOTFS}/usr/local/bin/firstboot-dockerbuildx.sh
 #!/bin/bash
+echo "firstboot-dockerbuildx.sh: Setting up multi target builder"
 
-if ! pgrep -x "dockerd" > /dev/null; then
-    echo "firstboot-dockerbuildx.sh : Docker daemon is not running."
+
+retry=0
+max_retries=5
+while [ $retry -lt $max_retries ]; do
+    if curl -s --unix-socket /var/run/docker.sock http/_ping 2>&1; then
+        echo "Docker is running."
+        break
+    else
+        echo "Docker is not running. Retrying in 1 seconds..."
+        sleep 1
+        retry=$((retry + 1))
+    fi
+done
+
+if [ $retry -eq $max_retries ]; then
+    echo "Docker failed to start after $max_retries attempts."
     exit 1
-else
-    echo "firstboot-dockerbuildx.sh : Docker daemon is running ok"
 fi
 
-echo "Setting up builder"
 if [[ -z "\$(docker buildx ls | grep multibuilder.*linux)" ]] then
      docker buildx create --name multibuilder --platform linux/amd64,linux/arm/v7,linux/arm64/v8 --use
      echo "firstboot-dockerbuildx.sh : docker multibuilder created"
@@ -724,6 +753,8 @@ else
      echo "firstboot-dockerbuildx.sh : docker multibuilder exists alread"
      echo "✅ multibuilder already exisits ! ">~/firstboot-dockerbuildx.log
 fi
+
+exit 0
 EOF
 
 chmod 755 ${ROOTFS}/usr/local/bin/firstboot-dockernet.sh
@@ -786,8 +817,11 @@ case "$1" in
   start)
     /usr/local/bin/firstboot-dockernet.sh
     ;;
+  stop)
+    echo "Firstboot script has run"
+    ;;
   *)
-    echo "Usage: /etc/init.d/firstboot-dockernet {start}"
+    echo "Usage: /etc/init.d/firstboot-dockernet {start|stop}"
     exit 1
     ;;
 esac
@@ -811,8 +845,11 @@ case "\$1" in
   start)
     su - ${TARGET_USERNAME} -c /usr/local/bin/firstboot-dockerbuildx.sh
     ;;
+  stop)
+    echo "Firstboot script has run"
+    ;;
   *)
-    echo "Usage: /etc/init.d/firstboot-dockerbuildx {start}"
+    echo "Usage: /etc/init.d/firstboot-dockerbuildx {start|stop}"
     exit 1
     ;;
 esac
@@ -897,10 +934,12 @@ ikube() {
  
 echo "install kube readiness"
 
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ]; then
 cat <<EOF | tee ${ROOTFS}/etc/modules-load.d/containerd.conf 
 overlay 
 br_netfilter
 EOF
+fi
 
 cat <<EOF | tee ${ROOTFS}/etc/sysctl.d/99-kubernetes-k8s.conf
 net.bridge.bridge-nf-call-iptables = 1
@@ -909,7 +948,7 @@ net.bridge.bridge-nf-call-ip6tables = 1
 EOF
 echo "kube readiness setup finished"
 
-if [ "$OSNAME" = "debian" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt install -y containerd
 EOF
@@ -923,18 +962,20 @@ fi
 
 echo "containerd setup"
 
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ]; then
 cat << EOF | chroot ${ROOTFS}
     mkdir -p /etc/containerd
     containerd config default | tee /etc/containerd/config.toml >/dev/null 2>&1
     sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
 EOF
+fi
 
 
 ikubectl
 
 echo "install kube server"
 
-if [ "$OSNAME" = "debian" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt install -y kubelet kubeadm
 EOF
@@ -1018,7 +1059,7 @@ echo "install gui"
 # if pulse replace by this apt install -y pulseaudio
     # apt install -y  pipewire-audio wireplumber pipewire-pulse pipewire-alsa libspa-0.2-bluetooth pulseaudio-utils qpwgraph pavucontrol
 
-if [ "$OSNAME" = "debian" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt install -y make gcc libx11-dev libxft-dev libxrandr-dev libimlib2-dev libfreetype-dev libxinerama-dev xorg numlockx 
     apt install -y pulseaudio pulseaudio-module-bluetooth pulseaudio-utils pavucontrol alsa-utils
@@ -1049,7 +1090,7 @@ for font in ${NERDFONTS} ; do
 done
  
 echo "additional gui packages"
-if [ "$OSNAME" = "debian" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt install -y ntfs-3g ifuse mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv network-manager dnsmasq acpitool lm-sensors fonts-noto libnotify-bin dunst ffmpeg python3-mutagen imagemagick mediainfo-gui arandr picom brightnessctl cups xsane libsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze-gtk-theme 
 EOF
@@ -1077,11 +1118,21 @@ EOF
 
 fi
 
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ]; then
 cat << EOF | chroot ${ROOTFS}
     systemctl disable dnsmasq
 EOF
+fi
 
-if [ "$OSNAME" = "debian" ]; then
+if [ "$OSNAME" = "devuan" ]; then
+cat << EOF | chroot ${ROOTFS}
+    rm /etc/insserv.conf.d/dnsmasq
+    update-rc.d -f dnsmasq remove
+EOF
+fi
+
+
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 cat << 'EOF' | tee ${ROOTFS}/etc/network/interfaces
 # This file describes the network interfaces available on your system
 # and how to activate them. For more information, see interfaces(5).
@@ -1113,7 +1164,7 @@ EOF
 # dunst notification
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/dunst
 
-if [ "$OSNAME" = "debian" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.config/dunst/dunstrc
 [global]
 monitor = 2
@@ -1163,7 +1214,7 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 
 # ffmpeg scripts
-ffmpegscripts="vconv-archive-lossless-h264-vaapi.sh vconv-extract-audio.sh vconv-h264-vaapi-qp.sh vconv-h264-vaapi-vbr.sh vconv-hevc-vaapi-qp.sh vconv-make-mkv.sh vconv-make-mp4.sh vconv-mp3-hq.sh vconv-ripcapt.sh vconv-ripscreen.sh vconv-vp9-vaapi-qp.sh vconv-x264-crf.sh vconv-x264-crf-576p.sh vconv-x264-lowres-lowvbr-2pass.sh vconv-x264-lowres-vbr-2pass.sh vconv-x264-vbr-2pass.sh"
+ffmpegscripts="vconv-archive-lossless-h264-vaapi.sh vconv-extract-audio.sh vconv-h264-vaapi-qp.sh vconv-h264-vaapi-vbr.sh vconv-hevc-vaapi-qp.sh vconv-make-mkv.sh vconv-make-mp4.sh vconv-mp3-hq.sh vconv-ripcapt.sh vconv-ripscreen.sh vconv-vp9-vaapi-qp.sh vconv-x264-crf.sh vconv-travel.sh vconv-x264-lowres-lowvbr-2pass.sh vconv-x264-lowres-vbr-2pass.sh vconv-x264-vbr-2pass.sh"
 for script in $ffmpegscripts ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/ffmpeg/$script
 cat << EOF | chroot ${ROOTFS}
@@ -1184,9 +1235,13 @@ ctl.pulse {
 }
 EOF
 
+cat << EOF | chroot ${ROOTFS}
+    chown $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.asoundrc
+EOF
+
 # create alsa loopback
 
-if [ "$OSNAME" = "debian" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 lineinfile ${ROOTFS}/etc/modules ".*snd-aloop.*" "snd-aloop"
 lineinfile ${ROOTFS}/etc/modules ".*snd-dummy.*" "snd-dummy"
 fi
@@ -1250,7 +1305,7 @@ chmod 755 ${ROOTFS}/usr/local/bin/$file
 done
 
 # install chrome browser
-if [ "$OSNAME" = "debian" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 mkdir -p ${ROOTFS}/opt/debs/
 wget -O /opt/debs/google-chrome-stable_current_amd64.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb 
 cat << EOF | chroot ${ROOTFS}
@@ -1290,8 +1345,9 @@ cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/wm
 EOF
 
-if [ "$OSNAME" = "debian" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 cat << EOF | chroot ${ROOTFS}
+    cd /home/$TARGET_USERNAME/wm
     git clone https://github.com/alainpham/slock-flexipatch.git
     cd /home/$TARGET_USERNAME/wm/slock-flexipatch && make clean install
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/wm
@@ -1340,7 +1396,14 @@ if [ -f ${ROOTFS}/usr/share/dbus-1/services/org.knopwob.dunst.service ] ; then
 mv ${ROOTFS}/usr/share/dbus-1/services/org.knopwob.dunst.service ${ROOTFS}/usr/share/dbus-1/services/org.knopwob.dunst.service.disabled
 fi
 
+if [ "$OSNAME" = "devuan" ]; then
+cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
+#!/bin/sh
+eval $(dbus-launch --sh-syntax --exit-with-session)
+EOF
+fi
 
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ]; then
 cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
 #!/bin/sh
 if [ -z "$DBUS_SESSION_BUS_ADDRESS" ] && [ -n "$XDG_RUNTIME_DIR" ] && \
@@ -1360,18 +1423,23 @@ if [ -x "/usr/bin/dbus-update-activation-environment" ]; then
 fi
 
 EOF
+fi
 
 # check if inside virtual machine
 export hypervisor=$(echo "virt-what" | chroot ${ROOTFS})
 
 if [ "$hypervisor" = "hyperv" ] || [ "$hypervisor" = "kvm" ]; then
+
+cat << 'EOF' | chroot ${ROOTFS}
+    apt install -y  spice-vdagent
+EOF
+
 cat << 'EOF' | tee -a ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
 spice-vdagent
-
 EOF
 fi
 
-if [ "$OSNAME" = "debian" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 cat << EOF | tee -a ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
 numlockx
 
@@ -1438,14 +1506,16 @@ EOF
 fi
 
 cat << EOF | chroot ${ROOTFS}
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/${TARGET_USERNAME}/.config/picom/picom.conf
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/${TARGET_USERNAME}/.config/picom
 EOF
 
 
 # Hyperv set resolution
 if [ "$hypervisor" = "hyperv" ] ; then
 sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/ {/video=Virtual-1:1600x900/! s/"$/ video=Virtual-1:1600x900"/}' ${ROOTFS}/etc/default/grub
-if [ "$OSNAME" = "debian" ]; then
+
+
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 cat << EOF | chroot ${ROOTFS}
     update-grub
 EOF
@@ -1472,9 +1542,9 @@ fi
 
 
 #enable numlock tty
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME"  = "openmandriva" ]; then
 cat <<'EOF' | tee ${ROOTFS}/usr/local/bin/nlock
 #!/bin/bash
+echo "nlock : activate numlock on tty"
 for tty in /dev/tty{1..6}
 do
     /usr/bin/setleds -D +num < "$tty";
@@ -1485,6 +1555,7 @@ cat << EOF | chroot ${ROOTFS}
     chmod 755 /usr/local/bin/nlock
 EOF
 
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME"  = "openmandriva" ]; then
 cat <<EOF | tee ${ROOTFS}/etc/systemd/system/nlock.service
 [Unit]
 Description=nlock
@@ -1500,6 +1571,42 @@ EOF
 
 cat << EOF | chroot ${ROOTFS}
     systemctl enable nlock
+EOF
+
+fi
+
+if [ "$OSNAME" = "devuan" ]; then
+cat <<'EOF' | tee ${ROOTFS}/etc/init.d/nlock
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          nlock
+# Required-Start:    $all
+# Required-Stop:     $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start daemon at boot time
+# Description:       Enable service provided by daemon.
+### END INIT INFO
+
+case "$1" in
+  start)
+    /usr/local/bin/nlock
+    ;;
+  stop)
+    echo "Stopping nlock"
+    ;;
+  *)
+    echo "Usage: /etc/init.d/firstboot {start|stop}"
+    exit 1
+    ;;
+esac
+
+exit 0
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /etc/init.d/nlock
+    update-rc.d nlock defaults
 EOF
 
 fi
@@ -1589,7 +1696,7 @@ cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config
 EOF
 
-if [ "$OSNAME" = "debian" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 cat << EOF | chroot ${ROOTFS}
     DEBIAN_FRONTEND=noninteractive apt install -y libdvd-pkg
 EOF
@@ -1613,7 +1720,7 @@ fi
 # EOF
 
 #vscode
-if [ "$OSNAME" = "debian" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 mkdir -p ${ROOTFS}/opt/debs/
 wget -O ${ROOTFS}/opt/debs/vscode.deb "https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64"
 cat << EOF | chroot ${ROOTFS}
@@ -1731,7 +1838,7 @@ EOF
 
 
 #caprine facebook messenger
-wget -O ${ROOTFS}/opt/appimages/caprine.AppImage https://github.com/sindresorhus/caprine/releases/download/v2.60.1/Caprine-2.60.1.AppImage
+wget -O ${ROOTFS}/opt/appimages/caprine.AppImage https://github.com/sindresorhus/caprine/releases/download/v${CAPRINE_VERSION}/Caprine-${CAPRINE_VERSION}.AppImage
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/caprine.AppImage
     ln -sf /opt/appimages/caprine.AppImage /usr/local/bin/caprine

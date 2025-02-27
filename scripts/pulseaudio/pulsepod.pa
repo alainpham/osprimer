@@ -17,6 +17,7 @@ set-sink-volume alsa_output.dummy-sink 65536
 # redirect from desktop to to-caller-sink and speakers
 load-module module-remap-sink sink_name=from-desktop sink_properties=device.description=from-desktop master=alsa_output.dummy-sink
 set-sink-volume from-desktop 62259
+set-sink-mute from-desktop 0
 
 # redirect from-caller to speaker only
 load-module module-remap-sink sink_name=from-caller sink_properties=device.description=from-caller master=alsa_output.dummy-sink
