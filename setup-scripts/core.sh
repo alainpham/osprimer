@@ -4,7 +4,7 @@
 
 inputversions() {
     # https://github.com/docker/buildx/releases
-    export DOCKER_BUILDX_VERSION=v0.20.1
+    export DOCKER_BUILDX_VERSION=v0.21.1
     echo "export DOCKER_BUILDX_VERSION=${DOCKER_BUILDX_VERSION}"
     
     # https://kubernetes.io/releases/  https://cloud.google.com/kubernetes-engine/docs/release-notes
@@ -12,7 +12,7 @@ inputversions() {
     echo "export MAJOR_KUBE_VERSION=${MAJOR_KUBE_VERSION}"
     
     # https://github.com/derailed/k9s/releases
-    export K9S_VERSION=v0.32.7
+    export K9S_VERSION=v0.40.5
     echo "export K9S_VERSION=${K9S_VERSION}"
     
     # https://maven.apache.org/download.cgi
@@ -23,7 +23,7 @@ inputversions() {
     echo "export NERDFONTS=${NERDFONTS}"
 
     # https://zoom.us/download?os=linux
-    export ZOOM_VERSION=6.3.6.6315
+    export ZOOM_VERSION=6.3.11.7212
     echo "export ZOOM_VERSION=${ZOOM_VERSION}"
     
     # https://mlv.app/
@@ -39,7 +39,7 @@ inputversions() {
     echo "export FREAC_VERSION=${FREAC_VERSION}"
 
     # https://github.com/IsmaelMartinez/teams-for-linux/releases/latest
-    export TEAMS_VERSION=1.12.5
+    export TEAMS_VERSION=1.12.7
     echo "export TEAMS_VERSION=${TEAMS_VERSION}"
 
     # https://github.com/sindresorhus/caprine/releases/tag/v2.60.3
@@ -47,7 +47,7 @@ inputversions() {
     echo "export CAPRINE_VERSION=${CAPRINE_VERSION}"
 
     # https://github.com/jgraph/drawio-desktop/releases
-    export DRAWIO_VERSION=26.0.4
+    export DRAWIO_VERSION=26.0.16
     echo "export DRAWIO_VERSION=${DRAWIO_VERSION}"
 
     # https://hub.docker.com/r/infinityofspace/certbot_dns_duckdns/tags
@@ -55,12 +55,34 @@ inputversions() {
     echo "export CERTBOT_DUCKDNS_VERSION=${CERTBOT_DUCKDNS_VERSION}"
 
     # https://www.onlyoffice.com/download-desktop.aspx
-    export ONLYOFFICE_VERSION=v8.2.2
+    export ONLYOFFICE_VERSION=v8.3.0
     echo "export ONLYOFFICE_VERSION=${ONLYOFFICE_VERSION}"
 
     # https://slack.com/release-notes/linux
     export SLACK_VERSION=4.41.105
     echo "export SLACK_VERSION=${SLACK_VERSION}"
+
+    # https://github.com/yshui/picom/releases
+    export PICOM_VERSION=12.5
+    echo "export PICOM_VERSION=${PICOM_VERSION}"
+
+    # https://github.com/Hummer12007/brightnessctl/releases
+    export BRIGHTNESSCTL_VERSION=0.5.1
+    echo "export BRIGHTNESSCTL_VERSION=${BRIGHTNESSCTL_VERSION}"
+
+    # https://github.com/naelstrof/slop/releases
+    export SLOP_VERSION=7.6
+    echo "export SLOP_VERSION=${SLOP_VERSION}"
+
+    # https://github.com/naelstrof/maim/releases
+    export MAIM_VERSION=5.8.0
+    echo "export MAIM_VERSION=${MAIM_VERSION}"
+
+    # https://kdenlive.org/en/download/
+    export KDENLIVE_MAIN_VERSION=24.12
+    echo "export KDENLIVE_MAIN_VERSION=${KDENLIVE_MAIN_VERSION}"
+    export KDENLIVE_FULL_VERSION=24.12.2
+    echo "export KDENLIVE_FULL_VERSION=${KDENLIVE_FULL_VERSION}"
 
     export OSNAME=$(awk -F= '/^ID=/ {gsub(/"/, "", $2); print $2}' /etc/os-release)
     echo "export OSNAME=${OSNAME}"
@@ -471,10 +493,15 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*CERTBOT_DUCKDNS_VERSION*=.*" "export CE
 lineinfile ${ROOTFS}${BASHRC} ".*export.*ONLYOFFICE_VERSION*=.*" "export ONLYOFFICE_VERSION=${ONLYOFFICE_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*SLACK_VERSION*=.*" "export SLACK_VERSION=${SLACK_VERSION}"
 
+lineinfile ${ROOTFS}${BASHRC} ".*export.*PICOM_VERSION*=.*" "export PICOM_VERSION=${PICOM_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*BRIGHTNESSCTL_VERSION*=.*" "export BRIGHTNESSCTL_VERSION=${BRIGHTNESSCTL_VERSION}"
+
+
 lineinfile ${ROOTFS}${BASHRC} ".*export.*OSNAME*=.*" "export OSNAME=${OSNAME}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*WILDCARD_DOMAIN*=.*" "export WILDCARD_DOMAIN=zez.duckdns.org"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*EMAIL*=.*" "export EMAIL=admin@zez.duckdns.org"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*DUCKDNS_TOKEN*=.*" "export DUCKDNS_TOKEN=xxxx-xxxx-xxxx-xxxx-xxxx"
+
 
 echo "bash aliases setup finished"
 }
@@ -1101,16 +1128,16 @@ cat << EOF | chroot ${ROOTFS}
     dnf install -y libgtk+3.0-devel python-gobject3-devel
     dnf install -y ntfs-3g ifuse mpv haruna vlc nmon neofetch feh qimgv NetworkManager dnsmasq acpitool lm_sensors noto-sans-fonts noto-serif-fonts fonts-ttf-awesome fonts-otf-awesome libnotify dunst ffmpeg mutagen imagemagick mediainfo arandr  cups xsane sane-backends filezilla lxappearance plasma6-breeze
     cd /tmp/
-    wget -O picom.zip "https://github.com/yshui/picom/archive/refs/tags/v12.5.zip"
+    wget -O picom.zip "https://github.com/yshui/picom/archive/refs/tags/v${PICOM_VERSION}.zip"
     unzip picom.zip
-    cd picom-12.5
+    cd picom-${PICOM_VERSION}
     meson setup --buildtype=release build
     ninja -C build install
 
     cd /tmp/
-    wget -O brightnessctl.zip https://github.com/Hummer12007/brightnessctl/archive/refs/tags/0.5.1.zip
+    wget -O brightnessctl.zip https://github.com/Hummer12007/brightnessctl/archive/refs/tags/${BRIGHTNESSCTL_VERSION}.zip
     unzip brightnessctl.zip
-    cd brightnessctl-0.5.1
+    cd brightnessctl-${BRIGHTNESSCTL_VERSION}
     make install
 EOF
 #     picom brightnessctl
@@ -1610,6 +1637,18 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 
 fi
+# end numlock tty
+
+# convert pdf to png with whitebackground
+cat << 'EOF' | tee ${ROOTFS}/usr/local/bin/pdf2png
+#!/bin/bash
+convert -density 150 "$1" -background white -alpha remove -alpha off "$1.png"
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /usr/local/bin/pdf2png
+EOF
+
 }
 
 iworkstation() {
@@ -1633,16 +1672,16 @@ EOF
 
 cat << EOF | chroot ${ROOTFS}
     cd /tmp/
-    wget https://github.com/naelstrof/slo/archive/refs/tags/v7.6.zip
-    unzip slop-7.6.zip
-    cd slop-7.6 
+    wget https://github.com/naelstrof/slop/archive/refs/tags/v${SLOP_VERSION}.zip
+    unzip slop-${SLOP_VERSION}.zip
+    cd slop-${SLOP_VERSION}
     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="/usr" ./
     make && sudo make install
 
     cd /tmp/
-    wget https://github.com/naelstrof/maim/archive/refs/tags/v5.8.0.zip
-    unzip maim-5.8.0.zip
-    cd maim-5.8.0
+    wget https://github.com/naelstrof/maim/archive/refs/tags/v${MAIM_VERSION}.zip
+    unzip maim-${MAIM_VERSION}.zip
+    cd maim-${MAIM_VERSION}
     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="/usr" ./
     make && sudo make install
 EOF
@@ -1790,7 +1829,7 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 
 #kdenlive
-wget -O ${ROOTFS}/opt/appimages/kdenlive.AppImage https://download.kde.org/stable/kdenlive/24.12/linux/kdenlive-24.12.2-x86_64.AppImage
+wget -O ${ROOTFS}/opt/appimages/kdenlive.AppImage https://download.kde.org/stable/kdenlive/${KDENLIVE_MAIN_VERSION}/linux/kdenlive-${KDENLIVE_FULL_VERSION}-x86_64.AppImage
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/kdenlive.AppImage
     ln -s /opt/appimages/kdenlive.AppImage /usr/local/bin/kdenlive
@@ -1842,8 +1881,6 @@ cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/teams-for-linux.AppImage
     ln -sf /opt/appimages/teams-for-linux.AppImage /usr/local/bin/teams-for-linux
 EOF
-
-
 
 #caprine facebook messenger
 wget -O ${ROOTFS}/opt/appimages/caprine.AppImage https://github.com/sindresorhus/caprine/releases/download/v${CAPRINE_VERSION}/Caprine-${CAPRINE_VERSION}.AppImage
@@ -2125,7 +2162,7 @@ sudo reboot now
 }
 
 
-runtest(){
+openmandrivaws(){
 init apham "NA" "authorized_keys" "NA" "NA" "NA"
 rmnouveau
 fastboot
@@ -2139,6 +2176,7 @@ allowsshpwd
 idocker
 ikube
 igui
+iworkstation
 sudo reboot now
 }
 
