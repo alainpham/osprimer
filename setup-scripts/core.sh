@@ -1789,6 +1789,14 @@ cat << EOF | chroot ${ROOTFS}
     dnf install -y ${ROOTFS}/opt/debs/dbeaver.rpm
 EOF
 
+#kdenlive
+wget -O ${ROOTFS}/opt/appimages/kdenlive.AppImage https://download.kde.org/stable/kdenlive/24.12/linux/kdenlive-24.12.2-x86_64.AppImage
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /opt/appimages/kdenlive.AppImage
+    ln -s /opt/appimages/kdenlive.AppImage /usr/local/bin/kdenlive
+EOF
+
+
 fi
 
 # APPimages
@@ -1852,6 +1860,7 @@ asnddef &
 EOF
 
 cat << EOF | chroot ${ROOTFS}
+    chmod 755 /home/$TARGET_USERNAME/.local/share/dwm/autostart.sh
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.local
 EOF
 
