@@ -1173,8 +1173,10 @@ EOF
 fi
 
 if [ "$OSNAME" = "openmandriva" ]; then
+cat <<EOF | chroot ${ROOTFS}
     systemctl disable systemd-resolved
     rm -f ${ROOTFS}/etc/resolv.conf
+EOF
 fi
 
 cat << 'EOF' | tee ${ROOTFS}/etc/NetworkManager/conf.d/00-use-dnsmasq.conf
@@ -1915,9 +1917,18 @@ EOF
 
 ivirt(){
 echo "virtualization tools"
+
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt install -y qemu-system qemu-utils virtinst libvirt-clients libvirt-daemon-system libguestfs-tools bridge-utils libosinfo-bin virt-manager genisoimage
     adduser $TARGET_USERNAME libvirt
+EOF
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y qemu-kvm qemu-system-x86 qemu-img virt-install libvirt-utils libvirt-utils libguestfs bridge-utils libosinfo-common virt-manager genisoimage
+    usermod -a -G libvirt $TARGET_USERNAME
 EOF
 
 
@@ -1958,6 +1969,7 @@ EOF
 
 chmod 755 ${ROOTFS}/usr/local/bin/firstboot-virt.sh
 
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ]; then
 cat <<EOF | tee ${ROOTFS}/etc/systemd/system/firstboot-virt.service
 [Unit]
 Description=firstboot-virt
@@ -1978,6 +1990,45 @@ EOF
 cat << EOF | chroot ${ROOTFS}
     systemctl enable firstboot-virt.service
 EOF
+
+fi
+
+
+if [ "$OSNAME" = "devuan" ]; then
+cat <<'EOF' | tee ${ROOTFS}/etc/init.d/firstboot-virt
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          firstboot-virt
+# Required-Start:    $all
+# Required-Stop:     $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Expand filesystem on first boot
+### END INIT INFO
+
+case "$1" in
+  start)
+    /usr/local/bin/firstboot-virt.sh
+    ;;
+  stop)
+    echo "Firstboot script has run"
+    ;;
+  *)
+    echo "Usage: /etc/init.d/firstboot-virt {start|stop}"
+    exit 1
+    ;;
+esac
+
+exit 0
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /etc/init.d/firstboot-virt
+    update-rc.d firstboot-virt defaults
+EOF
+
+fi
+
 }
 
 cleanupapt() {
