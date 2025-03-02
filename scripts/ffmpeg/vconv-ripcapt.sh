@@ -28,8 +28,25 @@ pulsdev="alsa_input.usb-Elgato_Game_Capture_HD60_S__0007798D4B000-03.analog-ster
 #     -f v4l2 -thread_queue_size 1024 -probesize 1G -analyzeduration 1G -use_wallclock_as_timestamps 1 -i $capdev \
 #     -f matroska -map 0:a -map 1:v -max_muxing_queue_size 1024 -preset $preset -pix_fmt yuv420p -c:v libx264 -crf ${crf} -g 24 -c:a aac -b:a ${ab}k $filename
 
+echo "
+ffmpeg  
+    -f alsa 
+        -thread_queue_size 1024 
+        -probesize 1G 
+        -analyzeduration 1G 
+        -i $alsadev 
+    -f v4l2
+        -thread_queue_size 1024 
+        -probesize 1G 
+        -analyzeduration 1G 
+        -use_wallclock_as_timestamps 1 
+        -input_format ${pixel_format} 
+        -pixel_format ${pixel_format} 
+        -i $capdev 
+    -f matroska -t ${duration} -r ${framerate} -fps_mode cfr -map 0:a -map 1:v -max_muxing_queue_size 1024 -preset $preset -pix_fmt yuv420p -c:v libx264 -crf ${crf} -g 24 -c:a aac -b:a ${ab}k $filename
+">$filename.command
+
 ffmpeg  \
-    -t ${duration} \
     -f alsa \
         -thread_queue_size 1024 \
         -probesize 1G \
@@ -43,4 +60,4 @@ ffmpeg  \
         -input_format ${pixel_format} \
         -pixel_format ${pixel_format} \
         -i $capdev \
-    -f matroska -r ${framerate} -fps_mode cfr -map 0:a -map 1:v -max_muxing_queue_size 1024 -preset $preset -pix_fmt yuv420p -c:v libx264 -crf ${crf} -g 24 -c:a aac -b:a ${ab}k $filename
+    -f matroska -t ${duration} -r ${framerate} -fps_mode cfr -map 0:a -map 1:v -max_muxing_queue_size 1024 -preset $preset -pix_fmt yuv420p -c:v libx264 -crf ${crf} -g 24 -c:a aac -b:a ${ab}k $filename
