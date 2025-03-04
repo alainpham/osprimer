@@ -12,7 +12,7 @@ capdev=$(v4l2-ctl --list-devices | grep -A 1 "HD60" | grep "/dev/video" | awk '{
 
 if [ "$snddriver" == "alsa" ]; then
     snddev="hw:CARD=S,DEV=0"
-    sndopt=""
+    sndopt="-thread_queue_size 2048"
 elif [ "$snddriver" == "pulse" ]; then
     snddev="alsa_input.usb-Elgato_Game_Capture_HD60_S__0007798D4B000-03.analog-stereo"
     sndopt="-thread_queue_size 1024 -use_wallclock_as_timestamps 1"
@@ -44,10 +44,10 @@ ffmpeg  \
         ${sndopt} \
         -i ${snddev} \
     -f v4l2 \
-        -thread_queue_size 1024 \
+        -thread_queue_size 2048 \
         -use_wallclock_as_timestamps 1 \
         -i $capdev \
-    -f matroska -t ${duration} -r ${framerate} -fps_mode cfr -map 0:a -map 1:v -preset $preset -pix_fmt yuv420p -c:v libx264 -crf ${crf} -g 24 -c:a aac -b:a ${ab}k  $filename
+    -f matroska -t ${duration} -r ${framerate} -fps_mode cfr -map 0:a -map 1:v -preset $preset -pix_fmt yuv420p -c:v libx264 -crf ${crf} -g 24 -c:a aac -b:a ${ab}k -ar 44100 -vf showinfo $filename 2> $filename.log
 ">$filename.command
 
 ffmpeg  \
@@ -55,7 +55,7 @@ ffmpeg  \
         ${sndopt} \
         -i ${snddev} \
     -f v4l2 \
-        -thread_queue_size 1024 \
+        -thread_queue_size 2048 \
         -use_wallclock_as_timestamps 1 \
         -i $capdev \
-    -f matroska -t ${duration} -r ${framerate} -fps_mode cfr -map 0:a -map 1:v -preset $preset -pix_fmt yuv420p -c:v libx264 -crf ${crf} -g 24 -c:a aac -b:a ${ab}k -ar 44100 $filename
+    -f matroska -t ${duration} -r ${framerate} -fps_mode cfr -map 0:a -map 1:v -preset $preset -pix_fmt yuv420p -c:v libx264 -crf ${crf} -g 24 -c:a aac -b:a ${ab}k -ar 44100 -vf showinfo $filename 2> $filename.log
