@@ -459,6 +459,13 @@ echo "firstboot script activated"
 
 bashaliases() {
 
+scripts="lineinfile"
+for script in $scripts ; do
+curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/setup-scripts/$script
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /usr/local/bin/$script
+EOF
+
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] ; then
     export BASHRC="/etc/bash.bashrc"
 fi
