@@ -47,7 +47,7 @@ ffmpeg  \
         -thread_queue_size 2048 \
         -use_wallclock_as_timestamps 1 \
         -i $capdev \
-    -f matroska -t ${duration} -r ${framerate} -fps_mode cfr -map 0:a -map 1:v -preset $preset -pix_fmt yuv420p -c:v libx264 -crf ${crf} -g 24 -c:a aac -b:a ${ab}k -ar 44100 -vf showinfo $filename 2> $filename.log
+    -f matroska -t ${duration} -r ${framerate} -fps_mode cfr -map 0:a -map 1:v -preset $preset -pix_fmt yuv420p -c:v libx264 -crf ${crf} -g 24 -c:a aac -b:a ${ab}k $filename 2> $filename.log
 ">$filename.command
 
 ffmpeg  \
@@ -58,4 +58,4 @@ ffmpeg  \
         -thread_queue_size 2048 \
         -use_wallclock_as_timestamps 1 \
         -i $capdev \
-    -f matroska -t ${duration} -r ${framerate} -fps_mode cfr -map 0:a -map 1:v -preset $preset -pix_fmt yuv420p -c:v libx264 -crf ${crf} -g 24 -c:a aac -b:a ${ab}k -ar 44100 -vf showinfo $filename 2> $filename.log
+    -f matroska -t ${duration} -r ${framerate} -fps_mode cfr -map 0:a -map 1:v -preset $preset -pix_fmt yuv420p -c:v libx264 -crf ${crf} -g 24 -c:a aac -b:a ${ab}k $filename 2> $filename.log

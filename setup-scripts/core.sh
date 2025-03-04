@@ -117,37 +117,62 @@ inputtasks() {
 
 }
 
-lineinfile() {
-    local file_path="$1"   # First argument: file path
-    local regex="$2"       # Second argument: regex to search for
-    local new_line="$3"    # Third argument: new line to replace or add
-    local create_file="$4" # Fourth argument: create file if not found
 
-    if [ -z "$create_file" ]; then
-        create_file=0
-    fi
+bashaliases() {
 
-    # Check if the file exists
-    if [ ! -f "$file_path" ]; then
-        if [ $create_file -eq 1 ]; then
-            echo "File not found creating file !"
-            touch "$file_path"
-        else
-            return 1
-        fi
-    fi
+scripts="lineinfile"
+for script in $scripts ; do
+curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/utils/$script
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /usr/local/bin/$script
+EOF
+done
 
-    # Check if the line matching the regex exists in the file
-    if grep -qE "$regex" "$file_path"; then
-        # If found, replace the matching line
-        sed -i "s]$regex]$new_line]" "$file_path"
-        echo "Line matching '$regex' was replaced."
-    else
-        # If not found, append the new line at the end of the file
-        echo "$new_line" >> "$file_path"
-        echo "New line added : $new_line"
-    fi
-    
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] ; then
+    export BASHRC="/etc/bash.bashrc"
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+    export BASHRC="/etc/bashrc"
+cat << EOF | chroot ${ROOTFS}
+    ln -sf /usr/bin/vim /usr/bin/vi
+EOF
+fi
+
+lineinfile ${ROOTFS}${BASHRC} ".*alias.*ll.*=.*" 'alias ll="ls -larth"'
+lineinfile ${ROOTFS}${BASHRC} ".*alias.*ap=.*" 'alias ap=ansible-playbook'
+
+
+lineinfile ${ROOTFS}${BASHRC} ".*export.*ROOTFS*=.*" 'export ROOTFS=\/'
+lineinfile ${ROOTFS}${BASHRC} ".*export.*TARGET_USERNAME*=.*" "export TARGET_USERNAME=${TARGET_USERNAME}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*DOCKER_BUILDX_VERSION*=.*" "export DOCKER_BUILDX_VERSION=${DOCKER_BUILDX_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*MAJOR_KUBE_VERSION*=.*" "export MAJOR_KUBE_VERSION=${MAJOR_KUBE_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*K9S_VERSION*=.*" "export K9S_VERSION=${K9S_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*MVN_VERSION*=.*" "export MVN_VERSION=${MVN_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*NERDFONTS*=.*" "export NERDFONTS=\"${NERDFONTS}\""
+lineinfile ${ROOTFS}${BASHRC} ".*export.*ZOOM_VERSION*=.*" "export ZOOM_VERSION=${ZOOM_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*MLVAPP_VERSION*=.*" "export MLVAPP_VERSION=${MLVAPP_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*BEEREF_VERSION*=.*" "export BEEREF_VERSION=${BEEREF_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*FREAC_VERSION*=.*" "export FREAC_VERSION=${FREAC_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*FREAC_VERSION*=.*" "export FREAC_VERSION=${FREAC_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*TEAMS_VERSION*=.*" "export TEAMS_VERSION=${TEAMS_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*CAPRINE_VERSION*=.*" "export CAPRINE_VERSION=${CAPRINE_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*DRAWIO_VERSION*=.*" "export DRAWIO_VERSION=${DRAWIO_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*CERTBOT_DUCKDNS_VERSION*=.*" "export CERTBOT_DUCKDNS_VERSION=${CERTBOT_DUCKDNS_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*ONLYOFFICE_VERSION*=.*" "export ONLYOFFICE_VERSION=${ONLYOFFICE_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*SLACK_VERSION*=.*" "export SLACK_VERSION=${SLACK_VERSION}"
+
+lineinfile ${ROOTFS}${BASHRC} ".*export.*PICOM_VERSION*=.*" "export PICOM_VERSION=${PICOM_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*BRIGHTNESSCTL_VERSION*=.*" "export BRIGHTNESSCTL_VERSION=${BRIGHTNESSCTL_VERSION}"
+
+
+lineinfile ${ROOTFS}${BASHRC} ".*export.*OSNAME*=.*" "export OSNAME=${OSNAME}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*WILDCARD_DOMAIN*=.*" "export WILDCARD_DOMAIN=zez.duckdns.org"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*EMAIL*=.*" "export EMAIL=admin@zez.duckdns.org"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*DUCKDNS_TOKEN*=.*" "export DUCKDNS_TOKEN=xxxx-xxxx-xxxx-xxxx-xxxx"
+
+
+echo "bash aliases setup finished"
 }
 
 mountraw() {
@@ -455,62 +480,6 @@ EOF
 fi
 
 echo "firstboot script activated"
-}
-
-bashaliases() {
-
-scripts="lineinfile"
-for script in $scripts ; do
-curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/setup-scripts/$script
-cat << EOF | chroot ${ROOTFS}
-    chmod 755 /usr/local/bin/$script
-EOF
-
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] ; then
-    export BASHRC="/etc/bash.bashrc"
-fi
-
-if [ "$OSNAME" = "openmandriva" ]; then
-    export BASHRC="/etc/bashrc"
-cat << EOF | chroot ${ROOTFS}
-    ln -sf /usr/bin/vim /usr/bin/vi
-EOF
-fi
-
-lineinfile ${ROOTFS}${BASHRC} ".*alias.*ll.*=.*" 'alias ll="ls -larth"'
-lineinfile ${ROOTFS}${BASHRC} ".*alias.*ap=.*" 'alias ap=ansible-playbook'
-
-
-lineinfile ${ROOTFS}${BASHRC} ".*export.*ROOTFS*=.*" 'export ROOTFS=\/'
-lineinfile ${ROOTFS}${BASHRC} ".*export.*TARGET_USERNAME*=.*" "export TARGET_USERNAME=${TARGET_USERNAME}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*DOCKER_BUILDX_VERSION*=.*" "export DOCKER_BUILDX_VERSION=${DOCKER_BUILDX_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*MAJOR_KUBE_VERSION*=.*" "export MAJOR_KUBE_VERSION=${MAJOR_KUBE_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*K9S_VERSION*=.*" "export K9S_VERSION=${K9S_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*MVN_VERSION*=.*" "export MVN_VERSION=${MVN_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*NERDFONTS*=.*" "export NERDFONTS=\"${NERDFONTS}\""
-lineinfile ${ROOTFS}${BASHRC} ".*export.*ZOOM_VERSION*=.*" "export ZOOM_VERSION=${ZOOM_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*MLVAPP_VERSION*=.*" "export MLVAPP_VERSION=${MLVAPP_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*BEEREF_VERSION*=.*" "export BEEREF_VERSION=${BEEREF_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*FREAC_VERSION*=.*" "export FREAC_VERSION=${FREAC_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*FREAC_VERSION*=.*" "export FREAC_VERSION=${FREAC_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*TEAMS_VERSION*=.*" "export TEAMS_VERSION=${TEAMS_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*CAPRINE_VERSION*=.*" "export CAPRINE_VERSION=${CAPRINE_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*DRAWIO_VERSION*=.*" "export DRAWIO_VERSION=${DRAWIO_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*CERTBOT_DUCKDNS_VERSION*=.*" "export CERTBOT_DUCKDNS_VERSION=${CERTBOT_DUCKDNS_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*ONLYOFFICE_VERSION*=.*" "export ONLYOFFICE_VERSION=${ONLYOFFICE_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*SLACK_VERSION*=.*" "export SLACK_VERSION=${SLACK_VERSION}"
-
-lineinfile ${ROOTFS}${BASHRC} ".*export.*PICOM_VERSION*=.*" "export PICOM_VERSION=${PICOM_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*BRIGHTNESSCTL_VERSION*=.*" "export BRIGHTNESSCTL_VERSION=${BRIGHTNESSCTL_VERSION}"
-
-
-lineinfile ${ROOTFS}${BASHRC} ".*export.*OSNAME*=.*" "export OSNAME=${OSNAME}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*WILDCARD_DOMAIN*=.*" "export WILDCARD_DOMAIN=zez.duckdns.org"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*EMAIL*=.*" "export EMAIL=admin@zez.duckdns.org"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*DUCKDNS_TOKEN*=.*" "export DUCKDNS_TOKEN=xxxx-xxxx-xxxx-xxxx-xxxx"
-
-
-echo "bash aliases setup finished"
 }
 
 smalllogs() {
@@ -2080,6 +2049,7 @@ if ! [ $# -eq 7 ]; then
 fi
 
 init $@
+bashaliases
 mountraw
 createuser
 setpasswd
@@ -2088,7 +2058,6 @@ rmnouveau
 fastboot
 disableturbo
 firstbootexpandfs
-bashaliases
 smalllogs
 reposrc
 iessentials
@@ -2117,10 +2086,10 @@ if ! [ $# -eq 1 ]; then
 fi
 
 init $1 "ps" "authorized_keys" "NA" "NA" "NA"
+bashaliases
 rmnouveau
 fastboot
 disableturbo
-bashaliases
 smalllogs
 reposrc
 iessentials
@@ -2143,10 +2112,10 @@ if ! [ $# -eq 1 ]; then
     return
 fi
 init $1 "ps" "authorized_keys" "NA" "NA" "NA"
+bashaliases
 rmnouveau
 fastboot
 disableturbo
-bashaliases
 smalllogs
 reposrc
 iessentials
@@ -2168,10 +2137,10 @@ if ! [ $# -eq 1 ]; then
     return
 fi
 init $1 "ps" "authorized_keys" "NA" "NA" "NA"
+bashaliases
 rmnouveau
 fastboot
 disableturbo
-bashaliases
 smalllogs
 reposrc
 iessentials
@@ -2192,9 +2161,9 @@ if ! [ $# -eq 1 ]; then
     return
 fi
 init $1 "ps" "authorized_keys" "NA" "NA" "NA"
+bashaliases
 createuser
 authkeys
-bashaliases
 smalllogs
 reposrc
 iessentials
@@ -2222,10 +2191,10 @@ sudo reboot now
 
 openmandrivaws(){
 init apham "NA" "authorized_keys" "NA" "NA" "NA"
+bashaliases
 rmnouveau
 fastboot
 disableturbo
-bashaliases
 smalllogs
 reposrc
 iessentials
@@ -2240,10 +2209,10 @@ sudo reboot now
 
 devuan(){
 init apham "NA" "authorized_keys" "NA" "NA" "NA"
+bashaliases
 rmnouveau
 fastboot
 disableturbo
-bashaliases
 smalllogs
 reposrc
 iessentials
