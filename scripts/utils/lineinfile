@@ -1,9 +1,9 @@
 #!/bin/bash
 
-local file_path="$1"   # First argument: file path
-local regex="$2"       # Second argument: regex to search for
-local new_line="$3"    # Third argument: new line to replace or add
-local create_file="$4" # Fourth argument: create file if not found
+file_path="$1"   # First argument: file path
+regex="$2"       # Second argument: regex to search for
+new_line="$3"    # Third argument: new line to replace or add
+create_file="$4" # Fourth argument: create file if not found
 
 if [ -z "$create_file" ]; then
     create_file=0
