@@ -9,27 +9,32 @@ ab=${6:-160}
 
 capdev=$(v4l2-ctl --list-devices | grep -A 1 "HD60" | grep "/dev/video" | awk '{print $1}')
 
+export thread_queue_size=2048
+
 if [ "$snddriver" == "alsa" ]; then
     snddev="hw:CARD=S,DEV=0"
-    sndopt="-thread_queue_size 4096"
+    sndopt="-thread_queue_size $thread_queue_size"
 elif [ "$snddriver" == "pulse" ]; then
     snddev="alsa_input.usb-Elgato_Game_Capture_HD60_S__0007798D4B000-03.analog-stereo"
-    sndopt="-thread_queue_size 4096 -use_wallclock_as_timestamps 1"
+    sndopt="-thread_queue_size $thread_queue_size -use_wallclock_as_timestamps 1"
 else
     echo "Invalid sound driver"
     exit 1
 fi
+
+# tuning="-tune zerolatency"
+tuning=""
 
 ffmpeg  \
     -f ${snddriver} \
         ${sndopt} \
         -i ${snddev} \
     -f v4l2 \
-        -thread_queue_size 4096 \
+        -thread_queue_size $thread_queue_size \
         -use_wallclock_as_timestamps 1 \
         -i $capdev \
-    -map "0:a" \
     -map "1:v" \
+    -map "0:a" \
         -t ${duration} \
         -r ${framerate} \
         -fps_mode cfr \
@@ -40,6 +45,6 @@ ffmpeg  \
         -g 24 \
         -c:a aac \
         -b:a ${ab}k \
-        -tune zerolatency \
+        $tuning \
         -report \
         -f matroska $filename
