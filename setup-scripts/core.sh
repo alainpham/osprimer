@@ -1,7 +1,9 @@
 #!/bin/bash
 
 # this is a script to install raw vm images, baremetal machines/laptops or cloud vms
-
+toto(){
+    echo "toto"
+}
 inputversions() {
     # https://github.com/docker/buildx/releases
     export DOCKER_BUILDX_VERSION=v0.21.1
@@ -1129,7 +1131,6 @@ cat << EOF | chroot ${ROOTFS}
     wget https://bitbucket.org/heldercorreia/speedcrunch/downloads/SpeedCrunch-${SPEEDCRUNCH_VERSION}-linux64.tar.bz2
     tar xvf SpeedCrunch-${SPEEDCRUNCH_VERSION}-linux64.tar.bz2
     cp speedcrunch /usr/local/bin/
-
 EOF
 #     picom brightnessctl
 
@@ -1906,7 +1907,7 @@ EOF
 
 }
 
-ivirt(){
+ivirt() {
 echo "virtualization tools"
 
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
@@ -1921,7 +1922,7 @@ cat << EOF | chroot ${ROOTFS}
     dnf install -y qemu-kvm qemu-system-x86 qemu-img virt-install libvirt-utils libvirt-utils libguestfs bridge-utils libosinfo-common virt-manager genisoimage
     usermod -a -G libvirt $TARGET_USERNAME
 EOF
-
+fi
 
 
 curl -Lo ${ROOTFS}/usr/local/bin/vmcr https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/vms/vmcr
@@ -1961,6 +1962,7 @@ EOF
 chmod 755 ${ROOTFS}/usr/local/bin/firstboot-virt.sh
 
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ]; then
+
 cat <<EOF | tee ${ROOTFS}/etc/systemd/system/firstboot-virt.service
 [Unit]
 Description=firstboot-virt
@@ -1986,6 +1988,7 @@ fi
 
 
 if [ "$OSNAME" = "devuan" ]; then
+
 cat <<'EOF' | tee ${ROOTFS}/etc/init.d/firstboot-virt
 #!/bin/sh
 ### BEGIN INIT INFO
@@ -2013,11 +2016,10 @@ esac
 exit 0
 EOF
 
-cat << EOF | chroot ${ROOTFS}
+cat << 'EOF' | chroot ${ROOTFS}
     chmod 755 /etc/init.d/firstboot-virt
     update-rc.d firstboot-virt defaults
 EOF
-
 fi
 
 }
