@@ -84,6 +84,10 @@ inputversions() {
     export KDENLIVE_FULL_VERSION=24.12.2
     echo "export KDENLIVE_FULL_VERSION=${KDENLIVE_FULL_VERSION}"
 
+    # https://heldercorreia.bitbucket.io/speedcrunch/download.html
+    export SPEEDCRUNCH_VERSION=0.12
+    echo "export SPEEDCRUNCH_VERSION=${SPEEDCRUNCH_VERSION}"
+
     export OSNAME=$(awk -F= '/^ID=/ {gsub(/"/, "", $2); print $2}' /etc/os-release)
     echo "export OSNAME=${OSNAME}"
 }
@@ -164,6 +168,11 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*SLACK_VERSION*=.*" "export SLACK_VERSIO
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*PICOM_VERSION*=.*" "export PICOM_VERSION=${PICOM_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*BRIGHTNESSCTL_VERSION*=.*" "export BRIGHTNESSCTL_VERSION=${BRIGHTNESSCTL_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*SLOP_VERSION*=.*" "export SLOP_VERSION=${SLOP_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*MAIM_VERSION*=.*" "export MAIM_VERSION=${MAIM_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*KDENLIVE_MAIN_VERSION*=.*" "export KDENLIVE_MAIN_VERSION=${KDENLIVE_MAIN_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*KDENLIVE_FULL_VERSION*=.*" "export KDENLIVE_FULL_VERSION=${KDENLIVE_FULL_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*SPEEDCRUNCH_VERSION*=.*" "export SPEEDCRUNCH_VERSION=${SPEEDCRUNCH_VERSION}"
 
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*OSNAME*=.*" "export OSNAME=${OSNAME}"
@@ -1115,6 +1124,12 @@ cat << EOF | chroot ${ROOTFS}
     unzip brightnessctl.zip
     cd brightnessctl-${BRIGHTNESSCTL_VERSION}
     make install
+
+    cd /tmp/
+    wget https://bitbucket.org/heldercorreia/speedcrunch/downloads/SpeedCrunch-${SPEEDCRUNCH_VERSION}-linux64.tar.bz2
+    tar xvf SpeedCrunch-${SPEEDCRUNCH_VERSION}-linux64.tar.bz2
+    cp speedcrunch /usr/local/bin/
+
 EOF
 #     picom brightnessctl
 
