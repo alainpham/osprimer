@@ -128,7 +128,7 @@ bashaliases() {
 
 scripts="lineinfile"
 for script in $scripts ; do
-curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/utils/$script
+wget -O ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/utils/$script
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /usr/local/bin/$script
 EOF
@@ -1235,7 +1235,7 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 
 # ffmpeg scripts
-ffmpegscripts="vconv-archive-lossless-h264-vaapi.sh vconv-extract-audio.sh vconv-h264-vaapi-qp.sh vconv-h264-vaapi-vbr.sh vconv-hevc-vaapi-qp.sh vconv-make-mkv.sh vconv-make-mp4.sh vconv-mp3-hq.sh vconv-ripcapt.sh vconv-ripscreen.sh vconv-vp9-vaapi-qp.sh vconv-x264-crf.sh vconv-travel.sh vconv-x264-lowres-lowvbr-2pass.sh vconv-x264-lowres-vbr-2pass.sh vconv-x264-vbr-2pass.sh"
+ffmpegscripts="ripscreen.sh riptv.sh vconv-archive-lossless-h264-vaapi.sh vconv-extract-audio.sh vconv-h264-vaapi-qp.sh vconv-h264-vaapi-vbr.sh vconv-hevc-vaapi-qp.sh vconv-make-mkv.sh vconv-make-mp4.sh vconv-mp3-hq.sh vconv-vp9-vaapi-qp.sh vconv-x264-crf.sh vconv-travel.sh vconv-x264-lowres-lowvbr-2pass.sh vconv-x264-lowres-vbr-2pass.sh vconv-x264-vbr-2pass.sh"
 for script in $ffmpegscripts ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/ffmpeg/$script
 cat << EOF | chroot ${ROOTFS}
@@ -1886,7 +1886,6 @@ EOF
 #autostart apps
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm
 cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm/autostart.sh
-slack &
 asnddef &
 EOF
 
@@ -2238,5 +2237,21 @@ allowsshpwd
 idocker
 ikube
 igui
+sudo reboot now
+}
+
+devuanvm(){
+init apham "NA" "authorized_keys" "NA" "NA" "NA"
+bashaliases
+rmnouveau
+fastboot
+smalllogs
+reposrc
+iessentials
+isudo
+allowsshpwd
+idocker
+igui
+iworkstation
 sudo reboot now
 }

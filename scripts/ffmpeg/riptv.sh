@@ -1,6 +1,7 @@
 #!/bin/bash
 filename=$(date +"%Y-%m-%d_%H-%M-%S").mkv
-duration=${1:-"03:35:00"}
+# duration="03:03:31" is exactly 11011 seconds, 24000/1001*11011=264000 frames
+duration=${1:-"03:03:31"}
 snddriver=${2:-"alsa"}
 framerate=${3:-"24000/1001"}
 preset=${4:-faster}
@@ -9,7 +10,7 @@ ab=${6:-160}
 
 capdev=$(v4l2-ctl --list-devices | grep -A 1 "HD60" | grep "/dev/video" | awk '{print $1}')
 
-export thread_queue_size=2048
+export thread_queue_size=1024
 
 if [ "$snddriver" == "alsa" ]; then
     snddev="hw:CARD=S,DEV=0"
@@ -31,7 +32,8 @@ ffmpeg  \
         -i ${snddev} \
     -f v4l2 \
         -thread_queue_size $thread_queue_size \
-        -use_wallclock_as_timestamps 1 \
+        -
+         1 \
         -i $capdev \
     -map "1:v" \
     -map "0:a" \

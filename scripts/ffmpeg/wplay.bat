@@ -6,6 +6,9 @@ setlocal
 :: show options : ffmpeg -f dshow -list_options true -i audio="Digital Audio Interface (Game Capture HD60 S+)"
 
 :: Run ffmpeg to capture video and audio
+::set vdevice="UGREEN 25773"
+::set adevice="Digital Audio Interface (UGREEN 25773)"
+::set pxformat="yuyv422"
 
 
 ffplay ^
