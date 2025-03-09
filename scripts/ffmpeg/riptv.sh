@@ -2,9 +2,10 @@
 filename=$(date +"%Y-%m-%d_%H-%M-%S").mkv
 # duration="03:03:31" is exactly 11011 seconds, 24000/1001*11011=264000 frames
 duration=${1:-"03:03:31"}
-snddriver=${2:-"alsa"}
-framerate=${3:-"24000/1001"}
-preset=${4:-faster}
+zerolatency=${2:-"true"}
+snddriver=${3:-"alsa"}
+framerate=${4:-"24000/1001"}
+preset=${5:-faster}
 crf=${5:-23}
 ab=${6:-160}
 
@@ -23,8 +24,12 @@ else
     exit 1
 fi
 
-# tuning="-tune zerolatency"
 tuning=""
+if ["$zerolatency" == "true"]; then
+    tuning="-tune zerolatency"
+fi
+
+export FFREPORT=file="${filename}.log:level=48"
 
 ffmpeg  \
     -f ${snddriver} \
@@ -32,8 +37,7 @@ ffmpeg  \
         -i ${snddev} \
     -f v4l2 \
         -thread_queue_size $thread_queue_size \
-        -
-         1 \
+        -use_wallclock_as_timestamps 1 \
         -i $capdev \
     -map "1:v" \
     -map "0:a" \
