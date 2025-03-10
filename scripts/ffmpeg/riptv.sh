@@ -9,7 +9,7 @@ preset=${5:-faster}
 crf=${5:-23}
 ab=${6:-160}
 
-capdev=$(v4l2-ctl --list-devices | grep -A 1 "HD60" | grep "/dev/video" | awk '{print $1}')
+capdev=$(v4l2-ctl --list-devices | grep -A 1 "HD60\|AVerMedia" | grep "/dev/video" | awk '{print $1}')
 
 export thread_queue_size=1024
 

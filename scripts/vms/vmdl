@@ -6,7 +6,7 @@ if ! [ $# -eq 1 ]; then
     exit 1
 fi
 
-VMS_DIR=/home/workdrive/virt/runtime
+VMS_DIR=/home/${USER}/virt/runtime
 sudo virsh destroy $1
 sudo virsh undefine $1
 rm -f $VMS_DIR/$1.qcow2

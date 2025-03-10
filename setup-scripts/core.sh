@@ -1643,20 +1643,15 @@ cat << EOF | chroot ${ROOTFS}
     chmod 755 /usr/local/bin/pdf2png
 EOF
 
-}
-
-iworkstation() {
-echo "additional workstation tools"
-
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 cat << EOF | chroot ${ROOTFS}
-    apt install -y handbrake gimp rawtherapee krita mypaint inkscape blender obs-studio mgba-qt v4l2loopback-utils kdenlive flameshot maim xclip xdotool thunar thunar-archive-plugin easytag audacity
+    apt install -y v4l2loopback-utils flameshot maim xclip xdotool thunar thunar-archive-plugin
 EOF
 fi
 
 if [ "$OSNAME" = "openmandriva" ]; then
 cat << EOF | chroot ${ROOTFS}
-    dnf install -y handbrake gimp rawtherapee krita python-numpy mypaint inkscape blender obs-studio v4l-utils flameshot xclip xdotool thunar thunar-archive-plugin easytag audacity
+    dnf install -y   v4l-utils flameshot xclip xdotool thunar thunar-archive-plugin 
 EOF
 
 # compile maim
@@ -1679,10 +1674,8 @@ cat << EOF | chroot ${ROOTFS}
     cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="/usr" ./
     make && sudo make install
 EOF
-
 fi
 
-# /!\TODO install appimage of kdenlive
 
 cat << 'EOF' | tee ${ROOTFS}/usr/local/bin/winshot.sh
 maim -i $(xdotool getactivewindow) | xclip -selection clipboard -t image/png
@@ -1728,6 +1721,37 @@ EOF
 cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config
 EOF
+
+#autostart apps
+mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm
+cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm/autostart.sh
+asnddef &
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /home/$TARGET_USERNAME/.local/share/dwm/autostart.sh
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.local
+EOF
+
+}
+
+
+iworkstation() {
+echo "additional workstation tools"
+
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
+cat << EOF | chroot ${ROOTFS}
+    apt install -y handbrake gimp rawtherapee krita mypaint inkscape blender obs-studio mgba-qt kdenlive easytag audacity
+EOF
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y handbrake gimp rawtherapee krita python-numpy mypaint inkscape blender obs-studio easytag audacity
+EOF
+
+
+fi
 
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 cat << EOF | chroot ${ROOTFS}
@@ -1881,17 +1905,6 @@ wget -O ${ROOTFS}/opt/appimages/caprine.AppImage https://github.com/sindresorhus
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/caprine.AppImage
     ln -sf /opt/appimages/caprine.AppImage /usr/local/bin/caprine
-EOF
-
-#autostart apps
-mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm
-cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm/autostart.sh
-asnddef &
-EOF
-
-cat << EOF | chroot ${ROOTFS}
-    chmod 755 /home/$TARGET_USERNAME/.local/share/dwm/autostart.sh
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.local
 EOF
 
 # configure OBS
@@ -2252,6 +2265,5 @@ isudo
 allowsshpwd
 idocker
 igui
-iworkstation
 sudo reboot now
 }

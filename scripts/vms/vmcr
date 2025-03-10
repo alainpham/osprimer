@@ -8,8 +8,8 @@ if ! [ $# -eq 8 ]; then
 fi
 
 # Directory to store images
-DIR=/home/workdrive/virt/images
-VMS_DIR=/home/workdrive/virt/runtime
+DIR=/home/${USER}/virt/images
+VMS_DIR=/home/${USER}/virt/runtime
 
 # Location of cloud image
 IMAGE=$DIR/$4.qcow2
