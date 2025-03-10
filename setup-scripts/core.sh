@@ -1945,15 +1945,17 @@ curl -Lo ${ROOTFS}/usr/local/bin/vmsh https://raw.githubusercontent.com/alainpha
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /usr/local/bin/vmcr /usr/local/bin/vmdl /usr/local/bin/vmls /usr/local/bin/vmsh
 
-    if [ ! -f /home/${TARGET_USERNAME}/.ssh/vm ]; then
-        ssh-keygen -f /home/${TARGET_USERNAME}/.ssh/vm -N ""
+    mkdir -p /home/${TARGET_USERNAME}/ssh
+    if [ ! -f /home/${TARGET_USERNAME}/ssh/vm ]; then
+        ssh-keygen -f /home/${TARGET_USERNAME}/ssh/vm -N ""
     fi
 
     chown -R ${TARGET_USERNAME}:${TARGET_USERNAME} /home/${TARGET_USERNAME}/.ssh/vm*
     
-    mkdir -p /home/workdrive/virt/images
-    mkdir -p /home/workdrive/virt/runtime
-    chown -R ${TARGET_USERNAME}:${TARGET_USERNAME} /home/workdrive
+    mkdir -p /home/${TARGET_USERNAME}/virt/images
+    mkdir -p /home/${TARGET_USERNAME}/virt/runtime
+    chown -R ${TARGET_USERNAME}:${TARGET_USERNAME} /home/${TARGET_USERNAME}/virt
+    chown -R ${TARGET_USERNAME}:${TARGET_USERNAME} /home/${TARGET_USERNAME}/ssh
 EOF
 
 # first boot script

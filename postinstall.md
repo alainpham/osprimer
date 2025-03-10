@@ -44,7 +44,7 @@ vmcr node03 2048 4 $image 13 40G 1G $variant
 
 vmcr splunk 6144 4  $image 40 40G 1G $variant
 vmcr vrbx 6144 4  $image 30 40G 1G $variant
-vmcr vrbx 6144 4 debian-12-generic-amd64 30 40G 1G debiantesting
+vmcr sandbox 6144 4 debian-12-generic-amd64 50 40G 1G debiantesting
 
 
 
