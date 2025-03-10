@@ -34,7 +34,7 @@ systemctl reboot;
 
 
 
-image=debian-12-genericcloud-amd64
+image=debian-12-generic-amd64
 variant=debiantesting
 
 vmcr master 4096 4 $image 10 40G 1G $variant
@@ -44,6 +44,7 @@ vmcr node03 2048 4 $image 13 40G 1G $variant
 
 vmcr splunk 6144 4  $image 40 40G 1G $variant
 vmcr vrbx 6144 4  $image 30 40G 1G $variant
+vmcr vrbx 6144 4 debian-12-generic-amd64 30 40G 1G debiantesting
 
 
 
