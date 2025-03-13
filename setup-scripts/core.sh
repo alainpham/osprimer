@@ -90,6 +90,11 @@ inputversions() {
     export SPEEDCRUNCH_VERSION=0.12
     echo "export SPEEDCRUNCH_VERSION=${SPEEDCRUNCH_VERSION}"
 
+    # https://www.videohelp.com/software/AviDemux
+    export AVIDEMUX_VERSION=2.8.1
+    echo "export AVIDEMUX_VERSION=${AVIDEMUX_VERSION}"
+
+
     export OSNAME=$(awk -F= '/^ID=/ {gsub(/"/, "", $2); print $2}' /etc/os-release)
     echo "export OSNAME=${OSNAME}"
 }
@@ -175,7 +180,7 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*MAIM_VERSION*=.*" "export MAIM_VERSION=
 lineinfile ${ROOTFS}${BASHRC} ".*export.*KDENLIVE_MAIN_VERSION*=.*" "export KDENLIVE_MAIN_VERSION=${KDENLIVE_MAIN_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*KDENLIVE_FULL_VERSION*=.*" "export KDENLIVE_FULL_VERSION=${KDENLIVE_FULL_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*SPEEDCRUNCH_VERSION*=.*" "export SPEEDCRUNCH_VERSION=${SPEEDCRUNCH_VERSION}"
-
+lineinfile ${ROOTFS}${BASHRC} ".*export.*AVIDEMUX_VERSION*=.*" "export AVIDEMUX_VERSION=${AVIDEMUX_VERSION}"
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*OSNAME*=.*" "export OSNAME=${OSNAME}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*WILDCARD_DOMAIN*=.*" "export WILDCARD_DOMAIN=zez.duckdns.org"
@@ -1907,6 +1912,14 @@ cat << EOF | chroot ${ROOTFS}
     ln -sf /opt/appimages/caprine.AppImage /usr/local/bin/caprine
 EOF
 
+# avidemux
+wget -O ${ROOTFS}/opt/appimages/avidemux.AppImage https://www.videohelp.com/download/avidemux_${AVIDEMUX_VERSION}.appImage
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /opt/appimages/avidemux.AppImage
+    ln -sf /opt/appimages/avidemux.AppImage /usr/local/bin/avidemux
+EOF
+
+
 # configure OBS
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/obs-studio
 
@@ -2260,12 +2273,32 @@ init apham "NA" "authorized_keys" "NA" "NA" "NA"
 bashaliases
 rmnouveau
 fastboot
+disableturbo
 smalllogs
 reposrc
 iessentials
 isudo
 allowsshpwd
+itouchpad
 idocker
 igui
+sudo reboot now
+}
+
+devuanwk(){
+init apham "NA" "authorized_keys" "NA" "NA" "NA"
+bashaliases
+rmnouveau
+fastboot
+disableturbo
+smalllogs
+reposrc
+iessentials
+isudo
+allowsshpwd
+itouchpad
+idocker
+igui
+iworkstation
 sudo reboot now
 }
