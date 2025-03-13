@@ -84,3 +84,17 @@ sudo tar zxvf crictl-$VERSION-linux-amd64.tar.gz -C /usr/local/bin
 rm -f crictl-$VERSION-linux-amd64.tar.gz
 
 
+macbook keyboard 
+
+```sh
+# KEYBOARD CONFIGURATION FILE
+
+# Consult the keyboard(5) manual page.
+
+XKBMODEL="apple_laptop"
+XKBLAYOUT="fr"
+XKBVARIANT="mac"
+XKBOPTIONS=""
+
+BACKSPACE="guess"
+```
