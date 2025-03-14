@@ -623,6 +623,7 @@ Section "InputClass"
     Identifier "touchpad catchall"
     Driver "libinput"
     Option "Tapping" "on"
+    Option "NaturalScrolling" "false"
 EndSection
 EOF
 }
@@ -2245,7 +2246,6 @@ iessentials
 isudo
 allowsshpwd
 idocker
-ikube
 igui
 iworkstation
 sudo reboot now
@@ -2300,5 +2300,5 @@ itouchpad
 idocker
 igui
 iworkstation
-sudo reboot now
+sudo reboot
 }
