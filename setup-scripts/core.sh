@@ -272,12 +272,16 @@ rmnouveau() {
 # deactivate nouveau drivers 
 sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/ {/modprobe.blacklist=nouveau/! s/"$/ modprobe.blacklist=nouveau"/}' ${ROOTFS}/etc/default/grub
 
-echo $OSNAME
-
 update-grub2
 
 echo "Deactivated nouveau drivers"
 
+}
+
+rmbroadcom() {
+sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/ {/modprobe.blacklist=b43,brcmsmac/! s/"$/ modprobe.blacklist=b43,brcmsmac"/}' ${ROOTFS}/etc/default/grub
+update-grub2
+echo "Deactivated broadcom drivers"
 }
 
 fastboot() {
@@ -2088,7 +2092,9 @@ init() {
     inputtasks $@
 }
 
-
+initdefault(){
+    init apham "NA" "authorized_keys" "NA" "NA" "NA"
+}
 
 ###############################
 ##### MAIN FUNCTIONS ##########
@@ -2114,6 +2120,7 @@ createuser
 setpasswd
 authkeys
 rmnouveau
+rmbroadcom
 fastboot
 disableturbo
 firstbootexpandfs
@@ -2325,7 +2332,6 @@ smalllogs
 reposrc
 iessentials
 isudo
-allowsshpwd
 itouchpad
 idocker
 igui
