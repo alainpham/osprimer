@@ -1,9 +1,6 @@
 #!/bin/bash
 
 # this is a script to install raw vm images, baremetal machines/laptops or cloud vms
-toto(){
-    echo "toto"
-}
 inputversions() {
     # https://github.com/docker/buildx/releases
     export DOCKER_BUILDX_VERSION=v0.21.1
@@ -96,7 +93,10 @@ inputversions() {
 
 
     export OSNAME=$(awk -F= '/^ID=/ {gsub(/"/, "", $2); print $2}' /etc/os-release)
-    echo "export OSNAME=${OSNAME}"
+    echo "export OSNAME=${OSNAME}"m
+
+    export OSVERSION=$(awk -F= '/^VERSION_ID=/ {gsub(/"/, "", $2); print $2}' /etc/os-release)
+    echo "export OSVERSION=${OSVERSION}"
 }
 
 inputkeyboard() {
@@ -183,6 +183,7 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*SPEEDCRUNCH_VERSION*=.*" "export SPEEDC
 lineinfile ${ROOTFS}${BASHRC} ".*export.*AVIDEMUX_VERSION*=.*" "export AVIDEMUX_VERSION=${AVIDEMUX_VERSION}"
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*OSNAME*=.*" "export OSNAME=${OSNAME}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*OSVERSION*=.*" "export OSVERSION=${OSVERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*WILDCARD_DOMAIN*=.*" "export WILDCARD_DOMAIN=zez.duckdns.org"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*EMAIL*=.*" "export EMAIL=admin@zez.duckdns.org"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*DUCKDNS_TOKEN*=.*" "export DUCKDNS_TOKEN=xxxx-xxxx-xxxx-xxxx-xxxx"
@@ -273,21 +274,7 @@ sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/ {/modprobe.blacklist=nouveau/! s/"$/ modpro
 
 echo $OSNAME
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
-cat << EOF | chroot ${ROOTFS}
-    update-grub
-EOF
-fi
-
-if [ "$OSNAME" = "openmandriva" ]; then
-cat << EOF | chroot ${ROOTFS}
-    if [ -d /sys/firmware/efi ]; then 
-        sudo grub2-mkconfig -o /boot/efi/EFI/openmandriva/grub.cfg
-    else 
-        sudo grub2-mkconfig -o /boot/grub2/grub.cfg
-    fi
-EOF
-fi
+update-grub2
 
 echo "Deactivated nouveau drivers"
 
@@ -300,23 +287,15 @@ echo debian
 # accelerate grub startup
 mkdir -p ${ROOTFS}/etc/default/grub.d/
 echo 'GRUB_TIMEOUT=0' | tee ${ROOTFS}/etc/default/grub.d/15_timeout.cfg
-cat << EOF | chroot ${ROOTFS}
-    update-grub
-EOF
 fi
 
 if [ "$OSNAME" = "openmandriva" ]; then
 echo openmandriva
 lineinfile ${ROOTFS}/etc/default/grub ".*GRUB_TIMEOUT=.*" 'GRUB_TIMEOUT=0'
-cat << EOF | chroot ${ROOTFS}
-    if [ -d /sys/firmware/efi ]; then 
-        sudo grub2-mkconfig -o /boot/efi/EFI/openmandriva/grub.cfg
-    else 
-        sudo grub2-mkconfig -o /boot/grub2/grub.cfg
-    fi
-EOF
-
 fi
+
+update-grub2
+
 
 echo "fastboot activated"
 
@@ -324,6 +303,11 @@ echo "fastboot activated"
 
 disableturbo() {
 # disable turbo boost
+
+if [ ! -f /sys/devices/system/cpu/intel_pstate/no_turbo ]; then
+    echo "no_turbo file not found, exiting"
+    return 0
+fi
 
 cat <<'EOF' | tee ${ROOTFS}/usr/local/bin/turboboost.sh
 #!/bin/bash
@@ -530,9 +514,14 @@ fi
 
 
 if [ "$OSNAME" = "openmandriva" ]; then
+
 rm -f ${ROOTFS}/etc/yum.repos.d/*
-curl -Lo ${ROOTFS}/etc/yum.repos.d/openmandriva-rolling-x86_64.repo https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/om/openmandriva-rolling-x86_64.repo
-# curl -Lo ${ROOTFS}/etc/yum.repos.d/openmandriva-rock-x86_64.repo https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/om/openmandriva-rock-x86_64.repo
+
+    if [ "$OSVERSION" = "5.0" ]; then
+        curl -Lo ${ROOTFS}/etc/yum.repos.d/openmandriva-rock-x86_64.repo https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/om/openmandriva-rock-x86_64.repo
+    else
+        curl -Lo ${ROOTFS}/etc/yum.repos.d/openmandriva-rolling-x86_64.repo https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/om/openmandriva-rolling-x86_64.repo
+    fi
 fi
 
 }
@@ -560,10 +549,20 @@ fi
 
 if [ "$OSNAME" = "openmandriva" ]; then
 
+
+    if [ "$OSVERSION" = "5.0" ]; then
 cat << EOF | chroot ${ROOTFS}
-    dnf clean -y all ; dnf -y repolist
-    dnf -y --allowerasing distro-sync
+dnf clean -y all ; dnf -y repolist
+dnf -y upgrade
 EOF
+    else
+cat << EOF | chroot ${ROOTFS}
+dnf clean -y all ; dnf -y repolist
+dnf -y --allowerasing distro-sync
+EOF
+    fi
+
+
 
 # cat << EOF | chroot ${ROOTFS}
 #     dnf clean all ; dnf repolist
@@ -1069,6 +1068,86 @@ echo 'options nvidia NVreg_PreserveVideoMemoryAllocations=1' > ${ROOTFS}/etc/mod
 }
 
 
+inumlocktty(){
+
+if [[ "$(dmidecode -t 1 | grep 'Product Name')" == *"MacBook"* ]]; then
+    echo "Running on a MacBook, no numlock"
+    return 0
+fi
+
+#enable numlock tty
+cat <<'EOF' | tee ${ROOTFS}/usr/local/bin/nlock
+#!/bin/bash
+echo "nlock : activate numlock on tty"
+for tty in /dev/tty{1..6}
+do
+    /usr/bin/setleds -D +num < "$tty";
+done
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /usr/local/bin/nlock
+EOF
+
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME"  = "openmandriva" ]; then
+cat <<EOF | tee ${ROOTFS}/etc/systemd/system/nlock.service
+[Unit]
+Description=nlock
+
+[Service]
+ExecStart=/usr/local/bin/nlock
+StandardInput=tty
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    systemctl enable nlock
+EOF
+
+fi
+
+if [ "$OSNAME" = "devuan" ]; then
+cat <<'EOF' | tee ${ROOTFS}/etc/init.d/nlock
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          nlock
+# Required-Start:    $all
+# Required-Stop:     $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start daemon at boot time
+# Description:       Enable service provided by daemon.
+### END INIT INFO
+
+case "$1" in
+  start)
+    /usr/local/bin/nlock
+    ;;
+  stop)
+    echo "Stopping nlock"
+    ;;
+  *)
+    echo "Usage: /etc/init.d/firstboot {start|stop}"
+    exit 1
+    ;;
+esac
+
+exit 0
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /etc/init.d/nlock
+    update-rc.d nlock defaults
+EOF
+
+fi
+# end numlock tty
+
+}
+
 ##############################################
 ########### GUI setup ########################
 ##############################################
@@ -1088,8 +1167,10 @@ EOF
 fi
 
 if [ "$OSNAME" = "openmandriva" ]; then
+#  backup   dnf install -y make clang gcc gcc-c++ libx11-devel libxft-devel libxrandr-devel lib64imlib2-devel freetype-devel libxinerama-devel x11-server-xorg numlock x11-util-macros
+
 cat << EOF | chroot ${ROOTFS}
-    dnf install -y make gcc libx11-devel libxft-devel libxrandr-devel lib64imlib2-devel freetype-devel libxinerama-devel x11-server-xorg numlock x11-util-macros
+    dnf install -y make clang libx11-devel libxft-devel libxrandr-devel lib64imlib2-devel freetype-devel libxinerama-devel x11-server-xorg numlock x11-util-macros
     dnf install -y meson cmake autoconf automake libtool lib64ev-devel glibc-devel libpixman-devel libx11-devel lib64xcb-util-image-devel lib64xcb-util-renderutil-devel libxcb-util-devel uthash-devel libpcre2-devel libepoxy-devel libdbus-1-devel
     dnf remove -y pipewire-pulse
     dnf install -y pulseaudio-server pulseaudio-module-bluetooth pulseaudio-utils pavucontrol alsa-utils
@@ -1117,9 +1198,20 @@ EOF
 fi
 
 if [ "$OSNAME" = "openmandriva" ]; then
+
+if [ "$OSVERSION" = "5.0" ]; then
+cat << EOF | chroot ${ROOTFS}
+dnf install -y breeze
+EOF
+else
+cat << EOF | chroot ${ROOTFS}
+dnf install -y plasma6-breeze
+EOF
+fi
+
 cat << EOF | chroot ${ROOTFS}
     dnf install -y libgtk+3.0-devel python-gobject3-devel
-    dnf install -y ntfs-3g ifuse mpv haruna vlc nmon neofetch feh qimgv NetworkManager dnsmasq acpitool lm_sensors noto-sans-fonts noto-serif-fonts fonts-ttf-awesome fonts-otf-awesome libnotify dunst ffmpeg mutagen imagemagick mediainfo arandr  cups xsane sane-backends filezilla lxappearance plasma6-breeze
+    dnf install -y ntfs-3g ifuse mpv haruna vlc nmon neofetch feh qimgv NetworkManager dnsmasq acpitool lm_sensors noto-sans-fonts noto-serif-fonts fonts-ttf-awesome fonts-otf-awesome libnotify dunst ffmpeg mutagen imagemagick mediainfo arandr  cups xsane sane-backends filezilla lxappearance
     cd /tmp/
     wget -O picom.zip "https://github.com/yshui/picom/archive/refs/tags/v${PICOM_VERSION}.zip"
     unzip picom.zip
@@ -1343,6 +1435,7 @@ fi
 if [ "$OSNAME" = "openmandriva" ]; then
 cat << EOF | chroot ${ROOTFS}
     dnf install -y google-chrome-stable
+    rm -f /etc/yum.repos.d/google-chrome.repo
 EOF
 fi
 
@@ -1372,20 +1465,20 @@ cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/wm
 EOF
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
+# if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 cat << EOF | chroot ${ROOTFS}
     cd /home/$TARGET_USERNAME/wm
     git clone https://github.com/alainpham/slock-flexipatch.git
     cd /home/$TARGET_USERNAME/wm/slock-flexipatch && make clean install
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/wm
 EOF
-fi
+# fi
 
-if [ "$OSNAME" = "openmandriva" ]; then
-cat << EOF | chroot ${ROOTFS}
-    dnf install -y slock
-EOF
-fi
+# if [ "$OSNAME" = "openmandriva" ]; then
+# cat << EOF | chroot ${ROOTFS}
+#     dnf install -y slock
+# EOF
+# fi
 
 # end dwm
 fi 
@@ -1466,18 +1559,23 @@ spice-vdagent
 EOF
 fi
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
+# Xinit numlock
+if [[ "$(dmidecode -t 1 | grep 'Product Name')" == *"MacBook"* ]]; then
+    echo "Running on a MacBook, no numlock"
+else
+    
+    if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 cat << EOF | tee -a ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
 numlockx
 
 EOF
-fi
+    fi
 
-if [ "$OSNAME" = "openmandriva" ]; then
+    if [ "$OSNAME" = "openmandriva" ]; then
 cat << 'EOF' | tee -a ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
 enable_X11_numlock
-
 EOF
+    fi
 fi
 
 cat << 'EOF' | tee -a ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
@@ -1500,7 +1598,7 @@ while true; do
     # No error logging
     #dwm >/dev/null 2>&1
     rebootdwm=$(cat ~/.rebootdwm)
-    if [[ "$rebootdwm" = '0'  ]]; then
+    if [ "$rebootdwm" = '0' ]; then
             break
     fi
 done
@@ -1520,124 +1618,6 @@ vsync = true;
 use-damage = false
 EOF
 fi
-
-# if inside virtual machine
-# video=Virtual-1:1600x900
-
-if [ "$hypervisor" = "hyperv" ] || [ "$hypervisor" = "kvm" ]; then
-cat << 'EOF' | tee ${ROOTFS}/home/${TARGET_USERNAME}/.config/picom/picom.conf
-# picom config
-backend = "xrender";
-use-damage = false
-EOF
-fi
-
-cat << EOF | chroot ${ROOTFS}
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/${TARGET_USERNAME}/.config/picom
-EOF
-
-
-# Hyperv set resolution
-if [ "$hypervisor" = "hyperv" ] ; then
-sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/ {/video=Virtual-1:1600x900/! s/"$/ video=Virtual-1:1600x900"/}' ${ROOTFS}/etc/default/grub
-
-
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
-cat << EOF | chroot ${ROOTFS}
-    update-grub
-EOF
-fi
-
-if [ "$OSNAME" = "openmandriva" ]; then
-cat << EOF | chroot ${ROOTFS}
-    if [ -d /sys/firmware/efi ]; then 
-        sudo grub2-mkconfig -o /boot/efi/EFI/openmandriva/grub.cfg
-    else 
-        sudo grub2-mkconfig -o /boot/grub2/grub.cfg
-    fi
-EOF
-fi
-
-cat <<EOF | tee ${ROOTFS}/etc/X11/xorg.conf.d/30-hyperv.conf
-Section "Device"
-  Identifier "HYPER_V Framebuffer"
-  Driver "fbdev"
-EndSection
-EOF
-#end hyperv
-fi
-
-
-#enable numlock tty
-cat <<'EOF' | tee ${ROOTFS}/usr/local/bin/nlock
-#!/bin/bash
-echo "nlock : activate numlock on tty"
-for tty in /dev/tty{1..6}
-do
-    /usr/bin/setleds -D +num < "$tty";
-done
-EOF
-
-cat << EOF | chroot ${ROOTFS}
-    chmod 755 /usr/local/bin/nlock
-EOF
-
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME"  = "openmandriva" ]; then
-cat <<EOF | tee ${ROOTFS}/etc/systemd/system/nlock.service
-[Unit]
-Description=nlock
-
-[Service]
-ExecStart=/usr/local/bin/nlock
-StandardInput=tty
-RemainAfterExit=yes
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-cat << EOF | chroot ${ROOTFS}
-    systemctl enable nlock
-EOF
-
-fi
-
-if [ "$OSNAME" = "devuan" ]; then
-cat <<'EOF' | tee ${ROOTFS}/etc/init.d/nlock
-#!/bin/sh
-### BEGIN INIT INFO
-# Provides:          nlock
-# Required-Start:    $all
-# Required-Stop:     $all
-# Default-Start:     2 3 4 5
-# Default-Stop:      0 1 6
-# Short-Description: Start daemon at boot time
-# Description:       Enable service provided by daemon.
-### END INIT INFO
-
-case "$1" in
-  start)
-    /usr/local/bin/nlock
-    ;;
-  stop)
-    echo "Stopping nlock"
-    ;;
-  *)
-    echo "Usage: /etc/init.d/firstboot {start|stop}"
-    exit 1
-    ;;
-esac
-
-exit 0
-EOF
-
-cat << EOF | chroot ${ROOTFS}
-    chmod 755 /etc/init.d/nlock
-    update-rc.d nlock defaults
-EOF
-
-fi
-# end numlock tty
 
 # convert pdf to png with whitebackground
 cat << 'EOF' | tee ${ROOTFS}/usr/local/bin/pdf2png
@@ -1682,7 +1662,6 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 fi
 
-
 cat << 'EOF' | tee ${ROOTFS}/usr/local/bin/winshot.sh
 maim -i $(xdotool getactivewindow) | xclip -selection clipboard -t image/png
 EOF
@@ -1696,7 +1675,6 @@ mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/Thunar/
 cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.config/Thunar/uca.xml
 <?xml version="1.0" encoding="UTF-8"?>
 <actions>
-
 <action>
         <icon>utilities-terminal</icon>
         <name>Open Terminal Here</name>
@@ -1739,24 +1717,58 @@ cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.local
 EOF
 
+inumlocktty
+ivmgui
+
 }
 
+ivmgui() {
+
+# if inside virtual machine
+# video=Virtual-1:1600x900
+
+if [ "$hypervisor" = "hyperv" ] || [ "$hypervisor" = "kvm" ]; then
+cat << 'EOF' | tee ${ROOTFS}/home/${TARGET_USERNAME}/.config/picom/picom.conf
+# picom config
+backend = "xrender";
+use-damage = false
+EOF
+fi
+
+cat << EOF | chroot ${ROOTFS}
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/${TARGET_USERNAME}/.config/picom
+EOF
+
+# Hyperv set resolution
+if [ "$hypervisor" = "hyperv" ] ; then
+sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/ {/video=Virtual-1:1600x900/! s/"$/ video=Virtual-1:1600x900"/}' ${ROOTFS}/etc/default/grub
+
+update-grub2
+
+cat <<EOF | tee ${ROOTFS}/etc/X11/xorg.conf.d/30-hyperv.conf
+Section "Device"
+  Identifier "HYPER_V Framebuffer"
+  Driver "fbdev"
+EndSection
+EOF
+#end hyperv
+fi
+}
 
 iworkstation() {
 echo "additional workstation tools"
 
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 cat << EOF | chroot ${ROOTFS}
-    apt install -y handbrake gimp rawtherapee krita mypaint inkscape blender obs-studio mgba-qt kdenlive easytag audacity
+    apt install -y handbrake gimp rawtherapee krita mypaint inkscape blender obs-studio mgba-qt easytag audacity
 EOF
 fi
 
 if [ "$OSNAME" = "openmandriva" ]; then
 cat << EOF | chroot ${ROOTFS}
-    dnf install -y handbrake gimp rawtherapee krita python-numpy mypaint inkscape blender obs-studio easytag audacity
+    dnf install -y handbrake gimp rawtherapee krita python-numpy mypaint inkscape blender obs-studio audacity
 EOF
-
-
+# install easytag flathub
 fi
 
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
@@ -1790,26 +1802,6 @@ cat << EOF | chroot ${ROOTFS}
     DEBIAN_FRONTEND=noninteractive apt install -y /opt/debs/vscode.deb
 EOF
 
-# install zoom
-mkdir -p ${ROOTFS}/opt/debs/
-wget -O ${ROOTFS}/opt/debs/zoom_amd64.deb https://zoom.us/client/${ZOOM_VERSION}/zoom_amd64.deb
-cat << EOF | chroot ${ROOTFS}
-    apt install -y /opt/debs/zoom_amd64.deb
-EOF
-
-mkdir -p ${ROOTFS}/opt/debs/
-wget -O ${ROOTFS}/opt/debs/slack.deb https://downloads.slack-edge.com/desktop-releases/linux/x64/${SLACK_VERSION}/slack-desktop-${SLACK_VERSION}-amd64.deb
-cat << EOF | chroot ${ROOTFS}
-    apt install -y /opt/debs/slack.deb
-EOF
-
-# install onlyoffice
-mkdir -p ${ROOTFS}/opt/debs/
-wget -O /opt/debs/onlyoffice-desktopeditors_amd64.deb https://download.onlyoffice.com/install/desktop/editors/linux/onlyoffice-desktopeditors_amd64.deb
-cat << EOF | chroot ${ROOTFS}
-    apt install -y /opt/debs/onlyoffice-desktopeditors_amd64.deb
-EOF
-
 # install dbeaver
 mkdir -p ${ROOTFS}/opt/debs/
 wget -O ${ROOTFS}/opt/debs/dbeaver.deb https://dbeaver.io/files/dbeaver-ce_latest_amd64.deb
@@ -1827,30 +1819,14 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 
 mkdir -p ${ROOTFS}/opt/debs/
-wget -O ${ROOTFS}/opt/debs/zoom.rpm "https://zoom.us/client/${ZOOM_VERSION}/zoom_x86_64.rpm"
-cat << EOF | chroot ${ROOTFS}
-    dnf install -y /opt/debs/zoom.rpm
-EOF
-
-
-mkdir -p ${ROOTFS}/opt/debs/
-wget -O ${ROOTFS}/opt/debs/slack.rpm https://downloads.slack-edge.com/desktop-releases/linux/x64/${SLACK_VERSION}/slack-${SLACK_VERSION}-0.1.el8.x86_64.rpm
-cat << EOF | chroot ${ROOTFS}
-    dnf install -y libxscrnsaver1 lib64appindicator3_1
-    rpm -ivh ${ROOTFS}/opt/debs/slack.rpm --nodeps
-EOF
-
-wget -O ${ROOTFS}/opt/appimages/onlyoffice.AppImage https://github.com/ONLYOFFICE/appimage-desktopeditors/releases/download/${ONLYOFFICE_VERSION}/DesktopEditors-x86_64.AppImage
-cat << EOF | chroot ${ROOTFS}
-    chmod 755 /opt/appimages/onlyoffice.AppImage
-    ln -s /opt/appimages/onlyoffice.AppImage /usr/local/bin/onlyoffice
-EOF
-
-mkdir -p ${ROOTFS}/opt/debs/
 wget -O ${ROOTFS}/opt/debs/dbeaver.rpm https://dbeaver.io/files/dbeaver-ce-latest-stable.x86_64.rpm
 cat << EOF | chroot ${ROOTFS}
     dnf install -y ${ROOTFS}/opt/debs/dbeaver.rpm
 EOF
+
+fi
+
+# APPimages
 
 #kdenlive
 wget -O ${ROOTFS}/opt/appimages/kdenlive.AppImage https://download.kde.org/stable/kdenlive/${KDENLIVE_MAIN_VERSION}/linux/kdenlive-${KDENLIVE_FULL_VERSION}-x86_64.AppImage
@@ -1859,10 +1835,13 @@ cat << EOF | chroot ${ROOTFS}
     ln -s /opt/appimages/kdenlive.AppImage /usr/local/bin/kdenlive
 EOF
 
+# Only Office
+wget -O ${ROOTFS}/opt/appimages/onlyoffice.AppImage https://github.com/ONLYOFFICE/appimage-desktopeditors/releases/download/${ONLYOFFICE_VERSION}/DesktopEditors-x86_64.AppImage
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /opt/appimages/onlyoffice.AppImage
+    ln -s /opt/appimages/onlyoffice.AppImage /usr/local/bin/onlyoffice
+EOF
 
-fi
-
-# APPimages
 # MLVP APP
 wget -O ${ROOTFS}/opt/appimages/mlvapp.AppImage https://github.com/ilia3101/MLV-App/releases/download/QTv${MLVAPP_VERSION}/MLV.App.v${MLVAPP_VERSION}.Linux.x86_64.AppImage
 cat << EOF | chroot ${ROOTFS}
@@ -1876,7 +1855,6 @@ cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/drawio.AppImage
     ln -s /opt/appimages/drawio.AppImage /usr/local/bin/drawio
 EOF
-
 
 #viber
 wget -O ${ROOTFS}/opt/appimages/viber.AppImage https://download.cdn.viber.com/desktop/Linux/viber.AppImage
@@ -1900,26 +1878,25 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 
 #teams
-wget -O ${ROOTFS}/opt/appimages/teams-for-linux.AppImage https://github.com/IsmaelMartinez/teams-for-linux/releases/download/v${TEAMS_VERSION}/teams-for-linux-${TEAMS_VERSION}.AppImage
-cat << EOF | chroot ${ROOTFS}
-    chmod 755 /opt/appimages/teams-for-linux.AppImage
-    ln -sf /opt/appimages/teams-for-linux.AppImage /usr/local/bin/teams-for-linux
-EOF
+# wget -O ${ROOTFS}/opt/appimages/teams-for-linux.AppImage https://github.com/IsmaelMartinez/teams-for-linux/releases/download/v${TEAMS_VERSION}/teams-for-linux-${TEAMS_VERSION}.AppImage
+# cat << EOF | chroot ${ROOTFS}
+#     chmod 755 /opt/appimages/teams-for-linux.AppImage
+#     ln -sf /opt/appimages/teams-for-linux.AppImage /usr/local/bin/teams-for-linux
+# EOF
 
 #caprine facebook messenger
-wget -O ${ROOTFS}/opt/appimages/caprine.AppImage https://github.com/sindresorhus/caprine/releases/download/v${CAPRINE_VERSION}/Caprine-${CAPRINE_VERSION}.AppImage
-cat << EOF | chroot ${ROOTFS}
-    chmod 755 /opt/appimages/caprine.AppImage
-    ln -sf /opt/appimages/caprine.AppImage /usr/local/bin/caprine
-EOF
+# wget -O ${ROOTFS}/opt/appimages/caprine.AppImage https://github.com/sindresorhus/caprine/releases/download/v${CAPRINE_VERSION}/Caprine-${CAPRINE_VERSION}.AppImage
+# cat << EOF | chroot ${ROOTFS}
+#     chmod 755 /opt/appimages/caprine.AppImage
+#     ln -sf /opt/appimages/caprine.AppImage /usr/local/bin/caprine
+# EOF
 
 # avidemux
-wget -O ${ROOTFS}/opt/appimages/avidemux.AppImage https://www.videohelp.com/download/avidemux_${AVIDEMUX_VERSION}.appImage
+wget -O ${ROOTFS}/opt/appimages/avidemux.AppImage https://altushost-swe.dl.sourceforge.net/project/avidemux/avidemux/${AVIDEMUX_VERSION}/avidemux_${AVIDEMUX_VERSION}.appImage?viasf=1
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/avidemux.AppImage
     ln -sf /opt/appimages/avidemux.AppImage /usr/local/bin/avidemux
 EOF
-
 
 # configure OBS
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/obs-studio
@@ -1929,7 +1906,44 @@ cat << EOF | chroot ${ROOTFS}
     tar xvf /tmp/obs-studio.tar -C /home/$TARGET_USERNAME/.config/
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/obs-studio
 EOF
+}
 
+icorporate(){
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
+
+# install zoom
+mkdir -p ${ROOTFS}/opt/debs/
+wget -O ${ROOTFS}/opt/debs/zoom_amd64.deb https://zoom.us/client/${ZOOM_VERSION}/zoom_amd64.deb
+cat << EOF | chroot ${ROOTFS}
+    apt install -y /opt/debs/zoom_amd64.deb
+EOF
+
+mkdir -p ${ROOTFS}/opt/debs/
+wget -O ${ROOTFS}/opt/debs/slack.deb https://downloads.slack-edge.com/desktop-releases/linux/x64/${SLACK_VERSION}/slack-desktop-${SLACK_VERSION}-amd64.deb
+cat << EOF | chroot ${ROOTFS}
+    apt install -y /opt/debs/slack.deb
+EOF
+
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+
+
+mkdir -p ${ROOTFS}/opt/debs/
+wget -O ${ROOTFS}/opt/debs/zoom.rpm "https://zoom.us/client/${ZOOM_VERSION}/zoom_x86_64.rpm"
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y /opt/debs/zoom.rpm
+EOF
+
+
+mkdir -p ${ROOTFS}/opt/debs/
+wget -O ${ROOTFS}/opt/debs/slack.rpm https://downloads.slack-edge.com/desktop-releases/linux/x64/${SLACK_VERSION}/slack-${SLACK_VERSION}-0.1.el8.x86_64.rpm
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y libxscrnsaver1 lib64appindicator3_1
+    rpm -ivh ${ROOTFS}/opt/debs/slack.rpm --nodeps
+EOF
+
+fi
 
 }
 
@@ -2291,6 +2305,22 @@ bashaliases
 rmnouveau
 fastboot
 disableturbo
+smalllogs
+reposrc
+iessentials
+isudo
+allowsshpwd
+itouchpad
+idocker
+igui
+iworkstation
+sudo reboot
+}
+
+oboo(){
+init apham "NA" "authorized_keys" "NA" "NA" "NA"
+bashaliases
+fastboot
 smalllogs
 reposrc
 iessentials
