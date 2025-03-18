@@ -536,8 +536,9 @@ echo "install essentials"
 
 if [ "$OSNAME" = "debian" ]; then
 cat << EOF | chroot ${ROOTFS}
-    apt update && apt upgrade -y
-    apt install ncurses-term
+    apt -y update 
+    apt install -y ncurses-term
+    apt -y upgrade
     apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon systemd-timesyncd htop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup iperf3
 EOF
@@ -545,8 +546,9 @@ fi
 
 if [ "$OSNAME" = "devuan" ]; then
 cat << EOF | chroot ${ROOTFS}
-    apt update && apt upgrade -y
-    apt install ncurses-term
+    apt -y update 
+    apt install -y ncurses-term
+    apt -y upgrade
     apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon htop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup iperf3
 EOF
@@ -2357,6 +2359,8 @@ bashaliases
 smalllogs
 reposrc
 iessentials
+ikeyboard
+inumlocktty
 idocker
 ikube
 sudo reboot now

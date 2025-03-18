@@ -30,8 +30,11 @@ sudo chown -R ${USER}:${USER} /home/${USER}/apps/tls/cfg
 openssl pkcs12 -export -out /home/${USER}/apps/tls/cfg/live/${WILDCARD_DOMAIN}/privkey.p12  -in /home/${USER}/apps/tls/cfg/live/${WILDCARD_DOMAIN}/fullchain.pem -inkey  /home/${USER}/apps/tls/cfg/live/${WILDCARD_DOMAIN}/privkey.pem -passin pass:password -passout pass:password
 
 
-sudo kubeadm init --control-plane-endpoint=v8s.duckdns.org  --pod-network-cidr=10.244.0.0/16
+sudo kubeadm init --control-plane-endpoint=${WILDCARD_DOMAIN} --pod-network-cidr=10.244.0.0/16
 
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
 
 kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
 kubectl taint node ${HOSTNAME} node-role.kubernetes.io/control-plane:NoSchedule-
