@@ -2342,7 +2342,6 @@ bashaliases
 smalllogs
 reposrc
 iessentials
-isudo
 idocker
 ikube
 sudo reboot now
@@ -2363,75 +2362,6 @@ ikube
 sudo reboot now
 }
 
-
-openmandrivaws(){
-init apham "NA" "authorized_keys" "NA" "NA" "NA"
-bashaliases
-rmnouveau
-fastboot
-disableturbo
-smalllogs
-reposrc
-iessentials
-isudo
-allowsshpwd
-idocker
-igui
-iworkstation
-sudo reboot now
-}
-
-devuan(){
-init apham "NA" "authorized_keys" "NA" "NA" "NA"
-bashaliases
-rmnouveau
-fastboot
-disableturbo
-smalllogs
-reposrc
-iessentials
-isudo
-allowsshpwd
-idocker
-ikube
-igui
-sudo reboot now
-}
-
-devuanvm(){
-init apham "NA" "authorized_keys" "NA" "NA" "NA"
-bashaliases
-rmnouveau
-fastboot
-disableturbo
-smalllogs
-reposrc
-iessentials
-isudo
-allowsshpwd
-itouchpad
-idocker
-igui
-sudo reboot now
-}
-
-devuanwk(){
-init apham "NA" "authorized_keys" "NA" "NA" "NA"
-bashaliases
-rmnouveau
-fastboot
-disableturbo
-smalllogs
-reposrc
-iessentials
-isudo
-allowsshpwd
-itouchpad
-idocker
-igui
-iworkstation
-sudo reboot
-}
 
 oboo(){
 init apham "NA" "authorized_keys" "NA" "NA" "NA"
