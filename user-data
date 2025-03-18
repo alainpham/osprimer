@@ -1,7 +1,0 @@
-users:
-  - name: apham
-    gecos: apham
-    shell: /bin/bash
-    lock-passwd: false
-    sudo: ALL=(ALL) NOPASSWD:ALL
-    ssh_authorized_keys:

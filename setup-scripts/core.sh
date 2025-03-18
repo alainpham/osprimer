@@ -539,6 +539,7 @@ cat << EOF | chroot ${ROOTFS}
     apt update && apt upgrade -y
     apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon systemd-timesyncd htop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup iperf3
+    apt install ncurses-term
 EOF
 fi
 
@@ -547,6 +548,7 @@ cat << EOF | chroot ${ROOTFS}
     apt update && apt upgrade -y
     apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon htop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup iperf3
+    apt install ncurses-term
 EOF
 fi
 
@@ -2325,6 +2327,18 @@ init $1 "ps" "authorized_keys" "NA" "NA" "NA"
 bashaliases
 createuser
 authkeys
+smalllogs
+reposrc
+iessentials
+isudo
+idocker
+ikube
+sudo reboot now
+}
+
+kvmkube(){
+init apham "NA" "authorized_keys" "NA" "NA" "NA"
+bashaliases
 smalllogs
 reposrc
 iessentials
