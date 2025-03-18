@@ -537,18 +537,18 @@ echo "install essentials"
 if [ "$OSNAME" = "debian" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt update && apt upgrade -y
+    apt install ncurses-term
     apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon systemd-timesyncd htop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup iperf3
-    apt install ncurses-term
 EOF
 fi
 
 if [ "$OSNAME" = "devuan" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt update && apt upgrade -y
+    apt install ncurses-term
     apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon htop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup iperf3
-    apt install ncurses-term
 EOF
 fi
 
@@ -576,9 +576,9 @@ EOF
 # EOF
 
 cat << EOF | chroot ${ROOTFS}
+    dnf install -y ncurses-extraterms gettext
     dnf install -y sudo git tmux vim curl wget rsync ncdu bind-utils htop bash-completion gnupg2 whois zip unzip virt-what wireguard-tools iptables jq
     dnf install -y cloud-utils openssh-server console-setup
-    dnf install -y ncurses-extraterms gettext
 EOF
 fi
 
@@ -2336,17 +2336,6 @@ ikube
 sudo reboot now
 }
 
-kvmkube(){
-init apham "NA" "authorized_keys" "NA" "NA" "NA"
-bashaliases
-smalllogs
-reposrc
-iessentials
-idocker
-ikube
-sudo reboot now
-}
-
 gcpkube(){
 if ! [ $# -eq 1 ]; then
     echo "Usage: sudo $0 <1_TARGET_USERNAME>"
@@ -2362,6 +2351,16 @@ ikube
 sudo reboot now
 }
 
+kvmkube(){
+init apham "NA" "authorized_keys" "NA" "NA" "NA"
+bashaliases
+smalllogs
+reposrc
+iessentials
+idocker
+ikube
+sudo reboot now
+}
 
 oboo(){
 init apham "NA" "authorized_keys" "NA" "NA" "NA"
