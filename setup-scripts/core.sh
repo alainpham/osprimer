@@ -3,7 +3,7 @@
 # this is a script to install raw vm images, baremetal machines/laptops or cloud vms
 inputversions() {
     # https://github.com/docker/buildx/releases
-    export DOCKER_BUILDX_VERSION=v0.21.1
+    export DOCKER_BUILDX_VERSION=v0.22.0
     echo "export DOCKER_BUILDX_VERSION=${DOCKER_BUILDX_VERSION}"
     
     # https://kubernetes.io/releases/  https://cloud.google.com/kubernetes-engine/docs/release-notes
@@ -11,7 +11,7 @@ inputversions() {
     echo "export MAJOR_KUBE_VERSION=${MAJOR_KUBE_VERSION}"
     
     # https://github.com/derailed/k9s/releases
-    export K9S_VERSION=v0.40.5
+    export K9S_VERSION=v0.40.10
     echo "export K9S_VERSION=${K9S_VERSION}"
     
     # https://maven.apache.org/download.cgi
@@ -46,7 +46,7 @@ inputversions() {
     echo "export CAPRINE_VERSION=${CAPRINE_VERSION}"
 
     # https://github.com/jgraph/drawio-desktop/releases
-    export DRAWIO_VERSION=26.0.16
+    export DRAWIO_VERSION=26.1.1
     echo "export DRAWIO_VERSION=${DRAWIO_VERSION}"
 
     # https://hub.docker.com/r/infinityofspace/certbot_dns_duckdns/tags
@@ -54,7 +54,7 @@ inputversions() {
     echo "export CERTBOT_DUCKDNS_VERSION=${CERTBOT_DUCKDNS_VERSION}"
 
     # https://www.onlyoffice.com/download-desktop.aspx
-    export ONLYOFFICE_VERSION=v8.3.0
+    export ONLYOFFICE_VERSION=v8.3.1
     echo "export ONLYOFFICE_VERSION=${ONLYOFFICE_VERSION}"
 
     # https://slack.com/release-notes/linux
@@ -80,7 +80,7 @@ inputversions() {
     # https://kdenlive.org/en/download/
     export KDENLIVE_MAIN_VERSION=24.12
     echo "export KDENLIVE_MAIN_VERSION=${KDENLIVE_MAIN_VERSION}"
-    export KDENLIVE_FULL_VERSION=24.12.2
+    export KDENLIVE_FULL_VERSION=24.12.3
     echo "export KDENLIVE_FULL_VERSION=${KDENLIVE_FULL_VERSION}"
 
     # https://heldercorreia.bitbucket.io/speedcrunch/download.html
@@ -2369,6 +2369,22 @@ sudo reboot now
 oboo(){
 init apham "NA" "authorized_keys" "NA" "NA" "NA"
 bashaliases
+fastboot
+smalllogs
+reposrc
+iessentials
+isudo
+itouchpad
+idocker
+igui
+iworkstation
+sudo reboot
+}
+
+oair(){
+init apham "NA" "authorized_keys" "NA" "NA" "NA"
+bashaliases
+rmbroadcom
 fastboot
 smalllogs
 reposrc
