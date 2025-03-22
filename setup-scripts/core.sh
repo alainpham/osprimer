@@ -58,7 +58,7 @@ inputversions() {
     echo "export ONLYOFFICE_VERSION=${ONLYOFFICE_VERSION}"
 
     # https://slack.com/release-notes/linux
-    export SLACK_VERSION=4.41.105
+    export SLACK_VERSION=4.43.43
     echo "export SLACK_VERSION=${SLACK_VERSION}"
 
     # https://github.com/yshui/picom/releases
@@ -97,6 +97,9 @@ inputversions() {
 
     export OSVERSION=$(awk -F= '/^VERSION_ID=/ {gsub(/"/, "", $2); print $2}' /etc/os-release)
     echo "export OSVERSION=${OSVERSION}"
+
+    export PRODUCT_NAME=$(dmidecode -t 1 | grep 'Product Name:' | sed 's/.*Product Name: //')
+    echo "export PRODUCT_NAME=${PRODUCT_NAME}"
 }
 
 inputkeyboard() {
@@ -187,7 +190,7 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*OSVERSION*=.*" "export OSVERSION=${OSVE
 lineinfile ${ROOTFS}${BASHRC} ".*export.*WILDCARD_DOMAIN*=.*" "export WILDCARD_DOMAIN=zez.duckdns.org"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*EMAIL*=.*" "export EMAIL=admin@zez.duckdns.org"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*DUCKDNS_TOKEN*=.*" "export DUCKDNS_TOKEN=xxxx-xxxx-xxxx-xxxx-xxxx"
-
+lineinfile ${ROOTFS}${BASHRC} ".*export.*PRODUCT_NAME*=.*" "export PRODUCT_NAME='${PRODUCT_NAME}'"
 
 echo "bash aliases setup finished"
 }
