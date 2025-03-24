@@ -661,10 +661,6 @@ cat << EOF | chroot ${ROOTFS}
     chown $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/libinput-gestures.conf
 EOF
 
-cat << EOF | chroot ${ROOTFS}
-    systemctl --machine=${TARGET_USERNAME}@.host --user enable libinput-gestures.
-EOF
-
 
 }
 
@@ -1630,6 +1626,15 @@ while true; do
     else
         kill -9 $piddwmblocks
         dwmblocks &
+    fi
+    if command -v libinput-gestures >/dev/null 2>&1; then
+        pidgestures=$(pgrep -f libinput-gestures)
+        if [ -z "$pidgestures" ]; then
+            libinput-gestures &
+        else
+            kill -9 $pidgestures
+            libinput-gestures &
+        fi
     fi
     bgfile=$(ls /usr/share/backgrounds/ | shuf -n 1)
     feh --bg-fill /usr/share/backgrounds/${bgfile}
