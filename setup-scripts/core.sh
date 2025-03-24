@@ -636,6 +636,36 @@ Section "InputClass"
     Option "NaturalScrolling" "false"
 EndSection
 EOF
+
+cd /tmp/
+git clone https://github.com/bulletmark/libinput-gestures.git
+cd libinput-gestures
+./libinput-gestures-setup install
+
+cat << EOF | chroot ${ROOTFS}
+    adduser $TARGET_USERNAME input
+EOF
+
+cat <<EOF | tee ${ROOTFS}/home/${TARGET_USERNAME}/.config/libinput-gestures.conf
+gesture swipe up        xdotool key super+m
+gesture swipe down      xdotool key super+t
+gesture swipe left      3 xdotool key alt+Left
+gesture swipe left      4 xdotool key super+Left
+gesture swipe right     3 xdotool key alt+Right
+gesture swipe right     4 xdotool key super+Right
+gesture pinch in        xdotool key ctrl+minus
+gesture pinch out       xdotool key ctrl+plus
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    chown $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/libinput-gestures.conf
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    systemctl --machine=${TARGET_USERNAME}@.host --user enable libinput-gestures.
+EOF
+
+
 }
 
 idocker() {
