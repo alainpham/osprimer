@@ -642,9 +642,17 @@ git clone https://github.com/bulletmark/libinput-gestures.git
 cd libinput-gestures
 ./libinput-gestures-setup install
 
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 cat << EOF | chroot ${ROOTFS}
     adduser $TARGET_USERNAME input
 EOF
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+cat << EOF | chroot ${ROOTFS}
+    usermod -aG input $TARGET_USERNAME
+EOF
+fi
 
 cat <<EOF | tee ${ROOTFS}/home/${TARGET_USERNAME}/.config/libinput-gestures.conf
 gesture swipe up        xdotool key super+m
