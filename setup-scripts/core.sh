@@ -196,9 +196,6 @@ echo "bash aliases setup finished"
 }
 
 mountraw() {
-    # Only execute when working with a raw image
-    if [ $INSIDE_MACHINE -eq 0 ]; then
-
     # name devices
     export DEVICE=/dev/loop0
     export ROOTFS="/tmp/installing-rootfs"
@@ -230,7 +227,6 @@ mountraw() {
     mount -t proc proc ${ROOTFS}/proc
     mount -t sysfs sysfs ${ROOTFS}/sys
     mount -t tmpfs tmpfs ${ROOTFS}/tmp
-    fi 
 }
 
 createuser() {
@@ -416,13 +412,20 @@ fi
 
 firstbootexpandfs() {
 # first boot script
-cat <<EOF | tee ${ROOTFS}/usr/local/bin/firstboot.sh
+cat << 'EOF' | tee ${ROOTFS}/usr/local/bin/firstboot.sh
 #!/bin/bash
 if [ ! -f /var/log/firstboot.log ]; then
+    if lsblk | grep -q vda; then
+        DEVICE="/dev/vda"
+    elif lsblk | grep -q sda; then
+        DEVICE="/dev/sda"
+    else
+        DEVICE="/dev/sda"
+    fi
     # Code to execute if log file does not exist
     echo "First boot script has run">/var/log/firstboot.log
-    growpart /dev/sda 1
-    resize2fs /dev/sda1
+    growpart $DEVICE 1
+    resize2fs ${DEVICE}1
 fi
 EOF
 
@@ -2259,8 +2262,8 @@ if ! [ $# -eq 7 ]; then
 fi
 
 init $@
-bashaliases
 mountraw
+bashaliases
 createuser
 setpasswd
 authkeys
@@ -2410,6 +2413,28 @@ inumlocktty
 idocker
 ikube
 sudo reboot now
+}
+
+rawkube(){
+    init apham p /home/apham/.ssh/authorized_keys /home/apham/virt/images/debian-12-nocloud-amd64.raw d12-kube.raw 5G
+    mountraw
+    bashaliases
+    createuser
+    setpasswd
+    authkeys
+    fastboot
+    firstbootexpandfs
+    smalllogs
+    reposrc
+    iessentials
+    isudo
+    allowsshpwd
+    ikeyboard
+    idocker
+    ikube
+    idlkubeimg
+    cleanupapt
+    unmountraw
 }
 
 oboo(){

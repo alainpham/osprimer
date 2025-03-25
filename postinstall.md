@@ -46,6 +46,7 @@ vmcr v8s 12288 8 debian-12-generic-amd64 20 40G 1G debiantesting
 vmcr sandbox 6144 4 debian-12-generic-amd64 50 40G 1G debiantesting
 
 
+vmcr v8s 12288 8 d12-kube 20 40G 1G debiantesting
 
 
 rm -rf /home/${USER}/apps/tls
