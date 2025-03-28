@@ -2072,6 +2072,7 @@ EOF
 }
 
 icorporate(){
+## corporate apps
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 
 # install zoom
