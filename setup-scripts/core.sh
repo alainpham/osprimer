@@ -2416,7 +2416,7 @@ sudo reboot now
 }
 
 rawkube(){
-    init apham p /home/apham/.ssh/authorized_keys /home/apham/virt/images/debian-12-nocloud-amd64.raw d12-kube.raw 5G
+    init apham p /home/apham/.ssh/authorized_keys /home/apham/virt/images/debian-12-nocloud-amd64.raw /home/apham/virt/images/d12-kube.raw 5G
     mountraw
     bashaliases
     createuser
@@ -2466,4 +2466,21 @@ idocker
 igui
 iworkstation
 sudo reboot
+}
+
+
+fuj(){
+init apham "NA" "authorized_keys" "NA" "NA" "NA"
+bashaliases
+fastboot
+smalllogs
+reposrc
+iessentials
+isudo
+idocker
+ikube
+igui
+iworkstation
+ivirt
+sudo reboot now
 }

@@ -1,11 +1,11 @@
 #!/bin/bash
-set -e
+
 # https://github.com/rancher/local-path-provisioner
 export LOCAL_PATH_PROVISIONER_VERSION=v0.0.31
 
 # https://github.com/kubernetes/ingress-nginx/blob/main/deploy/static/provider/baremetal/deploy.yaml
-export NGINX_INGRESS_VERSION=1.12.0
-export NGINX_INGRESS_KUBE_WEBHOOK_CERTGEN_VERSION=v1.5.0
+export NGINX_INGRESS_VERSION=1.12.1
+export NGINX_INGRESS_KUBE_WEBHOOK_CERTGEN_VERSION=v1.5.2
 
 # https://github.com/kubernetes-sigs/metrics-server
 export METRICS_SERVER_VERSION=v0.7.2

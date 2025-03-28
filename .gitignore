@@ -5,3 +5,4 @@ authorized_keys
 *.img
 pack.tar
 dwm-src
+.secret
