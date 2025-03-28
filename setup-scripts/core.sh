@@ -91,6 +91,9 @@ inputversions() {
     export AVIDEMUX_VERSION=2.8.1
     echo "export AVIDEMUX_VERSION=${AVIDEMUX_VERSION}"
 
+    # https://github.com/localsend/localsend/releases
+    export LOCALSEND_VERSION=1.17.0
+    echo "export LOCALSEND_VERSION=${LOCALSEND_VERSION}"
 
     export OSNAME=$(awk -F= '/^ID=/ {gsub(/"/, "", $2); print $2}' /etc/os-release)
     echo "export OSNAME=${OSNAME}"m
@@ -184,6 +187,7 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*KDENLIVE_MAIN_VERSION*=.*" "export KDEN
 lineinfile ${ROOTFS}${BASHRC} ".*export.*KDENLIVE_FULL_VERSION*=.*" "export KDENLIVE_FULL_VERSION=${KDENLIVE_FULL_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*SPEEDCRUNCH_VERSION*=.*" "export SPEEDCRUNCH_VERSION=${SPEEDCRUNCH_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*AVIDEMUX_VERSION*=.*" "export AVIDEMUX_VERSION=${AVIDEMUX_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*LOCALSEND_VERSION*=.*" "export LOCALSEND_VERSION=${LOCALSEND_VERSION}"
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*OSNAME*=.*" "export OSNAME=${OSNAME}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*OSVERSION*=.*" "export OSVERSION=${OSVERSION}"
@@ -2027,6 +2031,13 @@ wget -O ${ROOTFS}/opt/appimages/freac.AppImage https://github.com/enzo1982/freac
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/freac.AppImage
     ln -sf /opt/appimages/freac.AppImage /usr/local/bin/freac
+EOF
+
+# localsend
+wget -O ${ROOTFS}/opt/appimages/localsend.AppImage https://github.com/localsend/localsend/releases/download/v${LOCALSEND_VERSION}/LocalSend-${LOCALSEND_VERSION}-linux-x86-64.AppImage
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /opt/appimages/localsend.AppImage
+    ln -sf /opt/appimages/localsend.AppImage /usr/local/bin/localsend
 EOF
 
 #teams
