@@ -95,6 +95,10 @@ inputversions() {
     export LOCALSEND_VERSION=1.17.0
     echo "export LOCALSEND_VERSION=${LOCALSEND_VERSION}"
 
+    # https://gitlab.com/librewolf-community/browser/appimage/-/releases
+    export LIBREWOLF_VERSION=136.0.4-1
+    echo "export LIBREWOLF_VERSION=${LIBREWOLF_VERSION}"
+
     export OSNAME=$(awk -F= '/^ID=/ {gsub(/"/, "", $2); print $2}' /etc/os-release)
     echo "export OSNAME=${OSNAME}"m
 
@@ -188,6 +192,7 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*KDENLIVE_FULL_VERSION*=.*" "export KDEN
 lineinfile ${ROOTFS}${BASHRC} ".*export.*SPEEDCRUNCH_VERSION*=.*" "export SPEEDCRUNCH_VERSION=${SPEEDCRUNCH_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*AVIDEMUX_VERSION*=.*" "export AVIDEMUX_VERSION=${AVIDEMUX_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*LOCALSEND_VERSION*=.*" "export LOCALSEND_VERSION=${LOCALSEND_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*LIBREWOLF_VERSION*=.*" "export LIBREWOLF_VERSION=${LIBREWOLF_VERSION}"
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*OSNAME*=.*" "export OSNAME=${OSNAME}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*OSVERSION*=.*" "export OSVERSION=${OSVERSION}"
@@ -1982,6 +1987,20 @@ EOF
 
 fi
 
+# configure OBS
+mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/obs-studio
+
+cat << EOF | chroot ${ROOTFS}
+    curl -Lo /tmp/obs-studio.tar https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/obs/obs-studio.tar
+    tar xvf /tmp/obs-studio.tar -C /home/$TARGET_USERNAME/.config/
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/obs-studio
+EOF
+
+iappimages
+
+}
+
+iappimages(){
 # APPimages
 
 #kdenlive
@@ -2040,20 +2059,6 @@ cat << EOF | chroot ${ROOTFS}
     ln -sf /opt/appimages/localsend.AppImage /usr/local/bin/localsend
 EOF
 
-#teams
-# wget -O ${ROOTFS}/opt/appimages/teams-for-linux.AppImage https://github.com/IsmaelMartinez/teams-for-linux/releases/download/v${TEAMS_VERSION}/teams-for-linux-${TEAMS_VERSION}.AppImage
-# cat << EOF | chroot ${ROOTFS}
-#     chmod 755 /opt/appimages/teams-for-linux.AppImage
-#     ln -sf /opt/appimages/teams-for-linux.AppImage /usr/local/bin/teams-for-linux
-# EOF
-
-#caprine facebook messenger
-# wget -O ${ROOTFS}/opt/appimages/caprine.AppImage https://github.com/sindresorhus/caprine/releases/download/v${CAPRINE_VERSION}/Caprine-${CAPRINE_VERSION}.AppImage
-# cat << EOF | chroot ${ROOTFS}
-#     chmod 755 /opt/appimages/caprine.AppImage
-#     ln -sf /opt/appimages/caprine.AppImage /usr/local/bin/caprine
-# EOF
-
 # avidemux
 wget -O ${ROOTFS}/opt/appimages/avidemux.AppImage https://altushost-swe.dl.sourceforge.net/project/avidemux/avidemux/${AVIDEMUX_VERSION}/avidemux_${AVIDEMUX_VERSION}.appImage?viasf=1
 cat << EOF | chroot ${ROOTFS}
@@ -2061,14 +2066,13 @@ cat << EOF | chroot ${ROOTFS}
     ln -sf /opt/appimages/avidemux.AppImage /usr/local/bin/avidemux
 EOF
 
-# configure OBS
-mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/obs-studio
-
+# librewolf
+wget -O ${ROOTFS}/opt/appimages/librewolf.AppImage https://gitlab.com/api/v4/projects/24386000/packages/generic/librewolf/${LIBREWOLF_VERSION}/LibreWolf.x86_64.AppImage
 cat << EOF | chroot ${ROOTFS}
-    curl -Lo /tmp/obs-studio.tar https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/obs/obs-studio.tar
-    tar xvf /tmp/obs-studio.tar -C /home/$TARGET_USERNAME/.config/
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/obs-studio
+    chmod 755 /opt/appimages/librewolf.AppImage
+    ln -sf /opt/appimages/librewolf.AppImage /usr/local/bin/librewolf
 EOF
+
 }
 
 icorporate(){
@@ -2490,7 +2494,6 @@ reposrc
 iessentials
 isudo
 idocker
-ikube
 igui
 iworkstation
 ivirt
