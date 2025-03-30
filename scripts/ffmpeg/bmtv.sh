@@ -10,7 +10,7 @@ export FFREPORT=file="${filename}.log:level=48"
 
 ffmpeg  \
     -f decklink \
-        -format_code 23ps \
+        # -format_code 23ps \
         -i 'DeckLink Mini Recorder' \
         \
         -t ${duration} \

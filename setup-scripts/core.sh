@@ -2497,5 +2497,5 @@ idocker
 igui
 iworkstation
 ivirt
-sudo reboot now
+sudo reboot
 }
