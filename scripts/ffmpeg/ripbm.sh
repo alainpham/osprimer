@@ -8,9 +8,9 @@ ab=${4:-160}
 
 export FFREPORT=file="${filename}.log:level=48"
 
+# -format_code 23ps \
 ffmpeg  \
     -f decklink \
-        # -format_code 23ps \
         -i 'DeckLink Mini Recorder' \
         \
         -t ${duration} \
@@ -22,6 +22,5 @@ ffmpeg  \
         -g 24 \
         -c:a libfdk_aac \
         -b:a ${ab}k \
-        $tuning \
         -report \
         -f matroska $filename
