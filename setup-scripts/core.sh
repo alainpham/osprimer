@@ -1334,7 +1334,7 @@ EOF
 cat << 'EOF' | tee ${ROOTFS}/etc/NetworkManager/dnsmasq.d/dev.conf
 #/etc/NetworkManager/dnsmasq.d/dev.conf
 local=/zez.duckdns.org/
-address=/zez.duckdns.org/127.0.0.1
+address=/zez.duckdns.org/172.18.0.1
 EOF
 
 # dunst notification
