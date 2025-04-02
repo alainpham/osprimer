@@ -299,6 +299,7 @@ echo debian
 # accelerate grub startup
 mkdir -p ${ROOTFS}/etc/default/grub.d/
 echo 'GRUB_TIMEOUT=0' | tee ${ROOTFS}/etc/default/grub.d/15_timeout.cfg
+lineinfile ${ROOTFS}/etc/default/grub ".*GRUB_TIMEOUT=.*" 'GRUB_TIMEOUT=0'
 fi
 
 if [ "$OSNAME" = "openmandriva" ]; then
@@ -1069,7 +1070,7 @@ lineinfile ${ROOTFS}/usr/lib/systemd/system/docker.service ".*After.*=.*" "After
 
 fi
 
-kubescript="kubecr"
+kubescript="kubecr kubeotel"
 for script in $kubescript ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/k8s/$script
 cat << EOF | chroot ${ROOTFS}
