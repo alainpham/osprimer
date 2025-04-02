@@ -2,6 +2,16 @@
 # vmdl v8s
 # vmcr v8s 16384 12 d12-kube 20 80G 1G debiantesting
 
+if [ "${DUCKDNS_TOKEN}" == "xxxx-xxxx-xxxx-xxxx-xxxx" ]; then
+  echo "Error: DUCKDNS_TOKEN is set to the default value. Please update it to a valid token."
+  exit 1
+fi
+
+if [ "${WILDCARD_DOMAIN}" == "zez.duckdns.org" ]; then
+  echo "Error: WILDCARD_DOMAIN is set to the default value. Please update it to a valid domain."
+  exit 1
+fi
+
 # https://github.com/rancher/local-path-provisioner
 export LOCAL_PATH_PROVISIONER_VERSION=v0.0.31
 
@@ -11,7 +21,6 @@ export NGINX_INGRESS_KUBE_WEBHOOK_CERTGEN_VERSION=v1.5.2
 
 # https://github.com/kubernetes-sigs/metrics-server
 export METRICS_SERVER_VERSION=v0.7.2
-
 
 sudo rm -rf /home/${USER}/apps/tls
 mkdir -p /home/${USER}/apps/tls/cfg /home/${USER}/apps/tls/logs
@@ -31,6 +40,10 @@ sudo chown -R ${USER}:${USER} /home/${USER}/apps/tls/cfg
 
 openssl pkcs12 -export -out /home/${USER}/apps/tls/cfg/live/${WILDCARD_DOMAIN}/privkey.p12  -in /home/${USER}/apps/tls/cfg/live/${WILDCARD_DOMAIN}/fullchain.pem -inkey  /home/${USER}/apps/tls/cfg/live/${WILDCARD_DOMAIN}/privkey.pem -passin pass:password -passout pass:password
 
+if [ ! -f "/home/${USER}/apps/tls/cfg/live/${WILDCARD_DOMAIN}/privkey.p12" ]; then
+  echo "Error: privkey.p12 does not exist. Exiting."
+  exit 1
+fi
 
 sudo kubeadm init --control-plane-endpoint=${WILDCARD_DOMAIN} --pod-network-cidr=10.244.0.0/16
 
