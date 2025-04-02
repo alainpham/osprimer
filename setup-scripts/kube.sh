@@ -1,4 +1,6 @@
 #!/bin/bash
+# vmdl v8s
+# vmcr v8s 16384 12 d12-kube 20 80G 1G debiantesting
 
 # https://github.com/rancher/local-path-provisioner
 export LOCAL_PATH_PROVISIONER_VERSION=v0.0.31
@@ -11,7 +13,7 @@ export NGINX_INGRESS_KUBE_WEBHOOK_CERTGEN_VERSION=v1.5.2
 export METRICS_SERVER_VERSION=v0.7.2
 
 
-rm -rf /home/${USER}/apps/tls
+sudo rm -rf /home/${USER}/apps/tls
 mkdir -p /home/${USER}/apps/tls/cfg /home/${USER}/apps/tls/logs
 
 docker run --rm --name certbot  -v "/home/${USER}/apps/tls/cfg:/etc/letsencrypt" -v "/home/${USER}/apps/tls/logs:/var/log/letsencrypt" infinityofspace/certbot_dns_duckdns:${CERTBOT_DUCKDNS_VERSION} \
