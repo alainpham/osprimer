@@ -7,11 +7,6 @@ if [ "${DUCKDNS_TOKEN}" == "xxxx-xxxx-xxxx-xxxx-xxxx" ]; then
   exit 1
 fi
 
-if [ "${WILDCARD_DOMAIN}" == "zez.duckdns.org" ]; then
-  echo "Error: WILDCARD_DOMAIN is set to the default value. Please update it to a valid domain."
-  exit 1
-fi
-
 # https://github.com/rancher/local-path-provisioner
 export LOCAL_PATH_PROVISIONER_VERSION=v0.0.31
 
