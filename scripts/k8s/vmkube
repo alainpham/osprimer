@@ -28,7 +28,7 @@ docker run --rm --name certbot  -v "/home/${USER}/apps/tls/cfg:/etc/letsencrypt"
      --preferred-challenges dns \
      --authenticator dns-duckdns \
      --dns-duckdns-token ${DUCKDNS_TOKEN} \
-     --dns-duckdns-propagation-seconds 20 \
+     --dns-duckdns-propagation-seconds 35 \
      -d "*.${WILDCARD_DOMAIN}"
 
 sudo chown -R ${USER}:${USER} /home/${USER}/apps/tls/cfg
