@@ -52,3 +52,5 @@ kubectl -n ingress-nginx create secret tls nginx-ingress-tls  --key="/home/${USE
 
 wget -O /tmp/ingress.yaml https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/k8s/ingress-hostport-notoleration.yaml
 envsubst < /tmp/ingress.yaml | kubectl -n ingress-nginx apply -f -
+
+kubectl apply -n otel-demo -f  https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/k8s/oteldemo.yaml
