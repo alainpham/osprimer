@@ -1069,7 +1069,7 @@ lineinfile ${ROOTFS}/usr/lib/systemd/system/docker.service ".*After.*=.*" "After
 
 fi
 
-kubescript="vmkube"
+kubescript="kubecr"
 for script in $kubescript ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/k8s/$script
 cat << EOF | chroot ${ROOTFS}
