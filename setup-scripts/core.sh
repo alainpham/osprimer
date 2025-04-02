@@ -243,12 +243,16 @@ echo "setup users"
 cat << EOF | chroot ${ROOTFS}
     /usr/sbin/useradd -m -s /bin/bash $TARGET_USERNAME
     mkdir -p /home/${TARGET_USERNAME}/.ssh
+    chown -R ${TARGET_USERNAME}:${TARGET_USERNAME} /home/${TARGET_USERNAME}/.ssh
+EOF
+}
+
+isshkey(){
+cat << EOF | chroot ${ROOTFS}
     if [ ! -f /home/${TARGET_USERNAME}/.ssh/id_rsa ]; then
         ssh-keygen -N "" -f /home/${TARGET_USERNAME}/.ssh/id_rsa
     fi
-    chown -R ${TARGET_USERNAME}:${TARGET_USERNAME} /home/${TARGET_USERNAME}/.ssh
 EOF
-
 }
 
 setpasswd() {
@@ -2462,6 +2466,7 @@ rawkube(){
     smalllogs
     reposrc
     iessentials
+    isshkey
     isudo
     allowsshpwd
     ikeyboard
@@ -2471,6 +2476,7 @@ rawkube(){
     isecret
     cleanupapt
     unmountraw
+    rm /home/apham/virt/images/d12-kube.qcow2
     qemu-img convert -f raw -O qcow2 /home/apham/virt/images/d12-kube.raw /home/apham/virt/images/d12-kube.qcow2
 }
 
