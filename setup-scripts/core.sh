@@ -2244,6 +2244,15 @@ fi
 
 }
 
+isecret(){
+    if [ -f ".secret/run.sh" ]; then
+        echo "Running .secret/run.sh"
+        bash .secret/run.sh
+    else
+        echo ".secret/run.sh does not exist"
+    fi
+}
+
 cleanupapt() {
 echo "cleaning up"
 cat << EOF | chroot ${ROOTFS}
@@ -2459,8 +2468,10 @@ rawkube(){
     idocker
     ikube
     idlkubeimg
+    isecret
     cleanupapt
     unmountraw
+    qemu-img convert -f raw -O qcow2 /home/apham/virt/images/d12-kube.raw /home/apham/virt/images/d12-kube.qcow2
 }
 
 oboo(){

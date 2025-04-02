@@ -15,7 +15,7 @@ export METRICS_SERVER_VERSION=v0.7.2
 sudo rm -rf /home/${USER}/apps/tls
 mkdir -p /home/${USER}/apps/tls/cfg /home/${USER}/apps/tls/logs
 
-if [ ! -f "/home/${USER}/apps/tls/cfg/live/${WILDCARD_DOMAIN}/privkey.p12" ]; then
+if [ ! -f "/home/${USER}/apps/tls/cfg/live/${WILDCARD_DOMAIN}/privkey.pem" ]; then
 docker run --rm --name certbot  -v "/home/${USER}/apps/tls/cfg:/etc/letsencrypt" -v "/home/${USER}/apps/tls/logs:/var/log/letsencrypt" infinityofspace/certbot_dns_duckdns:${CERTBOT_DUCKDNS_VERSION} \
    certonly \
      --non-interactive \
