@@ -1284,7 +1284,7 @@ spec:
       serviceAccountName: opentelemetry-demo
       containers:
         - name: frontend
-          image: 'ghcr.io/open-telemetry/demo:2.0.1-frontend'
+          image: 'alainpham/otel-demo-frontend:2.0.1-faro'
           imagePullPolicy: IfNotPresent
           ports:
             
@@ -1332,6 +1332,8 @@ spec:
               value: http://localhost:8080/otlp-http/v1/traces
             - name: OTEL_RESOURCE_ATTRIBUTES
               value: service.name=$(OTEL_SERVICE_NAME),service.namespace=opentelemetry-demo,service.version=2.0.1
+            - name: GRAFANA_FARO_ENDPOINT
+              value: ${GCLOUD_FARO}
           resources:
             limits:
               memory: 250Mi

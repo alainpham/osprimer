@@ -1,3 +1,8 @@
 #!/bin/bash
 kubectl apply -n otel-demo -f  https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/k8s/oteldemo/oteldemo.yaml
-kubectl apply -n otel-demo -f  https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/k8s/oteldemo/expose.yaml
+ 
+
+
+wget -O /tmp/expose.yaml https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/k8s/oteldemo/expose.yaml
+envsubst < /tmp/expose.yaml | kubectl apply -n otel-demo -f -
+
