@@ -1284,7 +1284,7 @@ spec:
       serviceAccountName: opentelemetry-demo
       containers:
         - name: frontend
-          image: 'alainpham/otel-demo-frontend:2.0.1-faro'
+          image: 'alainpham/otel-demo-frontend:2.0.1-faro-001'
           imagePullPolicy: IfNotPresent
           ports:
             
