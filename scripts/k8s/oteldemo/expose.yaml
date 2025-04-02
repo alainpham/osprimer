@@ -15,7 +15,7 @@ metadata:
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
 spec:
   rules:
-  - host: frontend-proxy.${WILDCARD_DOMAIN}
+  - host: oteldemo.${WILDCARD_DOMAIN}
     http:
       paths:
       - path: /
