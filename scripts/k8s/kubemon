@@ -1,0 +1,110 @@
+#!/bin/bash
+
+helm repo add grafana https://grafana.github.io/helm-charts &&
+  helm repo update &&
+  helm upgrade --install --version ^2 --atomic --timeout 300s grafana-k8s-monitoring grafana/k8s-monitoring \
+    --namespace "agents" --create-namespace --values - <<EOF
+cluster:
+  name: kubernetes
+destinations:
+  - name: grafana-cloud-metrics
+    type: prometheus
+    url: ${PROM_URL}/api/prom/push
+    auth:
+      type: basic
+      username: "${PROM_USER}"
+      password: ${GCLOUD_PASSWORD}
+  - name: grafana-cloud-logs
+    type: loki
+    url: ${LOKI_URL}/loki/api/v1/push
+    auth:
+      type: basic
+      username: "${LOKI_USER}"
+      password: ${GCLOUD_PASSWORD}
+  - name: grafana-cloud-traces
+    type: otlp
+    url: ${TEMPO_URL}
+    protocol: grpc
+    auth:
+      type: basic
+      username: "${TEMPO_USER}"
+      password: ${GCLOUD_PASSWORD}
+    metrics:
+      enabled: false
+    logs:
+      enabled: false
+    traces:
+      enabled: true
+clusterMetrics:
+  enabled: true
+  opencost:
+    enabled: true
+    metricsSource: grafana-cloud-metrics
+    opencost:
+      exporter:
+        defaultClusterId: kubernetes
+      prometheus:
+        existingSecretName: grafana-cloud-metrics-grafana-k8s-monitoring
+        external:
+          url: ${PROM_URL}/api/prom
+  kepler:
+    enabled: true
+annotationAutodiscovery:
+  enabled: true
+prometheusOperatorObjects:
+  enabled: true
+clusterEvents:
+  enabled: true
+nodeLogs:
+  enabled: true
+podLogs:
+  enabled: true
+applicationObservability:
+  enabled: true
+  receivers:
+    otlp:
+      grpc:
+        enabled: true
+        port: 4317
+      http:
+        enabled: true
+        port: 4318
+    zipkin:
+      enabled: true
+      port: 9411
+  connectors:
+    grafanaCloudMetrics:
+      enabled: true
+integrations:
+  alloy:
+    instances:
+      - name: alloy
+        labelSelectors:
+          app.kubernetes.io/name:
+            - alloy-metrics
+            - alloy-singleton
+            - alloy-logs
+            - alloy-receiver
+alloy-metrics:
+  enabled: true
+alloy-singleton:
+  enabled: true
+alloy-logs:
+  enabled: true
+alloy-receiver:
+  enabled: true
+  alloy:
+    extraPorts:
+      - name: otlp-grpc
+        port: 4317
+        targetPort: 4317
+        protocol: TCP
+      - name: otlp-http
+        port: 4318
+        targetPort: 4318
+        protocol: TCP
+      - name: zipkin
+        port: 9411
+        targetPort: 9411
+        protocol: TCP
+EOF

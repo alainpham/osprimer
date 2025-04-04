@@ -100,7 +100,7 @@ inputversions() {
     echo "export LIBREWOLF_VERSION=${LIBREWOLF_VERSION}"
 
     export OSNAME=$(awk -F= '/^ID=/ {gsub(/"/, "", $2); print $2}' /etc/os-release)
-    echo "export OSNAME=${OSNAME}"m
+    echo "export OSNAME=${OSNAME}"
 
     export OSVERSION=$(awk -F= '/^VERSION_ID=/ {gsub(/"/, "", $2); print $2}' /etc/os-release)
     echo "export OSVERSION=${OSVERSION}"
@@ -1074,7 +1074,7 @@ lineinfile ${ROOTFS}/usr/lib/systemd/system/docker.service ".*After.*=.*" "After
 
 fi
 
-kubescript="kubecr kubeotel"
+kubescript="kubecr kubemon kubeotel"
 for script in $kubescript ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/k8s/$script
 cat << EOF | chroot ${ROOTFS}
