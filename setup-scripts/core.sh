@@ -550,7 +550,6 @@ fi
 
 }
 
-
 iessentials() {
 # Essentials packages
 echo "install essentials"
@@ -690,6 +689,43 @@ EOF
 
 }
 
+idev(){
+
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
+cat << EOF | chroot ${ROOTFS}
+    apt install -y ansible openjdk-17-jdk-headless npm golang-go
+EOF
+
+export JAVA_HOME_TARGET=/usr/lib/jvm/java-17-openjdk-amd64
+lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*JAVA_HOME*=.*" "export JAVA_HOME=${JAVA_HOME_TARGET}"
+
+echo "java home setup finished"
+fi
+
+
+if [ "$OSNAME" = "openmandriva" ]; then
+
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y ansible java-17-openjdk-devel npm golang
+EOF
+
+export JAVA_HOME_TARGET=/usr/lib/jvm/java-17-openjdk
+lineinfile ${ROOTFS}/etc/bashrc ".*export.*JAVA_HOME*=.*" "export JAVA_HOME=${JAVA_HOME_TARGET}"
+lineinfile ${ROOTFS}/etc/bashrc ".*export.*PATH*=.*" "export PATH=\$PATH:${JAVA_HOME_TARGET}/bin"
+
+fi
+
+mkdir -p ${ROOTFS}/opt/appimages/
+curl -L -o /tmp/maven.tar.gz https://dlcdn.apache.org/maven/maven-3/${MVN_VERSION}/binaries/apache-maven-${MVN_VERSION}-bin.tar.gz
+tar xzvf /tmp/maven.tar.gz  -C ${ROOTFS}/opt/appimages/
+cat << EOF | chroot ${ROOTFS}
+    ln -sf /opt/appimages/apache-maven-${MVN_VERSION}/bin/mvn /usr/local/bin/mvn
+EOF
+rm -f /tmp/maven.tar.gz
+echo "maven installed"
+
+}
+
 idocker() {
 
 echo "install docker"
@@ -697,7 +733,6 @@ echo "install docker"
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt install -y docker.io python3-docker docker-compose skopeo
-    apt install -y ansible openjdk-17-jdk-headless npm golang-go
 EOF
 
 cat <<EOF | tee ${ROOTFS}/etc/docker/daemon.json
@@ -713,18 +748,12 @@ echo "docker logs configured"
 cat << EOF | chroot ${ROOTFS}
     adduser $TARGET_USERNAME docker
 EOF
-
-export JAVA_HOME_TARGET=/usr/lib/jvm/java-17-openjdk-amd64
-lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*JAVA_HOME*=.*" "export JAVA_HOME=${JAVA_HOME_TARGET}"
-
-echo "java home setup finished"
 fi
 
 if [ "$OSNAME" = "openmandriva" ]; then
 
 cat << EOF | chroot ${ROOTFS}
     dnf install -y docker python-docker docker-compose skopeo
-    dnf install -y ansible java-17-openjdk-devel npm golang
     systemctl enable docker
 EOF
 
@@ -738,16 +767,7 @@ echo "docker logs configured"
 cat << EOF | chroot ${ROOTFS}
     usermod -aG docker $TARGET_USERNAME
 EOF
-
-export JAVA_HOME_TARGET=/usr/lib/jvm/java-17-openjdk
-lineinfile ${ROOTFS}/etc/bashrc ".*export.*JAVA_HOME*=.*" "export JAVA_HOME=${JAVA_HOME_TARGET}"
-lineinfile ${ROOTFS}/etc/bashrc ".*export.*PATH*=.*" "export PATH=\$PATH:${JAVA_HOME_TARGET}/bin"
-
 fi
-
-
-
-
 
 mkdir -p ${ROOTFS}/usr/lib/docker/cli-plugins
 curl -SL https://github.com/docker/buildx/releases/download/${DOCKER_BUILDX_VERSION}/buildx-${DOCKER_BUILDX_VERSION}.linux-amd64 -o ${ROOTFS}/usr/lib/docker/cli-plugins/docker-buildx
@@ -755,19 +775,6 @@ chmod 755 ${ROOTFS}/usr/lib/docker/cli-plugins/docker-buildx
 
 echo "docker build x installed"
 
-# cat << EOF | chroot ${ROOTFS}
-#     echo "export JAVA_HOME=${JAVA_HOME_TARGET}" | tee /etc/profile.d/java_home.sh
-# EOF
-# install maven
-
-mkdir -p ${ROOTFS}/opt/appimages/
-curl -L -o /tmp/maven.tar.gz https://dlcdn.apache.org/maven/maven-3/${MVN_VERSION}/binaries/apache-maven-${MVN_VERSION}-bin.tar.gz
-tar xzvf /tmp/maven.tar.gz  -C ${ROOTFS}/opt/appimages/
-cat << EOF | chroot ${ROOTFS}
-    ln -sf /opt/appimages/apache-maven-${MVN_VERSION}/bin/mvn /usr/local/bin/mvn
-EOF
-rm -f /tmp/maven.tar.gz
-echo "maven installed"
 
 cat <<'EOF' | tee ${ROOTFS}/usr/local/bin/firstboot-dockernet.sh
 #!/bin/bash
