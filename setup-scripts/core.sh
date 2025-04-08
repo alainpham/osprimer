@@ -2529,7 +2529,7 @@ sudo reboot
 }
 
 gcpvm(){
-init ${USER} "NA" "authorized_keys" "NA" "NA" "NA"
+init alain_pham_grafana_com "NA" "authorized_keys" "NA" "NA" "NA"
 bashaliases
 smalllogs
 iessentials

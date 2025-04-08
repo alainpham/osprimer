@@ -1,4 +1,10 @@
 
+```sh
+wget https://github.com/alainpham/debian-os-image/raw/refs/heads/master/setup-scripts/core.sh
+source core.sh
+sudo gcpvm
+```
+
 Make sure everything is unmounted
 
 ```bash
