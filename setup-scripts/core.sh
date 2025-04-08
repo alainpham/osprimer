@@ -550,6 +550,7 @@ fi
 
 }
 
+
 iessentials() {
 # Essentials packages
 echo "install essentials"
@@ -2525,4 +2526,12 @@ igui
 iworkstation
 ivirt
 sudo reboot
+}
+
+gcpvm(){
+init ${USER} "NA" "authorized_keys" "NA" "NA" "NA"
+bashaliases
+smalllogs
+iessentials
+idocker
 }
