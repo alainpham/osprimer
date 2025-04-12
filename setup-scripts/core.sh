@@ -529,11 +529,21 @@ fi
 
 if [ "$OSNAME" = "devuan" ]; then
 echo "setup apt"
+
+if [ "$OSVERSION" = "4" ]; then
+cat <<EOF > ${ROOTFS}/etc/apt/sources.list
+deb http://deb.devuan.org/merged chimaera main non-free contrib
+deb http://deb.devuan.org/merged chimaera-security main non-free contrib
+deb http://deb.devuan.org/merged chimaera-updates main non-free contrib
+EOF
+else
 cat <<EOF > ${ROOTFS}/etc/apt/sources.list
 deb http://deb.devuan.org/merged daedalus main non-free-firmware non-free contrib
 deb http://deb.devuan.org/merged daedalus-security main non-free-firmware non-free contrib
 deb http://deb.devuan.org/merged daedalus-updates main non-free-firmware non-free contrib
 EOF
+fi
+
 fi
 
 
@@ -1272,7 +1282,7 @@ done
 echo "additional gui packages"
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 cat << EOF | chroot ${ROOTFS}
-    apt install -y ntfs-3g ifuse mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv network-manager dnsmasq acpitool lm-sensors fonts-noto libnotify-bin dunst ffmpeg libfdk-aac2 python3-mutagen imagemagick mediainfo-gui arandr picom brightnessctl cups xsane libsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze-gtk-theme 
+    apt install -y ntfs-3g ifuse mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv network-manager dnsmasq acpitool lm-sensors fonts-noto libnotify-bin dunst ffmpeg libfdk-aac2 python3-mutagen imagemagick mediainfo-gui arandr picom brightnessctl cups xsane libsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze-gtk-theme breeze-icon-theme 
 EOF
 fi
 
@@ -2326,6 +2336,7 @@ isudo
 allowsshpwd
 ikeyboard
 itouchpad
+idev
 idocker
 ikube
 idlkubeimg
@@ -2357,6 +2368,7 @@ iessentials
 isudo
 allowsshpwd
 itouchpad
+idev
 idocker
 ikube
 igui
@@ -2383,6 +2395,7 @@ iessentials
 isudo
 allowsshpwd
 itouchpad
+idev
 idocker
 ikube
 igui
@@ -2407,6 +2420,7 @@ reposrc
 iessentials
 isudo
 allowsshpwd
+idev
 idocker
 ikube
 igui
@@ -2429,6 +2443,7 @@ smalllogs
 reposrc
 iessentials
 isudo
+idev
 idocker
 ikube
 sudo reboot now
@@ -2444,6 +2459,7 @@ init $1 "ps" "authorized_keys" "NA" "NA" "NA"
 bashaliases
 smalllogs
 iessentials
+idev
 idocker
 ikube
 sudo reboot now
@@ -2457,6 +2473,7 @@ reposrc
 iessentials
 ikeyboard
 inumlocktty
+idev
 idocker
 ikube
 sudo reboot now
@@ -2478,6 +2495,7 @@ rawkube(){
     isudo
     allowsshpwd
     ikeyboard
+    idev
     idocker
     ikube
     idlkubeimg
@@ -2497,6 +2515,7 @@ reposrc
 iessentials
 isudo
 itouchpad
+idev
 idocker
 igui
 iworkstation
@@ -2513,6 +2532,14 @@ reposrc
 iessentials
 isudo
 itouchpad
+
+cat <<EOF | tee ${ROOTFS}/etc/default/keyboard
+XKBMODEL="macbook79"
+XKBLAYOUT="fr"
+XKBVARIANT="mac"
+EOF
+
+idev
 idocker
 igui
 iworkstation
@@ -2528,6 +2555,7 @@ smalllogs
 reposrc
 iessentials
 isudo
+idev
 idocker
 igui
 iworkstation
