@@ -736,9 +736,9 @@ fi
 imaven() {
 
 mkdir -p ${ROOTFS}/opt/appimages/
+rm -rf ${ROOTFS}/opt/appimages/apache-maven-*
 curl -L -o /tmp/maven.tar.gz https://dlcdn.apache.org/maven/maven-3/${MVN_VERSION}/binaries/apache-maven-${MVN_VERSION}-bin.tar.gz
 tar xzvf /tmp/maven.tar.gz  -C ${ROOTFS}/opt/appimages/
-rm -rf ${ROOTFS}/opt/appimages/apache-maven-*
 cat << EOF | chroot ${ROOTFS}
     ln -sf /opt/appimages/apache-maven-${MVN_VERSION}/bin/mvn /usr/local/bin/mvn
 EOF
