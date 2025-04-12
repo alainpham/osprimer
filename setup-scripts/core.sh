@@ -575,7 +575,7 @@ cat << EOF | chroot ${ROOTFS}
     apt -y update 
     apt install -y ncurses-term
     apt -y upgrade
-    apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon systemd-timesyncd htop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq
+    apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon systemd-timesyncd htop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq sshfs
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup iperf3
 EOF
 fi
@@ -585,7 +585,7 @@ cat << EOF | chroot ${ROOTFS}
     apt -y update 
     apt install -y ncurses-term
     apt -y upgrade
-    apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon htop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq
+    apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon htop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq sshfs
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup iperf3
 EOF
 fi
@@ -615,7 +615,7 @@ EOF
 
 cat << EOF | chroot ${ROOTFS}
     dnf install -y ncurses-extraterms gettext
-    dnf install -y sudo git tmux vim curl wget rsync ncdu bind-utils htop bash-completion gnupg2 whois zip unzip virt-what wireguard-tools iptables jq
+    dnf install -y sudo git tmux vim curl wget rsync ncdu bind-utils htop bash-completion gnupg2 whois zip unzip virt-what wireguard-tools iptables jq sshfs
     dnf install -y cloud-utils openssh-server console-setup
 EOF
 fi
@@ -730,6 +730,8 @@ lineinfile ${ROOTFS}/etc/bashrc ".*export.*JAVA_HOME*=.*" "export JAVA_HOME=${JA
 lineinfile ${ROOTFS}/etc/bashrc ".*export.*PATH*=.*" "export PATH=\$PATH:${JAVA_HOME_TARGET}/bin"
 
 fi
+
+imaven
 
 }
 
@@ -2118,6 +2120,53 @@ EOF
 
 }
 
+iemulation(){
+
+lineinfile ${ROOTFS}/etc/bluetooth/input.conf ".*ClassicBondedOnly.*" "ClassicBondedOnly=false"
+
+echo "emulation tools"
+wget -O ${ROOTFS}/opt/appimages/emustation.AppImage https://gitlab.com/es-de/emulationstation-de/-/package_files/184126704/download
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /opt/appimages/emustation.AppImage
+    ln -sf /opt/appimages/emustation.AppImage /usr/local/bin/emustation
+EOF
+
+# https://buildbot.libretro.com/stable/
+wget -O ${ROOTFS}/tmp/RetroArch.7z https://buildbot.libretro.com/stable/1.20.0/linux/x86_64/RetroArch.7z
+wget -O ${ROOTFS}/tmp/RetroArch_cores.7z https://buildbot.libretro.com/stable/1.20.0/linux/x86_64/RetroArch_cores.7z
+cd ${ROOTFS}/tmp/
+7z x RetroArch.7z
+7z x RetroArch_cores.7z
+rm -rf ${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch
+
+
+
+export RARCHCFG=${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/retroarch.cfg
+mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/
+touch $RARCHCFG
+lineinfile $RARCHCFG "video_windowed_fullscreen.*=.*" 'video_windowed_fullscreen = "false"'
+lineinfile $RARCHCFG "video_fullscreen.*=.*" 'video_fullscreen = "true"'
+lineinfile $RARCHCFG "input_enable_hotkey_btn.*=.*" 'input_enable_hotkey_btn = "8"'
+lineinfile $RARCHCFG "input_exit_emulator_btn.*=.*" 'input_exit_emulator_btn = "9"'
+lineinfile $RARCHCFG "quit_press_twice.*=.*" 'quit_press_twice = "false"'
+lineinfile $RARCHCFG "menu_swap_ok_cancel_buttons.*=.*" 'menu_swap_ok_cancel_buttons = "true"'
+lineinfile $RARCHCFG "input_load_state_btn.*=.*" 'input_load_state_btn = "2"'
+lineinfile $RARCHCFG "input_save_state_btn.*=.*" 'input_save_state_btn = "3"'
+lineinfile $RARCHCFG "input_state_slot_decrease_btn.*=.*" 'input_state_slot_decrease_btn = "0"'
+lineinfile $RARCHCFG "input_state_slot_increase_btn.*=.*" 'input_state_slot_increase_btn = "1"'
+
+
+cat << EOF | chroot ${ROOTFS}
+    mv /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage /opt/appimages/RetroArch-Linux-x86_64.AppImage
+    chmod 755 /opt/appimages/RetroArch-Linux-x86_64.AppImage
+    ln -sf /opt/appimages/RetroArch-Linux-x86_64.AppImage /usr/local/bin/retroarch
+    mv /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch /home/$TARGET_USERNAME/.config/
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/retroarch
+EOF
+
+
+}
+
 icorporate(){
 ## corporate apps
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
@@ -2578,6 +2627,24 @@ ikubectl
 igui
 iworkstation
 ivirt
+sudo reboot
+}
+
+hped(){
+init apham "NA" "authorized_keys" "NA" "NA" "NA"
+bashaliases
+fastboot
+smalllogs
+reposrc
+iessentials
+isudo
+idev
+idocker
+ikubectl
+igui
+iworkstation
+ivirt
+iemulation
 sudo reboot
 }
 
