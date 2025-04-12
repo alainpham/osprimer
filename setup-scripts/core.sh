@@ -11,7 +11,7 @@ inputversions() {
     echo "export MAJOR_KUBE_VERSION=${MAJOR_KUBE_VERSION}"
     
     # https://github.com/derailed/k9s/releases
-    export K9S_VERSION=v0.40.10
+    export K9S_VERSION=v0.50.2
     echo "export K9S_VERSION=${K9S_VERSION}"
     
     # https://maven.apache.org/download.cgi
@@ -21,10 +21,29 @@ inputversions() {
     export NERDFONTS="Noto "
     echo "export NERDFONTS=${NERDFONTS}"
 
+    ### Corporate software
     # https://zoom.us/download?os=linux
-    export ZOOM_VERSION=6.3.11.7212
+    export ZOOM_VERSION=6.4.3.827
     echo "export ZOOM_VERSION=${ZOOM_VERSION}"
     
+    # https://slack.com/release-notes/linux
+    export SLACK_VERSION=4.43.51
+    echo "export SLACK_VERSION=${SLACK_VERSION}"
+
+    # https://github.com/IsmaelMartinez/teams-for-linux/releases/latest
+    export TEAMS_VERSION=1.12.7
+    echo "export TEAMS_VERSION=${TEAMS_VERSION}"
+
+    # https://github.com/sindresorhus/caprine/releases/tag/v2.60.3
+    export CAPRINE_VERSION=2.60.3
+    echo "export CAPRINE_VERSION=${CAPRINE_VERSION}"
+
+    # https://hub.docker.com/r/infinityofspace/certbot_dns_duckdns/tags
+    export CERTBOT_DUCKDNS_VERSION=v1.5
+    echo "export CERTBOT_DUCKDNS_VERSION=${CERTBOT_DUCKDNS_VERSION}"
+    ### Corporate software
+
+    ### appimages
     # https://mlv.app/
     export MLVAPP_VERSION=1.14
     echo "export MLVAPP_VERSION=${MLVAPP_VERSION}"
@@ -37,45 +56,13 @@ inputversions() {
     export FREAC_VERSION=1.1.7
     echo "export FREAC_VERSION=${FREAC_VERSION}"
 
-    # https://github.com/IsmaelMartinez/teams-for-linux/releases/latest
-    export TEAMS_VERSION=1.12.7
-    echo "export TEAMS_VERSION=${TEAMS_VERSION}"
-
-    # https://github.com/sindresorhus/caprine/releases/tag/v2.60.3
-    export CAPRINE_VERSION=2.60.3
-    echo "export CAPRINE_VERSION=${CAPRINE_VERSION}"
-
     # https://github.com/jgraph/drawio-desktop/releases
-    export DRAWIO_VERSION=26.1.1
+    export DRAWIO_VERSION=26.2.2
     echo "export DRAWIO_VERSION=${DRAWIO_VERSION}"
 
-    # https://hub.docker.com/r/infinityofspace/certbot_dns_duckdns/tags
-    export CERTBOT_DUCKDNS_VERSION=v1.5
-    echo "export CERTBOT_DUCKDNS_VERSION=${CERTBOT_DUCKDNS_VERSION}"
-
     # https://www.onlyoffice.com/download-desktop.aspx
-    export ONLYOFFICE_VERSION=v8.3.1
+    export ONLYOFFICE_VERSION=v8.3.2
     echo "export ONLYOFFICE_VERSION=${ONLYOFFICE_VERSION}"
-
-    # https://slack.com/release-notes/linux
-    export SLACK_VERSION=4.43.43
-    echo "export SLACK_VERSION=${SLACK_VERSION}"
-
-    # https://github.com/yshui/picom/releases
-    export PICOM_VERSION=12.5
-    echo "export PICOM_VERSION=${PICOM_VERSION}"
-
-    # https://github.com/Hummer12007/brightnessctl/releases
-    export BRIGHTNESSCTL_VERSION=0.5.1
-    echo "export BRIGHTNESSCTL_VERSION=${BRIGHTNESSCTL_VERSION}"
-
-    # https://github.com/naelstrof/slop/releases
-    export SLOP_VERSION=7.6
-    echo "export SLOP_VERSION=${SLOP_VERSION}"
-
-    # https://github.com/naelstrof/maim/releases
-    export MAIM_VERSION=5.8.0
-    echo "export MAIM_VERSION=${MAIM_VERSION}"
 
     # https://kdenlive.org/en/download/
     export KDENLIVE_MAIN_VERSION=24.12
@@ -96,8 +83,27 @@ inputversions() {
     echo "export LOCALSEND_VERSION=${LOCALSEND_VERSION}"
 
     # https://gitlab.com/librewolf-community/browser/appimage/-/releases
-    export LIBREWOLF_VERSION=136.0.4-1
+    export LIBREWOLF_VERSION=137.0.1-1
     echo "export LIBREWOLF_VERSION=${LIBREWOLF_VERSION}"
+    
+    ## end appimages
+
+    # https://github.com/yshui/picom/releases
+    export PICOM_VERSION=12.5
+    echo "export PICOM_VERSION=${PICOM_VERSION}"
+
+    # https://github.com/Hummer12007/brightnessctl/releases
+    export BRIGHTNESSCTL_VERSION=0.5.1
+    echo "export BRIGHTNESSCTL_VERSION=${BRIGHTNESSCTL_VERSION}"
+
+    # https://github.com/naelstrof/slop/releases
+    export SLOP_VERSION=7.6
+    echo "export SLOP_VERSION=${SLOP_VERSION}"
+
+    # https://github.com/naelstrof/maim/releases
+    export MAIM_VERSION=5.8.0
+    echo "export MAIM_VERSION=${MAIM_VERSION}"
+
 
     export OSNAME=$(awk -F= '/^ID=/ {gsub(/"/, "", $2); print $2}' /etc/os-release)
     echo "export OSNAME=${OSNAME}"
@@ -637,18 +643,17 @@ sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' ${ROOTFS}/etc/
 ikeyboard() {
 # setup keyboard
 cat <<EOF | tee ${ROOTFS}/etc/default/keyboard
-# KEYBOARD CONFIGURATION FILE
-
-# Consult the keyboard(5) manual page.
-
 XKBMODEL="pc105"
 XKBLAYOUT="${KEYBOARD_LAYOUT}"
-# XKBVARIANT=""
-# XKBOPTIONS=""
-
-# BACKSPACE="guess"
 EOF
 echo "keyboard setup finished"
+
+if [[ "$(dmidecode -t 1 | grep 'Product Name')" == *"MacBook"* ]]; then
+cat <<EOF | tee ${ROOTFS}/etc/default/keyboard
+XKBMODEL="macbook79"
+XKBLAYOUT="${KEYBOARD_LAYOUT}"
+EOF
+fi
 
 }
 
@@ -671,6 +676,7 @@ cd libinput-gestures
 
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 cat << EOF | chroot ${ROOTFS}
+    apt install libinput-tools wmctrl
     adduser $TARGET_USERNAME input
 EOF
 fi
@@ -725,15 +731,25 @@ lineinfile ${ROOTFS}/etc/bashrc ".*export.*PATH*=.*" "export PATH=\$PATH:${JAVA_
 
 fi
 
+}
+
+imaven() {
+
 mkdir -p ${ROOTFS}/opt/appimages/
 curl -L -o /tmp/maven.tar.gz https://dlcdn.apache.org/maven/maven-3/${MVN_VERSION}/binaries/apache-maven-${MVN_VERSION}-bin.tar.gz
 tar xzvf /tmp/maven.tar.gz  -C ${ROOTFS}/opt/appimages/
+rm -rf ${ROOTFS}/opt/appimages/apache-maven-*
 cat << EOF | chroot ${ROOTFS}
     ln -sf /opt/appimages/apache-maven-${MVN_VERSION}/bin/mvn /usr/local/bin/mvn
 EOF
 rm -f /tmp/maven.tar.gz
 echo "maven installed"
+}
 
+idockerbuildx(){
+    mkdir -p ${ROOTFS}/usr/lib/docker/cli-plugins
+    curl -SL https://github.com/docker/buildx/releases/download/${DOCKER_BUILDX_VERSION}/buildx-${DOCKER_BUILDX_VERSION}.linux-amd64 -o ${ROOTFS}/usr/lib/docker/cli-plugins/docker-buildx
+    chmod 755 ${ROOTFS}/usr/lib/docker/cli-plugins/docker-buildx
 }
 
 idocker() {
@@ -779,12 +795,7 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 fi
 
-mkdir -p ${ROOTFS}/usr/lib/docker/cli-plugins
-curl -SL https://github.com/docker/buildx/releases/download/${DOCKER_BUILDX_VERSION}/buildx-${DOCKER_BUILDX_VERSION}.linux-amd64 -o ${ROOTFS}/usr/lib/docker/cli-plugins/docker-buildx
-chmod 755 ${ROOTFS}/usr/lib/docker/cli-plugins/docker-buildx
-
-echo "docker build x installed"
-
+idockerbuildx
 
 cat <<'EOF' | tee ${ROOTFS}/usr/local/bin/firstboot-dockernet.sh
 #!/bin/bash
@@ -1282,7 +1293,7 @@ done
 echo "additional gui packages"
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 cat << EOF | chroot ${ROOTFS}
-    apt install -y ntfs-3g ifuse mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv network-manager dnsmasq acpitool lm-sensors fonts-noto libnotify-bin dunst ffmpeg libfdk-aac2 python3-mutagen imagemagick mediainfo-gui arandr picom brightnessctl cups xsane libsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze-gtk-theme breeze-icon-theme 
+    apt install -y ntfs-3g ifuse mousepad mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv network-manager dnsmasq acpitool lm-sensors fonts-noto libnotify-bin dunst ffmpeg libfdk-aac2 python3-mutagen imagemagick mediainfo-gui arandr picom brightnessctl cups xsane libsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze-gtk-theme breeze-icon-theme 
 EOF
 fi
 
@@ -1300,7 +1311,7 @@ fi
 
 cat << EOF | chroot ${ROOTFS}
     dnf install -y libgtk+3.0-devel python-gobject3-devel
-    dnf install -y ntfs-3g ifuse mpv haruna vlc nmon neofetch feh qimgv NetworkManager dnsmasq acpitool lm_sensors noto-sans-fonts noto-serif-fonts fonts-ttf-awesome fonts-otf-awesome libnotify dunst ffmpeg mutagen imagemagick mediainfo arandr  cups xsane sane-backends filezilla lxappearance
+    dnf install -y ntfs-3g ifuse mousepad mpv haruna vlc nmon neofetch feh qimgv NetworkManager dnsmasq acpitool lm_sensors noto-sans-fonts noto-serif-fonts fonts-ttf-awesome fonts-otf-awesome libnotify dunst ffmpeg mutagen imagemagick mediainfo arandr  cups xsane sane-backends filezilla lxappearance
     cd /tmp/
     wget -O picom.zip "https://github.com/yshui/picom/archive/refs/tags/v${PICOM_VERSION}.zip"
     unzip picom.zip
@@ -2301,6 +2312,15 @@ initdefault(){
     init apham "NA" "authorized_keys" "NA" "NA" "NA"
 }
 
+iupdateworkstation(){
+    init apham "NA" "authorized_keys" "NA" "NA" "NA"
+    bashaliases
+    imaven
+    idockerbuild
+    ikubectl
+    iappimages
+}
+
 ###############################
 ##### MAIN FUNCTIONS ##########
 ###############################
@@ -2514,9 +2534,11 @@ smalllogs
 reposrc
 iessentials
 isudo
+ikeyboard
 itouchpad
 idev
 idocker
+ikubectl
 igui
 iworkstation
 sudo reboot
@@ -2531,16 +2553,11 @@ smalllogs
 reposrc
 iessentials
 isudo
+ikeyboard
 itouchpad
-
-cat <<EOF | tee ${ROOTFS}/etc/default/keyboard
-XKBMODEL="macbook79"
-XKBLAYOUT="fr"
-XKBVARIANT="mac"
-EOF
-
 idev
 idocker
+ikubectl
 igui
 iworkstation
 sudo reboot
@@ -2557,6 +2574,7 @@ iessentials
 isudo
 idev
 idocker
+ikubectl
 igui
 iworkstation
 ivirt
@@ -2570,3 +2588,4 @@ smalllogs
 iessentials
 idocker
 }
+
