@@ -769,6 +769,8 @@ cat << EOF | chroot ${ROOTFS}
     apt install -y docker.io python3-docker docker-compose skopeo
 EOF
 
+mkdir -p ${ROOTFS}/etc/docker
+
 cat <<EOF | tee ${ROOTFS}/etc/docker/daemon.json
 {
   "log-opts": {
@@ -827,7 +829,7 @@ if [ $retry -eq $max_retries ]; then
     exit 1
 fi
 
-if [[ -z "\$(docker network ls | grep primenet)" ]] then
+if [[ -z "$(docker network ls | grep primenet)" ]] then
      docker network create --driver=bridge --subnet=172.18.0.0/16 --gateway=172.18.0.1 primenet
      echo "firstboot-dockernet.sh : docker primenet created"
      echo "✅ primenet docker network created !">/var/log/firstboot-dockernet.log
@@ -863,7 +865,7 @@ if [ $retry -eq $max_retries ]; then
     exit 1
 fi
 
-if [[ -z "\$(docker buildx ls | grep multibuilder.*linux)" ]] then
+if [[ -z "$(docker buildx ls | grep multibuilder.*linux)" ]] then
      docker buildx create --name multibuilder --platform linux/amd64,linux/arm/v7,linux/arm64/v8 --use
      echo "firstboot-dockerbuildx.sh : docker multibuilder created"
      echo "✅ multibuilder docker buildx created !">/var/log/firstboot-dockerbuildx.log
