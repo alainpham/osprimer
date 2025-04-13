@@ -155,7 +155,7 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 done
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] ; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ] ; then
     export BASHRC="/etc/bash.bashrc"
 fi
 
@@ -180,7 +180,6 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*NERDFONTS*=.*" "export NERDFONTS=\"${NE
 lineinfile ${ROOTFS}${BASHRC} ".*export.*ZOOM_VERSION*=.*" "export ZOOM_VERSION=${ZOOM_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*MLVAPP_VERSION*=.*" "export MLVAPP_VERSION=${MLVAPP_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*BEEREF_VERSION*=.*" "export BEEREF_VERSION=${BEEREF_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*FREAC_VERSION*=.*" "export FREAC_VERSION=${FREAC_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*FREAC_VERSION*=.*" "export FREAC_VERSION=${FREAC_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*TEAMS_VERSION*=.*" "export TEAMS_VERSION=${TEAMS_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*CAPRINE_VERSION*=.*" "export CAPRINE_VERSION=${CAPRINE_VERSION}"
@@ -297,24 +296,24 @@ echo "Deactivated nouveau drivers"
 }
 
 rmbroadcom() {
-sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/ {/modprobe.blacklist=b43,brcmsmac/! s/"$/ modprobe.blacklist=b43,brcmsmac"/}' ${ROOTFS}/etc/default/grub
+sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/ {/modprobe.blacklist=b43,brcmsmac,wl/! s/"$/ modprobe.blacklist=b43,brcmsmac,wl"/}' ${ROOTFS}/etc/default/grub
 update-grub2
 echo "Deactivated broadcom drivers"
 }
 
 fastboot() {
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ] ; then
 echo debian
 # accelerate grub startup
 mkdir -p ${ROOTFS}/etc/default/grub.d/
-echo 'GRUB_TIMEOUT=0' | tee ${ROOTFS}/etc/default/grub.d/15_timeout.cfg
-lineinfile ${ROOTFS}/etc/default/grub ".*GRUB_TIMEOUT=.*" 'GRUB_TIMEOUT=0'
+echo 'GRUB_TIMEOUT=1' | tee ${ROOTFS}/etc/default/grub.d/15_timeout.cfg
+lineinfile ${ROOTFS}/etc/default/grub ".*GRUB_TIMEOUT=.*" 'GRUB_TIMEOUT=1'
 fi
 
 if [ "$OSNAME" = "openmandriva" ]; then
 echo openmandriva
-lineinfile ${ROOTFS}/etc/default/grub ".*GRUB_TIMEOUT=.*" 'GRUB_TIMEOUT=0'
+lineinfile ${ROOTFS}/etc/default/grub ".*GRUB_TIMEOUT=.*" 'GRUB_TIMEOUT=1'
 fi
 
 update-grub2
@@ -361,7 +360,7 @@ EOF
 chmod 755 ${ROOTFS}/usr/local/bin/turboboost.sh
 
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ]; then
 
 cat <<EOF | tee ${ROOTFS}/etc/systemd/system/disable-intel-turboboost.service
 [Unit]
@@ -451,7 +450,7 @@ EOF
 
 chmod 755 ${ROOTFS}/usr/local/bin/firstboot.sh
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat <<EOF | tee ${ROOTFS}/etc/systemd/system/firstboot.service
 [Unit]
 Description=firstboot
@@ -514,7 +513,7 @@ echo "firstboot script activated"
 
 smalllogs() {
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ]; then
 lineinfile ${ROOTFS}/etc/systemd/journald.conf ".*SystemMaxUse=.*" "SystemMaxUse=50M"
 echo "lower log volume activated"
 fi
@@ -531,6 +530,10 @@ deb http://deb.debian.org/debian bookworm-updates main contrib non-free non-free
 EOF
 
 echo "apt sources setup finished"
+fi
+
+if [ "$OSNAME" = "ubuntu" ]; then
+echo "TODO : apt sources setup finished"
 fi
 
 if [ "$OSNAME" = "devuan" ]; then
@@ -570,7 +573,7 @@ iessentials() {
 # Essentials packages
 echo "install essentials"
 
-if [ "$OSNAME" = "debian" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt -y update 
     apt install -y ncurses-term
@@ -674,9 +677,9 @@ git clone https://github.com/bulletmark/libinput-gestures.git
 cd libinput-gestures
 ./libinput-gestures-setup install
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
-    apt install libinput-tools wmctrl
+    apt -y install libinput-tools wmctrl
     adduser $TARGET_USERNAME input
 EOF
 fi
@@ -686,6 +689,8 @@ cat << EOF | chroot ${ROOTFS}
     usermod -aG input $TARGET_USERNAME
 EOF
 fi
+
+mkdir -p ${ROOTFS}/home/${TARGET_USERNAME}/.config/
 
 cat <<EOF | tee ${ROOTFS}/home/${TARGET_USERNAME}/.config/libinput-gestures.conf
 gesture swipe up        xdotool key super+m
@@ -699,6 +704,7 @@ gesture pinch out       xdotool key ctrl+plus
 EOF
 
 cat << EOF | chroot ${ROOTFS}
+    chown $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config
     chown $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/libinput-gestures.conf
 EOF
 
@@ -707,7 +713,7 @@ EOF
 
 idev(){
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt install -y ansible openjdk-17-jdk-headless npm golang-go
 EOF
@@ -758,7 +764,7 @@ idocker() {
 
 echo "install docker"
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt install -y docker.io python3-docker docker-compose skopeo
 EOF
@@ -872,7 +878,7 @@ EOF
 chmod 755 ${ROOTFS}/usr/local/bin/firstboot-dockernet.sh
 chmod 755 ${ROOTFS}/usr/local/bin/firstboot-dockerbuildx.sh
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat <<EOF | tee ${ROOTFS}/etc/systemd/system/firstboot-dockernet.service
 [Unit]
 Description=firstboot-dockernet
@@ -982,7 +988,7 @@ fi
 ikubectl(){
 echo "install kubectl"
 
-if [ "$OSNAME" = "debian" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
     curl -fsSL https://pkgs.k8s.io/core:/stable:/$MAJOR_KUBE_VERSION/deb/Release.key | gpg --batch --yes --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
     echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/$MAJOR_KUBE_VERSION/deb/ /' | tee /etc/apt/sources.list.d/kubernetes.list
@@ -1046,7 +1052,7 @@ ikube() {
  
 echo "install kube readiness"
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat <<EOF | tee ${ROOTFS}/etc/modules-load.d/containerd.conf 
 overlay 
 br_netfilter
@@ -1060,7 +1066,7 @@ net.bridge.bridge-nf-call-ip6tables = 1
 EOF
 echo "kube readiness setup finished"
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt install -y containerd
 EOF
@@ -1074,7 +1080,7 @@ fi
 
 echo "containerd setup"
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
     mkdir -p /etc/containerd
     containerd config default | tee /etc/containerd/config.toml >/dev/null 2>&1
@@ -1087,7 +1093,7 @@ ikubectl
 
 echo "install kube server"
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt install -y kubelet kubeadm
 EOF
@@ -1191,7 +1197,7 @@ cat << EOF | chroot ${ROOTFS}
     chmod 755 /usr/local/bin/nlock
 EOF
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME"  = "openmandriva" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME"  = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat <<EOF | tee ${ROOTFS}/etc/systemd/system/nlock.service
 [Unit]
 Description=nlock
@@ -1260,7 +1266,7 @@ echo "install gui"
 # if pulse replace by this apt install -y pulseaudio
     # apt install -y  pipewire-audio wireplumber pipewire-pulse pipewire-alsa libspa-0.2-bluetooth pulseaudio-utils qpwgraph pavucontrol
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt install -y make gcc libx11-dev libxft-dev libxrandr-dev libimlib2-dev libfreetype-dev libxinerama-dev xorg numlockx 
     apt install -y pulseaudio pulseaudio-module-bluetooth pulseaudio-utils pavucontrol alsa-utils
@@ -1293,9 +1299,15 @@ for font in ${NERDFONTS} ; do
 done
  
 echo "additional gui packages"
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
+cat << EOF | chroot ${ROOTFS}
+    apt install -y ntfs-3g ifuse mousepad mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv network-manager dnsmasq acpitool lm-sensors fonts-noto libnotify-bin dunst ffmpeg libfdk-aac2 python3-mutagen imagemagick mediainfo-gui arandr picom brightnessctl cups xsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze-gtk-theme breeze-icon-theme 
+EOF
+fi
+
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 cat << EOF | chroot ${ROOTFS}
-    apt install -y ntfs-3g ifuse mousepad mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv network-manager dnsmasq acpitool lm-sensors fonts-noto libnotify-bin dunst ffmpeg libfdk-aac2 python3-mutagen imagemagick mediainfo-gui arandr picom brightnessctl cups xsane libsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze-gtk-theme breeze-icon-theme 
+    apt install -y libsane
 EOF
 fi
 
@@ -1337,7 +1349,7 @@ EOF
 
 fi
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
     systemctl disable dnsmasq
 EOF
@@ -1351,7 +1363,7 @@ EOF
 fi
 
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << 'EOF' | tee ${ROOTFS}/etc/network/interfaces
 # This file describes the network interfaces available on your system
 # and how to activate them. For more information, see interfaces(5).
@@ -1364,10 +1376,19 @@ iface lo inet loopback
 EOF
 fi
 
-if [ "$OSNAME" = "openmandriva" ]; then
+if [ "$OSNAME" = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat <<EOF | chroot ${ROOTFS}
     systemctl disable systemd-resolved
     rm -f ${ROOTFS}/etc/resolv.conf
+EOF
+fi
+
+if [ "$OSNAME" = "ubuntu" ]; then
+#TODO
+cat <<EOF | chroot ${ROOTFS}
+    rm /etc/netplan/*
+    apt -y install ifupdown
+    apt -y remove resolvconf
 EOF
 fi
 
@@ -1385,7 +1406,7 @@ EOF
 # dunst notification
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/dunst
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.config/dunst/dunstrc
 [global]
 monitor = 2
@@ -1462,7 +1483,7 @@ EOF
 
 # create alsa loopback
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 lineinfile ${ROOTFS}/etc/modules ".*snd-aloop.*" "snd-aloop"
 lineinfile ${ROOTFS}/etc/modules ".*snd-dummy.*" "snd-dummy"
 fi
@@ -1526,7 +1547,7 @@ chmod 755 ${ROOTFS}/usr/local/bin/$file
 done
 
 # install chrome browser
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 mkdir -p ${ROOTFS}/opt/debs/
 wget -O /opt/debs/google-chrome-stable_current_amd64.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb 
 cat << EOF | chroot ${ROOTFS}
@@ -1625,7 +1646,7 @@ eval $(dbus-launch --sh-syntax --exit-with-session)
 EOF
 fi
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
 #!/bin/sh
 if [ -z "$DBUS_SESSION_BUS_ADDRESS" ] && [ -n "$XDG_RUNTIME_DIR" ] && \
@@ -1666,7 +1687,7 @@ if [[ "$(dmidecode -t 1 | grep 'Product Name')" == *"MacBook"* ]]; then
     echo "Running on a MacBook, no numlock"
 else
     
-    if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
+    if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | tee -a ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
 numlockx
 
@@ -1740,7 +1761,7 @@ cat << EOF | chroot ${ROOTFS}
     chmod 755 /usr/local/bin/pdf2png
 EOF
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt install -y v4l2loopback-utils flameshot maim xclip xdotool thunar thunar-archive-plugin
 EOF
@@ -1964,7 +1985,7 @@ fi
 iworkstation() {
 echo "additional workstation tools"
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt install -y handbrake gimp rawtherapee krita mypaint inkscape blender obs-studio mgba-qt easytag audacity
 EOF
@@ -1977,7 +1998,7 @@ EOF
 # install easytag flathub
 fi
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
     DEBIAN_FRONTEND=noninteractive apt install -y libdvd-pkg
 EOF
@@ -2001,7 +2022,7 @@ fi
 # EOF
 
 #vscode
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 mkdir -p ${ROOTFS}/opt/debs/
 wget -O ${ROOTFS}/opt/debs/vscode.deb "https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64"
 cat << EOF | chroot ${ROOTFS}
@@ -2169,7 +2190,7 @@ EOF
 
 icorporate(){
 ## corporate apps
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 
 # install zoom
 mkdir -p ${ROOTFS}/opt/debs/
@@ -2210,7 +2231,7 @@ fi
 ivirt() {
 echo "virtualization tools"
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt install -y qemu-system qemu-utils virtinst libvirt-clients libvirt-daemon-system libguestfs-tools bridge-utils libosinfo-bin virt-manager genisoimage
     adduser $TARGET_USERNAME libvirt
@@ -2263,7 +2284,7 @@ EOF
 
 chmod 755 ${ROOTFS}/usr/local/bin/firstboot-virt.sh
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ]; then
 
 cat <<EOF | tee ${ROOTFS}/etc/systemd/system/firstboot-virt.service
 [Unit]
@@ -2594,10 +2615,12 @@ sudo reboot
 }
 
 oair(){
+modprobe -r b43 brcmsmac
 init apham "NA" "authorized_keys" "NA" "NA" "NA"
 bashaliases
 rmbroadcom
 fastboot
+disableturbo
 smalllogs
 reposrc
 iessentials
