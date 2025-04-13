@@ -120,6 +120,8 @@ inputversions() {
     export KEYBOARD_LAYOUT="fr"
     echo "export KEYBOARD_LAYOUT=${KEYBOARD_LAYOUT}"
 
+    export APT_PROXY="http://192.168.8.100:3142"
+    echo "export APT_PROXY=${APT_PROXY}"
 }
 
 
@@ -209,6 +211,8 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*DUCKDNS_TOKEN*=.*" "export DUCKDNS_TOKE
 lineinfile ${ROOTFS}${BASHRC} ".*export.*PRODUCT_NAME*=.*" "export PRODUCT_NAME='${PRODUCT_NAME}'"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*TIMEZONE*=.*" "export TIMEZONE=${TIMEZONE}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*KEYBOARD_LAYOUT*=.*" "export KEYBOARD_LAYOUT=${KEYBOARD_LAYOUT}"
+
+lineinfile ${ROOTFS}${BASHRC} ".*export.*APT_PROXY*=.*" "export APT_PROXY='${APT_PROXY}'"
 
 echo "bash aliases setup finished"
 }
@@ -571,6 +575,15 @@ rm -f ${ROOTFS}/etc/yum.repos.d/*
     fi
 fi
 
+}
+
+iaptproxy() {
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
+cat << EOF | tee ${ROOTFS}/etc/apt/apt.conf.d/99proxy
+Acquire::HTTP::Proxy "${APT_PROXY}";
+Acquire::HTTPS::Proxy "false";
+EOF
+fi
 }
 
 iessentials() {
@@ -2438,6 +2451,7 @@ disableturbo
 firstbootexpandfs
 smalllogs
 reposrc
+iaptproxy
 iessentials
 isudo
 allowsshpwd
@@ -2472,6 +2486,7 @@ fastboot
 disableturbo
 smalllogs
 reposrc
+iaptproxy
 iessentials
 isudo
 allowsshpwd
@@ -2500,6 +2515,7 @@ fastboot
 disableturbo
 smalllogs
 reposrc
+iaptproxy
 iessentials
 isudo
 allowsshpwd
@@ -2527,6 +2543,7 @@ fastboot
 disableturbo
 smalllogs
 reposrc
+iaptproxy
 iessentials
 isudo
 allowsshpwd
@@ -2552,6 +2569,7 @@ createuser
 authkeys
 smalllogs
 reposrc
+iaptproxy
 iessentials
 isudo
 idev
@@ -2581,6 +2599,7 @@ init apham "NA" "authorized_keys" "NA" "NA" "NA"
 bashaliases
 smalllogs
 reposrc
+iaptproxy
 iessentials
 ikeyboard
 inumlocktty
@@ -2591,30 +2610,30 @@ sudo reboot now
 }
 
 rawkube(){
-    init apham p /home/apham/.ssh/authorized_keys /home/apham/virt/images/debian-12-nocloud-amd64.raw /home/apham/virt/images/d12-kube.raw 5G
-    mountraw
-    bashaliases
-    createuser
-    setpasswd
-    authkeys
-    fastboot
-    firstbootexpandfs
-    smalllogs
-    reposrc
-    iessentials
-    isshkey
-    isudo
-    allowsshpwd
-    ikeyboard
-    idev
-    idocker
-    ikube
-    idlkubeimg
-    isecret
-    cleanupapt
-    unmountraw
-    rm /home/apham/virt/images/d12-kube.qcow2
-    qemu-img convert -f raw -O qcow2 /home/apham/virt/images/d12-kube.raw /home/apham/virt/images/d12-kube.qcow2
+init apham p /home/apham/.ssh/authorized_keys /home/apham/virt/images/debian-12-nocloud-amd64.raw /home/apham/virt/images/d12-kube.raw 5G
+mountraw
+bashaliases
+createuser
+setpasswd
+authkeys
+fastboot
+firstbootexpandfs
+smalllogs
+reposrc
+iessentials
+isshkey
+isudo
+allowsshpwd
+ikeyboard
+idev
+idocker
+ikube
+idlkubeimg
+isecret
+cleanupapt
+unmountraw
+rm /home/apham/virt/images/d12-kube.qcow2
+qemu-img convert -f raw -O qcow2 /home/apham/virt/images/d12-kube.raw /home/apham/virt/images/d12-kube.qcow2
 }
 
 oboo(){
@@ -2623,6 +2642,7 @@ bashaliases
 fastboot
 smalllogs
 reposrc
+iaptproxy
 iessentials
 isudo
 ikeyboard
@@ -2645,6 +2665,7 @@ fastboot
 disableturbo
 smalllogs
 reposrc
+iaptproxy
 iessentials
 isudo
 ikeyboard
@@ -2666,6 +2687,7 @@ bashaliases
 fastboot
 smalllogs
 reposrc
+iaptproxy
 iessentials
 isudo
 idev
@@ -2684,6 +2706,7 @@ bashaliases
 fastboot
 smalllogs
 reposrc
+iaptproxy
 iessentials
 isudo
 idev
