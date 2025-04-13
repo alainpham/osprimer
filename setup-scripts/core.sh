@@ -2155,7 +2155,7 @@ echo "emulation tools"
 wget -O ${ROOTFS}/opt/appimages/emustation.AppImage https://gitlab.com/es-de/emulationstation-de/-/package_files/184126704/download
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/emustation.AppImage
-    ln -sf /opt/appimages/emustation.AppImage /usr/local/bin/emustation
+    ln -sf /opt/appimages/emustation.AppImage /usr/local/bin/estation
 EOF
 
 # https://buildbot.libretro.com/stable/
