@@ -113,11 +113,13 @@ inputversions() {
 
     export PRODUCT_NAME=$(dmidecode -t 1 | grep 'Product Name:' | sed 's/.*Product Name: //')
     echo "export PRODUCT_NAME=${PRODUCT_NAME}"
-}
 
-inputkeyboard() {
-    export KEYBOARD_LAYOUT=fr
+    export TIMEZONE="Europe/Paris"
+    echo "export TIMEZONE=${TIMEZONE}"
+
+    export KEYBOARD_LAYOUT="fr"
     echo "export KEYBOARD_LAYOUT=${KEYBOARD_LAYOUT}"
+
 }
 
 
@@ -205,6 +207,8 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*WILDCARD_DOMAIN*=.*" "export WILDCARD_D
 lineinfile ${ROOTFS}${BASHRC} ".*export.*EMAIL*=.*" "export EMAIL=admin@zez.duckdns.org"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*DUCKDNS_TOKEN*=.*" "export DUCKDNS_TOKEN=xxxx-xxxx-xxxx-xxxx-xxxx"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*PRODUCT_NAME*=.*" "export PRODUCT_NAME='${PRODUCT_NAME}'"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*TIMEZONE*=.*" "export TIMEZONE=${TIMEZONE}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*KEYBOARD_LAYOUT*=.*" "export KEYBOARD_LAYOUT=${KEYBOARD_LAYOUT}"
 
 echo "bash aliases setup finished"
 }
@@ -2075,28 +2079,28 @@ iappimages(){
 wget -O ${ROOTFS}/opt/appimages/kdenlive.AppImage https://download.kde.org/stable/kdenlive/${KDENLIVE_MAIN_VERSION}/linux/kdenlive-${KDENLIVE_FULL_VERSION}-x86_64.AppImage
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/kdenlive.AppImage
-    ln -s /opt/appimages/kdenlive.AppImage /usr/local/bin/kdenlive
+    ln -sf /opt/appimages/kdenlive.AppImage /usr/local/bin/kdenlive
 EOF
 
 # Only Office
 wget -O ${ROOTFS}/opt/appimages/onlyoffice.AppImage https://github.com/ONLYOFFICE/appimage-desktopeditors/releases/download/${ONLYOFFICE_VERSION}/DesktopEditors-x86_64.AppImage
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/onlyoffice.AppImage
-    ln -s /opt/appimages/onlyoffice.AppImage /usr/local/bin/onlyoffice
+    ln -sf /opt/appimages/onlyoffice.AppImage /usr/local/bin/onlyoffice
 EOF
 
 # MLVP APP
 wget -O ${ROOTFS}/opt/appimages/mlvapp.AppImage https://github.com/ilia3101/MLV-App/releases/download/QTv${MLVAPP_VERSION}/MLV.App.v${MLVAPP_VERSION}.Linux.x86_64.AppImage
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/mlvapp.AppImage
-    ln -s /opt/appimages/mlvapp.AppImage /usr/local/bin/mlvapp
+    ln -sf /opt/appimages/mlvapp.AppImage /usr/local/bin/mlvapp
 EOF
 
 # Drawio
 wget -O ${ROOTFS}/opt/appimages/drawio.AppImage https://github.com/jgraph/drawio-desktop/releases/download/v${DRAWIO_VERSION}/drawio-x86_64-${DRAWIO_VERSION}.AppImage
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/drawio.AppImage
-    ln -s /opt/appimages/drawio.AppImage /usr/local/bin/drawio
+    ln -sf /opt/appimages/drawio.AppImage /usr/local/bin/drawio
 EOF
 
 #viber
@@ -2160,12 +2164,8 @@ wget -O ${ROOTFS}/tmp/RetroArch_cores.7z https://buildbot.libretro.com/stable/1.
 cd ${ROOTFS}/tmp/
 7z x RetroArch.7z
 7z x RetroArch_cores.7z
-rm -rf ${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch
 
-
-
-export RARCHCFG=${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/retroarch.cfg
-mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/
+export RARCHCFG=${ROOTFS}/tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/retroarch.cfg
 touch $RARCHCFG
 lineinfile $RARCHCFG "video_windowed_fullscreen.*=.*" 'video_windowed_fullscreen = "false"'
 lineinfile $RARCHCFG "video_fullscreen.*=.*" 'video_fullscreen = "true"'
@@ -2183,10 +2183,19 @@ cat << EOF | chroot ${ROOTFS}
     mv /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage /opt/appimages/RetroArch-Linux-x86_64.AppImage
     chmod 755 /opt/appimages/RetroArch-Linux-x86_64.AppImage
     ln -sf /opt/appimages/RetroArch-Linux-x86_64.AppImage /usr/local/bin/retroarch
+    rm -rf /home/$TARGET_USERNAME/.config/retroarch
     mv /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch /home/$TARGET_USERNAME/.config/
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/retroarch
 EOF
 
+
+emuscripts="emumount.sh emustop.sh"
+for script in $emuscripts ; do
+curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/$script
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /usr/local/bin/$script
+EOF
+done
 
 }
 
@@ -2358,6 +2367,13 @@ isecret(){
     fi
 }
 
+itimezone(){
+cat << EOF | chroot ${ROOTFS}
+    ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime
+    echo $TIMEZONE > /etc/timezone
+EOF
+}
+
 cleanupapt() {
 echo "cleaning up"
 cat << EOF | chroot ${ROOTFS}
@@ -2376,7 +2392,6 @@ losetup -D
 init() {
     # Set the default values
     inputversions
-    inputkeyboard
     inputtasks $@
 }
 
@@ -2436,6 +2451,7 @@ invidia
 igui
 iworkstation
 ivirt
+itimezone
 cleanupapt
 unmountraw
 sudo reboot now
@@ -2466,6 +2482,7 @@ ikube
 igui
 iworkstation
 ivirt
+itimezone
 sudo reboot now
 }
 
@@ -2492,6 +2509,7 @@ idocker
 ikube
 igui
 iworkstation
+itimezone
 sudo reboot now
 }
 
@@ -2516,6 +2534,7 @@ idev
 idocker
 ikube
 igui
+itimezone
 sudo reboot now
 }
 
@@ -2613,6 +2632,7 @@ idocker
 ikubectl
 igui
 iworkstation
+itimezone
 sudo reboot
 }
 
@@ -2634,6 +2654,8 @@ idocker
 ikubectl
 igui
 iworkstation
+iemulation
+itimezone
 sudo reboot
 }
 
@@ -2652,6 +2674,7 @@ ikubectl
 igui
 iworkstation
 ivirt
+itimezone
 sudo reboot
 }
 
@@ -2670,6 +2693,7 @@ igui
 iworkstation
 ivirt
 iemulation
+itimezone
 sudo reboot
 }
 
