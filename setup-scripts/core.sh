@@ -2172,8 +2172,8 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 
 # https://buildbot.libretro.com/stable/
-wget -O ${ROOTFS}/tmp/RetroArch.7z https://buildbot.libretro.com/stable/1.20.0/linux/x86_64/RetroArch.7z
-wget -O ${ROOTFS}/tmp/RetroArch_cores.7z https://buildbot.libretro.com/stable/1.20.0/linux/x86_64/RetroArch_cores.7z
+wget -O ${ROOTFS}/tmp/RetroArch.7z https://buildbot.libretro.com/stable/1.21.0/linux/x86_64/RetroArch.7z
+wget -O ${ROOTFS}/tmp/RetroArch_cores.7z https://buildbot.libretro.com/stable/1.21.0/linux/x86_64/RetroArch_cores.7z
 cd ${ROOTFS}/tmp/
 7z x RetroArch.7z
 7z x RetroArch_cores.7z
@@ -2210,6 +2210,13 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 done
 
+}
+
+iautologin(){
+if [ "$OSNAME" = "devuan" ]; then
+lineinfile ${ROOTFS}/etc/inittab "1.2345.respawn./sbin/getty.*tty1" "1:2345:respawn:/sbin/getty --autologin ${TARGET_USERNAME} --noclear 38400 tty1"
+lineinfile ${ROOTFS}/home/$TARGET_USERNAME/.bashrc .*startx.* '[ -z "$DISPLAY" ] && [ $(tty) = /dev/tty1 ] && startx'
+fi
 }
 
 icorporate(){
@@ -2676,6 +2683,7 @@ ikubectl
 igui
 iworkstation
 iemulation
+iautologin
 itimezone
 sudo reboot
 }
