@@ -2188,8 +2188,13 @@ lineinfile $RARCHCFG "quit_press_twice.*=.*" 'quit_press_twice = "false"'
 lineinfile $RARCHCFG "menu_swap_ok_cancel_buttons.*=.*" 'menu_swap_ok_cancel_buttons = "true"'
 lineinfile $RARCHCFG "input_load_state_btn.*=.*" 'input_load_state_btn = "2"'
 lineinfile $RARCHCFG "input_save_state_btn.*=.*" 'input_save_state_btn = "3"'
+lineinfile $RARCHCFG "savestate_auto_index.*=.*" 'savestate_auto_index = true'
+lineinfile $RARCHCFG "savestate_thumbnail_enable.*=.*" 'savestate_thumbnail_enable = true'
+
 lineinfile $RARCHCFG "input_state_slot_decrease_btn.*=.*" 'input_state_slot_decrease_btn = "0"'
 lineinfile $RARCHCFG "input_state_slot_increase_btn.*=.*" 'input_state_slot_increase_btn = "1"'
+# deactivate menu button
+lineinfile $RARCHCFG "input_menu_toggle_btn.*=.*" 'input_menu_toggle_btn = "200"'
 
 
 cat << EOF | chroot ${ROOTFS}
