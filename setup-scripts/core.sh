@@ -2194,24 +2194,43 @@ unzip ${ROOTFS}/tmp/bios.zip 'system/*' -d /tmp/RetroArch-Linux-x86_64/RetroArch
 
 
 export RARCHCFG=${ROOTFS}/tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/retroarch.cfg
+# export RARCHCFG=/home/$TARGET_USERNAME/.config/retroarch/retroarch.cfg
 touch $RARCHCFG
 lineinfile $RARCHCFG "video_windowed_fullscreen.*=.*" 'video_windowed_fullscreen = "false"'
 lineinfile $RARCHCFG "video_fullscreen.*=.*" 'video_fullscreen = "true"'
-lineinfile $RARCHCFG "input_enable_hotkey_btn.*=.*" 'input_enable_hotkey_btn = "8"'
-lineinfile $RARCHCFG "input_exit_emulator_btn.*=.*" 'input_exit_emulator_btn = "9"'
 lineinfile $RARCHCFG "quit_press_twice.*=.*" 'quit_press_twice = "false"'
 lineinfile $RARCHCFG "menu_swap_ok_cancel_buttons.*=.*" 'menu_swap_ok_cancel_buttons = "true"'
-lineinfile $RARCHCFG "input_load_state_btn.*=.*" 'input_load_state_btn = "2"'
-lineinfile $RARCHCFG "input_save_state_btn.*=.*" 'input_save_state_btn = "3"'
-lineinfile $RARCHCFG "savestate_auto_index.*=.*" 'savestate_auto_index = true'
-lineinfile $RARCHCFG "
-.*=.*" 'savestate_thumbnail_enable = true'
-
-lineinfile $RARCHCFG "input_state_slot_decrease_btn.*=.*" 'input_state_slot_decrease_btn = "0"'
-lineinfile $RARCHCFG "input_state_slot_increase_btn.*=.*" 'input_state_slot_increase_btn = "1"'
+lineinfile $RARCHCFG "savestate_auto_index.*=.*" 'savestate_auto_index = "true"'
+lineinfile $RARCHCFG "savestate_thumbnail_enable.*=.*" 'savestate_thumbnail_enable = "true"'
 # deactivate menu button
 lineinfile $RARCHCFG "input_menu_toggle_btn.*=.*" 'input_menu_toggle_btn = "200"'
 
+#dpad mode analogue
+for i in $(seq 1 16); do
+lineinfile $RARCHCFG "input_player${i}_analog_dpad_mode.*=.*" "input_player${i}_analog_dpad_mode = \"1\""
+done
+
+# ### Per controller settings
+# PS3 controller
+export CTRLCFG=${ROOTFS}/tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/autoconfig/udev/Sony-PlayStation3-DualShock3-Controller-USB.cfg
+# export CTRLCFG=/home/$TARGET_USERNAME/.config/retroarch/autoconfig/udev/Sony-PlayStation3-DualShock3-Controller-USB.cfg
+touch "$CTRLCFG"
+lineinfile "$CTRLCFG" "input_enable_hotkey_btn.*=.*" 'input_enable_hotkey_btn = "10"'
+lineinfile "$CTRLCFG" "input_exit_emulator_btn.*=.*" 'input_exit_emulator_btn = "9"'
+lineinfile "$CTRLCFG" "input_load_state_btn.*=.*" 'input_load_state_btn = "2"'
+lineinfile "$CTRLCFG" "input_save_state_btn.*=.*" 'input_save_state_btn = "3"'
+lineinfile "$CTRLCFG" "input_state_slot_decrease_btn.*=.*" 'input_state_slot_decrease_btn = "0"'
+lineinfile "$CTRLCFG" "input_state_slot_increase_btn.*=.*" 'input_state_slot_increase_btn = "1"'
+# Xbox 360 Controller
+export CTRLCFG="${ROOTFS}/tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/autoconfig/udev/Microsoft X-Box 360 pad.cfg"
+# export CTRLCFG="/home/$TARGET_USERNAME/.config/retroarch/autoconfig/udev/Microsoft X-Box 360 pad.cfg"
+touch "$CTRLCFG"
+lineinfile "$CTRLCFG" "input_enable_hotkey_btn.*=.*" 'input_enable_hotkey_btn = "8"'
+lineinfile "$CTRLCFG" "input_exit_emulator_btn.*=.*" 'input_exit_emulator_btn = "7"'
+lineinfile "$CTRLCFG" "input_load_state_btn.*=.*" 'input_load_state_btn = "3"'
+lineinfile "$CTRLCFG" "input_save_state_btn.*=.*" 'input_save_state_btn = "2"'
+lineinfile "$CTRLCFG" "input_state_slot_decrease_btn.*=.*" 'input_state_slot_decrease_btn = "0"'
+lineinfile "$CTRLCFG" "input_state_slot_increase_btn.*=.*" 'input_state_slot_increase_btn = "1"'
 
 cat << EOF | chroot ${ROOTFS}
     mv /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage /opt/appimages/RetroArch-Linux-x86_64.AppImage
@@ -2230,9 +2249,11 @@ EOF
 cat << EOF | chroot ${ROOTFS}
 mkdir -p /home/${TARGET_USERNAME}/ROMs
 mkdir -p /home/${TARGET_USERNAME}/ES-DE/downloaded_media
-
+mkdir -p /home/${TARGET_USERNAME}/.config/retroarch/states
+mkdir -p /home/${TARGET_USERNAME}/.config/retroarch/saves
 chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/${TARGET_USERNAME}/ROMs
 chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/${TARGET_USERNAME}/ES-DE
+chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/${TARGET_USERNAME}/.config/retroarch
 EOF
 
 emuscripts="emumount.sh emustop.sh"
