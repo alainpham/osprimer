@@ -3,7 +3,7 @@
 # this is a script to install raw vm images, baremetal machines/laptops or cloud vms
 inputversions() {
     # https://github.com/docker/buildx/releases
-    export DOCKER_BUILDX_VERSION=v0.22.0
+    export DOCKER_BUILDX_VERSION=v0.23.0
     echo "export DOCKER_BUILDX_VERSION=${DOCKER_BUILDX_VERSION}"
     
     # https://kubernetes.io/releases/  https://cloud.google.com/kubernetes-engine/docs/release-notes
@@ -11,7 +11,7 @@ inputversions() {
     echo "export MAJOR_KUBE_VERSION=${MAJOR_KUBE_VERSION}"
     
     # https://github.com/derailed/k9s/releases
-    export K9S_VERSION=v0.50.2
+    export K9S_VERSION=v0.50.4
     echo "export K9S_VERSION=${K9S_VERSION}"
     
     # https://maven.apache.org/download.cgi
@@ -22,16 +22,16 @@ inputversions() {
     echo "export NERDFONTS=${NERDFONTS}"
 
     ### Corporate software
-    # https://zoom.us/download?os=linux
-    export ZOOM_VERSION=6.4.3.827
+    # https://zoom.us/download?os=linux 
+    export ZOOM_VERSION=6.4.6.1370
     echo "export ZOOM_VERSION=${ZOOM_VERSION}"
     
     # https://slack.com/release-notes/linux
-    export SLACK_VERSION=4.43.51
+    export SLACK_VERSION=4.43.52
     echo "export SLACK_VERSION=${SLACK_VERSION}"
 
     # https://github.com/IsmaelMartinez/teams-for-linux/releases/latest
-    export TEAMS_VERSION=1.12.7
+    export TEAMS_VERSION=2.0.11
     echo "export TEAMS_VERSION=${TEAMS_VERSION}"
 
     # https://github.com/sindresorhus/caprine/releases/tag/v2.60.3
@@ -39,13 +39,13 @@ inputversions() {
     echo "export CAPRINE_VERSION=${CAPRINE_VERSION}"
 
     # https://hub.docker.com/r/infinityofspace/certbot_dns_duckdns/tags
-    export CERTBOT_DUCKDNS_VERSION=v1.5
+    export CERTBOT_DUCKDNS_VERSION=v1.6
     echo "export CERTBOT_DUCKDNS_VERSION=${CERTBOT_DUCKDNS_VERSION}"
     ### Corporate software
 
     ### appimages
     # https://mlv.app/
-    export MLVAPP_VERSION=1.14
+    export MLVAPP_VERSION=1.15
     echo "export MLVAPP_VERSION=${MLVAPP_VERSION}"
 
     # https://beeref.org/
@@ -57,17 +57,17 @@ inputversions() {
     echo "export FREAC_VERSION=${FREAC_VERSION}"
 
     # https://github.com/jgraph/drawio-desktop/releases
-    export DRAWIO_VERSION=26.2.2
+    export DRAWIO_VERSION=26.2.15
     echo "export DRAWIO_VERSION=${DRAWIO_VERSION}"
 
     # https://www.onlyoffice.com/download-desktop.aspx
-    export ONLYOFFICE_VERSION=v8.3.2
+    export ONLYOFFICE_VERSION=v8.3.3
     echo "export ONLYOFFICE_VERSION=${ONLYOFFICE_VERSION}"
 
     # https://kdenlive.org/en/download/
-    export KDENLIVE_MAIN_VERSION=24.12
+    export KDENLIVE_MAIN_VERSION=25.04
     echo "export KDENLIVE_MAIN_VERSION=${KDENLIVE_MAIN_VERSION}"
-    export KDENLIVE_FULL_VERSION=24.12.3
+    export KDENLIVE_FULL_VERSION=25.04.0
     echo "export KDENLIVE_FULL_VERSION=${KDENLIVE_FULL_VERSION}"
 
     # https://heldercorreia.bitbucket.io/speedcrunch/download.html
@@ -83,7 +83,7 @@ inputversions() {
     echo "export LOCALSEND_VERSION=${LOCALSEND_VERSION}"
 
     # https://gitlab.com/librewolf-community/browser/appimage/-/releases
-    export LIBREWOLF_VERSION=137.0.1-1
+    export LIBREWOLF_VERSION=137.0.2-1
     echo "export LIBREWOLF_VERSION=${LIBREWOLF_VERSION}"
     
     ## end appimages
@@ -103,7 +103,14 @@ inputversions() {
     # https://github.com/naelstrof/maim/releases
     export MAIM_VERSION=5.8.0
     echo "export MAIM_VERSION=${MAIM_VERSION}"
+    # https://gitlab.com/es-de/emulationstation-de/-/releases
+    export ESDE_VERSION=3.2.0
+    echo "export ESDE_VERSION=${ESDE_VERSION}"
+    export ESDE_VERSION_ID=184126704
+    echo "export ESDE_VERSION_ID=${ESDE_VERSION_ID}"
 
+    export RETROARCH_VERSION=1.21.0
+    echo "export RETROARCH_VERSION=${RETROARCH_VERSION}"
 
     export OSNAME=$(awk -F= '/^ID=/ {gsub(/"/, "", $2); print $2}' /etc/os-release)
     echo "export OSNAME=${OSNAME}"
@@ -202,6 +209,9 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*SPEEDCRUNCH_VERSION*=.*" "export SPEEDC
 lineinfile ${ROOTFS}${BASHRC} ".*export.*AVIDEMUX_VERSION*=.*" "export AVIDEMUX_VERSION=${AVIDEMUX_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*LOCALSEND_VERSION*=.*" "export LOCALSEND_VERSION=${LOCALSEND_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*LIBREWOLF_VERSION*=.*" "export LIBREWOLF_VERSION=${LIBREWOLF_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*ESDE_VERSION*=.*" "export ESDE_VERSION=${ESDE_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*ESDE_VERSION_ID*=.*" "export ESDE_VERSION_ID=${ESDE_VERSION_ID}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*RETROARCH_VERSION*=.*" "export RETROARCH_VERSION=${RETROARCH_VERSION}"
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*OSNAME*=.*" "export OSNAME=${OSNAME}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*OSVERSION*=.*" "export OSVERSION=${OSVERSION}"
@@ -2165,18 +2175,23 @@ iemulation(){
 lineinfile ${ROOTFS}/etc/bluetooth/input.conf ".*ClassicBondedOnly.*" "ClassicBondedOnly=false"
 
 echo "emulation tools"
-wget -O ${ROOTFS}/opt/appimages/emustation.AppImage https://gitlab.com/es-de/emulationstation-de/-/package_files/184126704/download
+wget -O ${ROOTFS}/opt/appimages/emustation.AppImage https://gitlab.com/es-de/emulationstation-de/-/package_files/${ESDE_VERSION_ID}/download
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/emustation.AppImage
     ln -sf /opt/appimages/emustation.AppImage /usr/local/bin/estation
 EOF
 
 # https://buildbot.libretro.com/stable/
-wget -O ${ROOTFS}/tmp/RetroArch.7z https://buildbot.libretro.com/stable/1.21.0/linux/x86_64/RetroArch.7z
-wget -O ${ROOTFS}/tmp/RetroArch_cores.7z https://buildbot.libretro.com/stable/1.21.0/linux/x86_64/RetroArch_cores.7z
+wget -O ${ROOTFS}/tmp/RetroArch.7z https://buildbot.libretro.com/stable/${RETROARCH_VERSION}/linux/x86_64/RetroArch.7z
+wget -O ${ROOTFS}/tmp/RetroArch_cores.7z https://buildbot.libretro.com/stable/${RETROARCH_VERSION}/linux/x86_64/RetroArch_cores.7z
 cd ${ROOTFS}/tmp/
 7z x RetroArch.7z
 7z x RetroArch_cores.7z
+
+wget -O ${ROOTFS}/tmp/bios.zip https://github.com/Abdess/retroarch_system/releases/download/v20220308/RetroArch_v1.10.1.zip
+unzip ${ROOTFS}/tmp/bios.zip 'system/*' -d /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/
+
+
 
 export RARCHCFG=${ROOTFS}/tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/retroarch.cfg
 touch $RARCHCFG
@@ -2189,7 +2204,8 @@ lineinfile $RARCHCFG "menu_swap_ok_cancel_buttons.*=.*" 'menu_swap_ok_cancel_but
 lineinfile $RARCHCFG "input_load_state_btn.*=.*" 'input_load_state_btn = "2"'
 lineinfile $RARCHCFG "input_save_state_btn.*=.*" 'input_save_state_btn = "3"'
 lineinfile $RARCHCFG "savestate_auto_index.*=.*" 'savestate_auto_index = true'
-lineinfile $RARCHCFG "savestate_thumbnail_enable.*=.*" 'savestate_thumbnail_enable = true'
+lineinfile $RARCHCFG "
+.*=.*" 'savestate_thumbnail_enable = true'
 
 lineinfile $RARCHCFG "input_state_slot_decrease_btn.*=.*" 'input_state_slot_decrease_btn = "0"'
 lineinfile $RARCHCFG "input_state_slot_increase_btn.*=.*" 'input_state_slot_increase_btn = "1"'
@@ -2202,10 +2218,22 @@ cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/RetroArch-Linux-x86_64.AppImage
     ln -sf /opt/appimages/RetroArch-Linux-x86_64.AppImage /usr/local/bin/retroarch
     rm -rf /home/$TARGET_USERNAME/.config/retroarch
+
+    
     mv /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch /home/$TARGET_USERNAME/.config/
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/retroarch
 EOF
 
+# get bios
+
+
+cat << EOF | chroot ${ROOTFS}
+mkdir -p /home/${TARGET_USERNAME}/ROMs
+mkdir -p /home/${TARGET_USERNAME}/ES-DE/downloaded_media
+
+chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/${TARGET_USERNAME}/ROMs
+chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/${TARGET_USERNAME}/ES-DE
+EOF
 
 emuscripts="emumount.sh emustop.sh"
 for script in $emuscripts ; do
@@ -2214,6 +2242,8 @@ cat << EOF | chroot ${ROOTFS}
     chmod 755 /usr/local/bin/$script
 EOF
 done
+
+# 
 
 }
 
