@@ -11,7 +11,7 @@ inputversions() {
     echo "export MAJOR_KUBE_VERSION=${MAJOR_KUBE_VERSION}"
     
     # https://github.com/derailed/k9s/releases
-    export K9S_VERSION=v0.50.4
+    export K9S_VERSION=v0.50.6
     echo "export K9S_VERSION=${K9S_VERSION}"
     
     # https://maven.apache.org/download.cgi
@@ -23,15 +23,15 @@ inputversions() {
 
     ### Corporate software
     # https://zoom.us/download?os=linux 
-    export ZOOM_VERSION=6.4.6.1370
+    export ZOOM_VERSION=6.4.10.2027
     echo "export ZOOM_VERSION=${ZOOM_VERSION}"
     
     # https://slack.com/release-notes/linux
-    export SLACK_VERSION=4.43.52
+    export SLACK_VERSION=4.44.60
     echo "export SLACK_VERSION=${SLACK_VERSION}"
 
     # https://github.com/IsmaelMartinez/teams-for-linux/releases/latest
-    export TEAMS_VERSION=2.0.11
+    export TEAMS_VERSION=2.0.13
     echo "export TEAMS_VERSION=${TEAMS_VERSION}"
 
     # https://github.com/sindresorhus/caprine/releases/tag/v2.60.3
@@ -57,17 +57,17 @@ inputversions() {
     echo "export FREAC_VERSION=${FREAC_VERSION}"
 
     # https://github.com/jgraph/drawio-desktop/releases
-    export DRAWIO_VERSION=26.2.15
+    export DRAWIO_VERSION=27.0.5
     echo "export DRAWIO_VERSION=${DRAWIO_VERSION}"
 
     # https://www.onlyoffice.com/download-desktop.aspx
     export ONLYOFFICE_VERSION=v8.3.3
     echo "export ONLYOFFICE_VERSION=${ONLYOFFICE_VERSION}"
 
-    # https://kdenlive.org/en/download/
+    # https://kdenlive.org/download/
     export KDENLIVE_MAIN_VERSION=25.04
     echo "export KDENLIVE_MAIN_VERSION=${KDENLIVE_MAIN_VERSION}"
-    export KDENLIVE_FULL_VERSION=25.04.0
+    export KDENLIVE_FULL_VERSION=25.04.1
     echo "export KDENLIVE_FULL_VERSION=${KDENLIVE_FULL_VERSION}"
 
     # https://heldercorreia.bitbucket.io/speedcrunch/download.html
@@ -83,7 +83,7 @@ inputversions() {
     echo "export LOCALSEND_VERSION=${LOCALSEND_VERSION}"
 
     # https://gitlab.com/librewolf-community/browser/appimage/-/releases
-    export LIBREWOLF_VERSION=137.0.2-1
+    export LIBREWOLF_VERSION=138.0.4-1
     echo "export LIBREWOLF_VERSION=${LIBREWOLF_VERSION}"
     
     ## end appimages
@@ -109,6 +109,7 @@ inputversions() {
     export ESDE_VERSION_ID=184126704
     echo "export ESDE_VERSION_ID=${ESDE_VERSION_ID}"
 
+    # https://buildbot.libretro.com/stable/
     export RETROARCH_VERSION=1.21.0
     echo "export RETROARCH_VERSION=${RETROARCH_VERSION}"
 
@@ -2528,6 +2529,8 @@ invidia
 igui
 iworkstation
 ivirt
+iemulation
+iautologin
 itimezone
 cleanupapt
 unmountraw
@@ -2793,3 +2796,23 @@ iessentials
 idocker
 }
 
+awon(){
+init apham "NA" "authorized_keys" "NA" "NA" "NA"
+bashaliases
+fastboot
+disableturbo
+smalllogs
+reposrc
+iessentials
+isudo
+idev
+idocker
+ikubectl
+igui
+iworkstation
+ivirt
+iemulation
+iautologin
+itimezone
+sudo reboot
+}

@@ -6,8 +6,8 @@
 export LOCAL_PATH_PROVISIONER_VERSION=v0.0.31
 
 # https://github.com/kubernetes/ingress-nginx/blob/main/deploy/static/provider/baremetal/deploy.yaml
-export NGINX_INGRESS_VERSION=1.12.1
-export NGINX_INGRESS_KUBE_WEBHOOK_CERTGEN_VERSION=v1.5.2
+export NGINX_INGRESS_VERSION=1.12.2
+export NGINX_INGRESS_KUBE_WEBHOOK_CERTGEN_VERSION=v1.5.3
 
 # https://github.com/kubernetes-sigs/metrics-server
 export METRICS_SERVER_VERSION=v0.7.2
