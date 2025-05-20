@@ -2796,7 +2796,7 @@ iessentials
 idocker
 }
 
-awon(){
+aaon(){
 init apham "NA" "authorized_keys" "NA" "NA" "NA"
 bashaliases
 fastboot
@@ -2815,4 +2815,24 @@ iemulation
 iautologin
 itimezone
 sudo reboot
+
+
+}
+
+function postaaon(){
+# install apt cacher ng.
+# create ssh keys -> github
+# mount disks to good mediafolder.
+# auth to ghcr.io & docker
+# setup wireguard client
+
+# /etc/fstab 
+# /dev/disk/by-label/m01  /media/m01      ext4    defaults,nofail   0 0
+# /dev/disk/by-label/m02  /media/m02      ext4    defaults,nofail   0 0
+# /dev/disk/by-label/m03  /media/m03      ntfs    defaults,nofail   0 0
+
+ln -s /media/m01/apps/media-content /home/$TARGET_USERNAME/apps/media-content/m01
+ln -s /media/m02/apps/media-content /home/$TARGET_USERNAME/apps/media-content/m02
+ln -s /media/m02/apps/media-content /home/$TARGET_USERNAME/apps/media-content/m03
+
 }
