@@ -1,12 +1,5 @@
 #!/bin/bash
 
-# Usage:
-# ./merge_audio.sh <input_video> <input_audio> <language_code> [audio_delay_ms] [set_default]
-# Examples:
-# ./merge_audio.sh input1.mp4 input2.mka en               (delay=0, set_default=yes)
-# ./merge_audio.sh input1.mp4 input2.mka en 300 no       (delay=300ms, no default)
-
-# Check minimum arguments (3 mandatory, 2 optional)
 if [ $# -lt 3 ] || [ $# -gt 5 ]; then
   echo "Usage: $0 <input_video> <input_audio> <language_code> [audio_delay_ms] [set_default]"
   echo "  audio_delay_ms: optional, default=0 (milliseconds)"
