@@ -2212,6 +2212,7 @@ lineinfile $RARCHCFG "input_player${i}_analog_dpad_mode.*=.*" "input_player${i}_
 done
 
 # ### Per controller settings
+
 # PS3 controller
 export CTRLCFG=${ROOTFS}/tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/autoconfig/udev/Sony-PlayStation3-DualShock3-Controller-USB.cfg
 # export CTRLCFG=/home/$TARGET_USERNAME/.config/retroarch/autoconfig/udev/Sony-PlayStation3-DualShock3-Controller-USB.cfg
@@ -2222,6 +2223,7 @@ lineinfile "$CTRLCFG" "input_load_state_btn.*=.*" 'input_load_state_btn = "2"'
 lineinfile "$CTRLCFG" "input_save_state_btn.*=.*" 'input_save_state_btn = "3"'
 lineinfile "$CTRLCFG" "input_state_slot_decrease_btn.*=.*" 'input_state_slot_decrease_btn = "0"'
 lineinfile "$CTRLCFG" "input_state_slot_increase_btn.*=.*" 'input_state_slot_increase_btn = "1"'
+
 # Xbox 360 Controller
 export CTRLCFG="${ROOTFS}/tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/autoconfig/udev/Microsoft X-Box 360 pad.cfg"
 # export CTRLCFG="/home/$TARGET_USERNAME/.config/retroarch/autoconfig/udev/Microsoft X-Box 360 pad.cfg"
@@ -2232,6 +2234,18 @@ lineinfile "$CTRLCFG" "input_load_state_btn.*=.*" 'input_load_state_btn = "3"'
 lineinfile "$CTRLCFG" "input_save_state_btn.*=.*" 'input_save_state_btn = "2"'
 lineinfile "$CTRLCFG" "input_state_slot_decrease_btn.*=.*" 'input_state_slot_decrease_btn = "0"'
 lineinfile "$CTRLCFG" "input_state_slot_increase_btn.*=.*" 'input_state_slot_increase_btn = "1"'
+
+# "ShanWan PS3/PC Wired GamePad
+export CTRLCFG="${ROOTFS}/tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/autoconfig/udev/Spartan Gear Oplon.cfg"
+# export CTRLCFG="/home/$TARGET_USERNAME/.config/retroarch/autoconfig/udev/Microsoft X-Box 360 pad.cfg"
+touch "$CTRLCFG"
+lineinfile "$CTRLCFG" "input_enable_hotkey_btn.*=.*" 'input_enable_hotkey_btn = "12"'
+lineinfile "$CTRLCFG" "input_exit_emulator_btn.*=.*" 'input_exit_emulator_btn = "11"'
+lineinfile "$CTRLCFG" "input_load_state_btn.*=.*" 'input_load_state_btn = "4"'
+lineinfile "$CTRLCFG" "input_save_state_btn.*=.*" 'input_save_state_btn = "3"'
+lineinfile "$CTRLCFG" "input_state_slot_decrease_btn.*=.*" 'input_state_slot_decrease_btn = "0"'
+lineinfile "$CTRLCFG" "input_state_slot_increase_btn.*=.*" 'input_state_slot_increase_btn = "1"'
+
 
 cat << EOF | chroot ${ROOTFS}
     mv /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage /opt/appimages/RetroArch-Linux-x86_64.AppImage
