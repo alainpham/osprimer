@@ -1,31 +1,56 @@
+# start script to detect internal mic/speaker
+
 export internalspeakerid=$(pactl list short sinks | grep -E "alsa_output.pci-" | awk '{print $2}')
 export internalmicid=$(pactl list short sources | grep -E "alsa_input.pci-" | awk '{print $2}')
 
+# if multiple dont select hdmi
+if [[ "$internalspeakerid" == *$'\n'* ]]; then
+    internalspeakerid=$(echo "$internalspeakerid" | grep -v hdmi | head -n1)
+fi
+
+# if no mic can be found use dummy
 if [ -z "${internalmicid}" ]; then
 export internalmicid="alsa_input.dummy-source"
 fi
 
+if [[ "$internalmicid" == *$'\n'* ]]; then
+    internalmicid=$(echo "$internalmicid" |  head -n1)
+fi
+
+# specific to dell g15 5520
 if [ "${PRODUCT_NAME}" == "Dell G15 5520" ]; then
 export internalspeakerid="alsa_output.pci-0000_00_1f.3-platform-skl_hda_dsp_generic.HiFi__hw_sofhdadsp__sink"
 export internalmicid="alsa_input.pci-0000_00_1f.3-platform-skl_hda_dsp_generic.HiFi__hw_sofhdadsp_6__source"
 fi
 
+export internalspeakervolume="45"
 export internalmicvolume="50"
+
+# end of internal mic/speaker
 
 export focspeakerid="alsa_output.usb-Focusrite_Scarlett_2i2_USB_Y8QWAQ69B26B58-00.analog-stereo"
 export focmicid="alsa_input.usb-Focusrite_Scarlett_2i2_USB_Y8QWAQ69B26B58-00.analog-stereo"
+export focspeakervolume="45"
 export focmicvolume="100"
 
 export zvspeakerid="alsa_output.usb-Logitech_Zone_Vibe_125_2216MH00LMF8-00.analog-stereo"
 export zvmicid="alsa_input.usb-Logitech_Zone_Vibe_125_2216MH00LMF8-00.mono-fallback"
+export zvspeakervolume="45"
 export zvmicvolume="100"
 
 export h6speakerid="alsa_output.usb-sky_wing_EKSA_PC_Adapter_20211221100133-01.analog-stereo"
 export h6micid="alsa_input.usb-sky_wing_EKSA_PC_Adapter_20211221100133-01.mono-fallback"
+export h6speakervolume="45"
 export h6micvolume="100"
+
+export acerusbspeakerid="alsa_output.usb-0c76_USB_Speaker-00.analog-stereo"
+export acerusbmicid="alsa_input.dummy-source"
+export acerusbspeakervolume="70"
+export acerusbmicvolume="100"
 
 export dummyspeakerid="alsa_output.dummy-sink"
 export dummymicid="alsa_input.dummy-source"
+export dummyspeakervolume="45"
 export dummymicvolume="100"
 
 declare -A shortsoundnames
@@ -42,8 +67,8 @@ shortsoundnames[${zvmicid}]="ZVI"
 shortsoundnames[${h6speakerid}]="H6"
 shortsoundnames[${h6micid}]="H6"
 
-shortsoundnames[${h6speakerid}]="H6"
-shortsoundnames[${h6micid}]="H6"
+shortsoundnames[${acerusbspeakerid}]="ACR"
+shortsoundnames[${acerusbmicid}]="DMY"
 
 shortsoundnames[${dummyspeakerid}]="DMY"
 shortsoundnames[${dummymicid}]="DMY"

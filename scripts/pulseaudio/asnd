@@ -5,7 +5,9 @@ speakers=$1
 
 mic=$2
 
-micvolume=${3:-100}
+speakervolume=${3:-45}
+
+micvolume=${4:-100}
 
 if [ -z "$speakers" ]; then
     echo "No speakers selected. Exiting."
@@ -49,7 +51,7 @@ pactl set-default-source mic01-processed
 pactl set-default-sink from-desktop
 
 # set physical volumes
-pactl set-sink-volume $speakers 45%
+pactl set-sink-volume $speakers ${speakervolume}%
 pactl set-sink-mute $speakers 0
 
 pactl set-source-volume $mic ${micvolume}%

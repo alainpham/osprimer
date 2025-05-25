@@ -14,38 +14,54 @@ zvmic=$(pactl list short sources | grep ${zvmicid} | awk '{print $2}')
 h6speaker=$(pactl list short sinks | grep ${h6speakerid} | awk '{print $2}')
 h6mic=$(pactl list short sources | grep ${h6micid} | awk '{print $2}')
 
+acerusbspeaker=$(pactl list short sinks | grep ${acerusbspeakerid} | awk '{print $2}')
+acerusbmic=$(pactl list short sources | grep ${acerusbmicid} | awk '{print $2}')
+
 dummyspeaker=$(pactl list short sinks | grep ${dummyspeakerid} | awk '{print $2}')
 dummymic=$(pactl list short sources | grep ${dummymicid} | awk '{print $2}')
 
-if [ -n "$focmic" ]
+if [ -n "$focspeaker" ]
 then
     echo "Focusrite is present"
     selected_output=$focspeaker
     selected_input=$focmic
+    selected_speaker_volume=$focspeakervolume
     selected_microphone_volume=$focmicvolume
 
     echo $selected_output $selected_input
-elif [ -n "$zvmic" ]
+elif [ -n "$zvspeaker" ]
 then
     echo "Logitech is present"
     selected_output=$zvspeaker
     selected_input=$zvmic
+    selected_speaker_volume=$zvspeakervolume
     selected_microphone_volume=$zvmicvolume
 
     echo $selected_output $selected_output
-elif [ -n "$h6mic" ]
+elif [ -n "$h6speaker" ]
 then
     echo "H6 is present"
     selected_output=$h6speaker
     selected_input=$h6mic
+    selected_speaker_volume=$h6speakervolume
     selected_microphone_volume=$h6micvolume
+
+    echo $selected_output $selected_output
+elif [ -n "$acerusbspeaker" ]
+then
+    echo "Acer usb is present"
+    selected_output=$acerusbspeaker
+    selected_input=$acerusbmic
+    selected_speaker_volume=$acerusbspeakervolume
+    selected_microphone_volume=$acerusbmicvolume
 
     echo $selected_output $selected_output
 elif [ -n "$internalmic" ]
 then
-    echo "Internal mic is present"
+    echo "Internal is present"
     selected_output=$internalspeaker
     selected_input=$internalmic
+    selected_speaker_volume=$internalspeakervolume
     selected_microphone_volume=$internalmicvolume
 
     echo $selected_output $selected_output
@@ -53,6 +69,7 @@ else
     echo "No sound device found choosing dummy devices"
     selected_output=$dummyspeaker
     selected_input=$dummymic
+    selected_speaker_volume=$dummyspeakervolume
     selected_microphone_volume=$dummymicvolume
 
     echo $selected_output $selected_output
@@ -61,4 +78,4 @@ fi
 speakers=$selected_output
 mic=$selected_input
 
-asnd $selected_output $selected_input $selected_microphone_volume
+asnd $selected_output $selected_input $selected_speaker_volume $selected_microphone_volume
