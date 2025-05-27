@@ -1086,7 +1086,7 @@ ikube() {
 echo "install k3s"
 cat << EOF | chroot ${ROOTFS}
     curl -Lo /usr/local/bin/k3s https://github.com/k3s-io/k3s/releases/download/v1.32.5%2Bk3s1/k3s
-    chown root:root /usr/local/bin/k9s
+    chown root:root /usr/local/bin/k3s
     chmod 755 /usr/local/bin/k3s
 EOF
 
@@ -2732,7 +2732,6 @@ ikeyboard
 idev
 idocker
 ikube
-idlkubeimg
 isecret
 cleanupapt
 unmountraw
