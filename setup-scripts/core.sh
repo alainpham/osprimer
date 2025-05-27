@@ -1126,13 +1126,14 @@ echo "install kube server"
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt install -y kubelet kubeadm
+    systemctl disable kubelet
 EOF
 fi
 
 if [ "$OSNAME" = "openmandriva" ]; then
 cat << EOF | chroot ${ROOTFS}
     dnf install -y kubelet kubeadm --disableexcludes=kubernetes
-    systemctl enable kubelet
+    systemctl disable kubelet
     systemctl enable containerd
     systemctl mask systemd-zram-setup@zram0.service
 EOF
@@ -2690,6 +2691,7 @@ sudo reboot now
 }
 
 rawkube(){
+curl -Lo /home/apham/virt/images/debian-12-nocloud-amd64.raw https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw
 init apham p /home/apham/.ssh/authorized_keys /home/apham/virt/images/debian-12-nocloud-amd64.raw /home/apham/virt/images/d12-kube.raw 5G
 mountraw
 bashaliases
