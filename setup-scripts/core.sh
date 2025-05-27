@@ -10,6 +10,9 @@ inputversions() {
     export MAJOR_KUBE_VERSION=v1.32
     echo "export MAJOR_KUBE_VERSION=${MAJOR_KUBE_VERSION}"
     
+    export K3S_VERSION="v1.32.5+k3s1"
+    echo "export K3S_VERSION=${MAJOR_KUBE_VERSION}"
+
     # https://github.com/derailed/k9s/releases
     export K9S_VERSION=v0.50.6
     echo "export K9S_VERSION=${K9S_VERSION}"
@@ -186,6 +189,7 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*ROOTFS*=.*" 'export ROOTFS=\/'
 lineinfile ${ROOTFS}${BASHRC} ".*export.*TARGET_USERNAME*=.*" "export TARGET_USERNAME=${TARGET_USERNAME}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*DOCKER_BUILDX_VERSION*=.*" "export DOCKER_BUILDX_VERSION=${DOCKER_BUILDX_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*MAJOR_KUBE_VERSION*=.*" "export MAJOR_KUBE_VERSION=${MAJOR_KUBE_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*K3S_VERSION*=.*" "export K3S_VERSION=${K3S_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*K9S_VERSION*=.*" "export K9S_VERSION=${K9S_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*MVN_VERSION*=.*" "export MVN_VERSION=${MVN_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*NERDFONTS*=.*" "export NERDFONTS=\"${NERDFONTS}\""
@@ -1079,6 +1083,24 @@ EOF
 }
 
 ikube() {
+echo "install k3s"
+cat << EOF | chroot ${ROOTFS}
+    curl -Lo /usr/local/bin/k3s https://github.com/k3s-io/k3s/releases/download/v1.32.5%2Bk3s1/k3s
+    chown root:root /usr/local/bin/k9s
+    chmod 755 /usr/local/bin/k3s
+EOF
+
+kubescript="kubecr kubemon kubeotel"
+for script in $kubescript ; do
+curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/k8s/$script
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /usr/local/bin/$script
+EOF
+done
+ 
+}
+
+ikubeclassic() {
  
 echo "install kube readiness"
 
