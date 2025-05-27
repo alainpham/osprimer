@@ -1019,7 +1019,7 @@ fi
 
 }
 
-ikubectl(){
+ikube(){
 echo "install kubectl"
 
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "ubuntu" ]; then
@@ -1078,20 +1078,6 @@ cat << EOF | chroot ${ROOTFS}
     rm -f k9s_Linux_amd64.tar.gz
 EOF
 
-
-
-}
-
-ikube() {
-
-ikubectl
-
-echo "install k3s"
-
-cat << EOF | chroot ${ROOTFS}
-curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_ENABLE="true" INSTALL_K3S_SKIP_START="true" INSTALL_K3S_VERSION="${K3S_VERSION}" K3S_KUBECONFIG_MODE="644" INSTALL_K3S_EXEC="server --disable=servicelb,traefik" sh -
-EOF
-
 kubescript="kubecr kubemon kubeotel"
 for script in $kubescript ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/k8s/$script
@@ -1100,8 +1086,8 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 done
 
-
 }
+
 
 ikubeclassic() {
  
@@ -1143,8 +1129,6 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 fi
 
-
-ikubectl
 
 echo "install kube server"
 
@@ -2521,7 +2505,7 @@ iupdateworkstation(){
     bashaliases
     imaven
     idockerbuild
-    ikubectl
+    ikube
     iappimages
 }
 
@@ -2755,7 +2739,7 @@ ikeyboard
 itouchpad
 idev
 idocker
-ikubectl
+ikube
 igui
 iworkstation
 itimezone
@@ -2778,7 +2762,7 @@ ikeyboard
 itouchpad
 idev
 idocker
-ikubectl
+ikube
 igui
 iworkstation
 iemulation
@@ -2799,7 +2783,7 @@ iessentials
 isudo
 idev
 idocker
-ikubectl
+ikube
 igui
 iworkstation
 ivirt
@@ -2818,7 +2802,7 @@ iessentials
 isudo
 idev
 idocker
-ikubectl
+ikube
 igui
 iworkstation
 ivirt
@@ -2847,7 +2831,7 @@ iessentials
 isudo
 idev
 idocker
-ikubectl
+ikube
 igui
 iworkstation
 ivirt
