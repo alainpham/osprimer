@@ -39,6 +39,9 @@ if [ ! -f "/home/${USER}/apps/tls/cfg/live/${WILDCARD_DOMAIN}/privkey.p12" ]; th
   exit 1
 fi
 
+sudo systemctl enable kubelet
+sudo systemctl start kubelet
+
 sudo kubeadm init --control-plane-endpoint=${WILDCARD_DOMAIN} --pod-network-cidr=10.244.0.0/16
 
 mkdir -p $HOME/.kube
