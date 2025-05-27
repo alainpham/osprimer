@@ -3,11 +3,11 @@
 # this is a script to install raw vm images, baremetal machines/laptops or cloud vms
 inputversions() {
     # https://github.com/docker/buildx/releases
-    export DOCKER_BUILDX_VERSION=v0.23.0
+    export DOCKER_BUILDX_VERSION=v0.24.0
     echo "export DOCKER_BUILDX_VERSION=${DOCKER_BUILDX_VERSION}"
     
     # https://kubernetes.io/releases/  https://cloud.google.com/kubernetes-engine/docs/release-notes
-    export MAJOR_KUBE_VERSION=v1.30
+    export MAJOR_KUBE_VERSION=v1.32
     echo "export MAJOR_KUBE_VERSION=${MAJOR_KUBE_VERSION}"
     
     # https://github.com/derailed/k9s/releases
