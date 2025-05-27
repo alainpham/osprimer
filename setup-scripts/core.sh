@@ -2692,7 +2692,7 @@ sudo reboot now
 
 rawkube(){
 curl -Lo /home/apham/virt/images/debian-12-nocloud-amd64.raw https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw
-init apham p /home/apham/.ssh/authorized_keys /home/apham/virt/images/debian-12-nocloud-amd64.raw /home/apham/virt/images/d12-kube.raw 5G
+init apham p /home/apham/.ssh/authorized_keys /home/apham/virt/images/debian-12-nocloud-amd64.raw /home/apham/virt/images/d12-kube.raw 6G
 mountraw
 bashaliases
 createuser
