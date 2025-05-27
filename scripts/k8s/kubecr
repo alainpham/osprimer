@@ -37,8 +37,6 @@ sudo systemctl start k3s
 
 mkdir -p $HOME/.kube ; cp /etc/rancher/k3s/k3s.yaml $HOME/.kube/config
 
-kubectl taint node ${HOSTNAME} node-role.kubernetes.io/control-plane:NoSchedule-
-
 kubectl create ns ingress-nginx
 kubectl -n ingress-nginx create secret tls nginx-ingress-tls  --key="/home/${USER}/apps/tls/cfg/live/${WILDCARD_DOMAIN}/privkey.pem"   --cert="/home/${USER}/apps/tls/cfg/live/${WILDCARD_DOMAIN}/fullchain.pem"  --dry-run=client -o yaml | kubectl apply -f -
 
