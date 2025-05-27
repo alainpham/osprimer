@@ -1085,9 +1085,8 @@ EOF
 ikube() {
 echo "install k3s"
 cat << EOF | chroot ${ROOTFS}
-    curl -Lo /usr/local/bin/k3s https://github.com/k3s-io/k3s/releases/download/v1.32.5%2Bk3s1/k3s
-    chown root:root /usr/local/bin/k3s
-    chmod 755 /usr/local/bin/k3s
+    curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_ENABLE=true INSTALL_K3S_SKIP_START=true INSTALL_K3S_VERSION="${K3S_VERSION}" K3S_KUBECONFIG_MODE="644" sh -s
+- --disable=servicelb,traefik
 EOF
 
 kubescript="kubecr kubemon kubeotel"
@@ -1097,7 +1096,8 @@ cat << EOF | chroot ${ROOTFS}
     chmod 755 /usr/local/bin/$script
 EOF
 done
- 
+
+
 }
 
 ikubeclassic() {

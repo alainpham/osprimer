@@ -20,6 +20,7 @@ metadata:
   namespace: ingress-nginx
 ---
 apiVersion: v1
+automountServiceAccountToken: true
 kind: ServiceAccount
 metadata:
   labels:
@@ -319,8 +320,7 @@ subjects:
   namespace: ingress-nginx
 ---
 apiVersion: v1
-data:
-  allow-snippet-annotations: "false"
+data: null
 kind: ConfigMap
 metadata:
   labels:
@@ -419,10 +419,6 @@ spec:
         app.kubernetes.io/part-of: ingress-nginx
         app.kubernetes.io/version: ${NGINX_INGRESS_VERSION}
     spec:
-      tolerations:
-        - key: "node-role.kubernetes.io/control-plane"
-          operator: "Exists"
-          effect: "NoSchedule"
       containers:
       - args:
         - /nginx-ingress-controller
@@ -510,7 +506,6 @@ spec:
       dnsPolicy: ClusterFirst
       nodeSelector:
         kubernetes.io/os: linux
-        node-role.kubernetes.io/control-plane: ""
       serviceAccountName: ingress-nginx
       terminationGracePeriodSeconds: 300
       volumes:
@@ -541,10 +536,6 @@ spec:
         app.kubernetes.io/version: ${NGINX_INGRESS_VERSION}
       name: ingress-nginx-admission-create
     spec:
-      tolerations:
-        - key: "node-role.kubernetes.io/control-plane"
-          operator: "Exists"
-          effect: "NoSchedule"
       containers:
       - args:
         - create
@@ -571,7 +562,6 @@ spec:
             type: RuntimeDefault
       nodeSelector:
         kubernetes.io/os: linux
-        node-role.kubernetes.io/control-plane: ""
       restartPolicy: OnFailure
       serviceAccountName: ingress-nginx-admission
 ---
@@ -597,10 +587,6 @@ spec:
         app.kubernetes.io/version: ${NGINX_INGRESS_VERSION}
       name: ingress-nginx-admission-patch
     spec:
-      tolerations:
-        - key: "node-role.kubernetes.io/control-plane"
-          operator: "Exists"
-          effect: "NoSchedule"
       containers:
       - args:
         - patch
@@ -629,7 +615,6 @@ spec:
             type: RuntimeDefault
       nodeSelector:
         kubernetes.io/os: linux
-        node-role.kubernetes.io/control-plane: ""
       restartPolicy: OnFailure
       serviceAccountName: ingress-nginx-admission
 ---

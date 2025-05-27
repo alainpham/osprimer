@@ -32,6 +32,11 @@ if [ ! -f "/home/${USER}/apps/tls/cfg/live/${WILDCARD_DOMAIN}/privkey.p12" ]; th
   exit 1
 fi
 
+sudo systemctl enable k3s
+sudo systemctl start k3s
+
+mkdir -p $HOME/.kube ; cp /etc/rancher/k3s/k3s.yaml $HOME/.kube/config
+
 kubectl taint node ${HOSTNAME} node-role.kubernetes.io/control-plane:NoSchedule-
 
 kubectl create ns ingress-nginx
