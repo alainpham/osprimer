@@ -1,7 +1,7 @@
 #!/bin/bash
 # vmdl v8s
 # vmcr v8s 16384 12 d12-kube 20 80G 1G debiantesting
-
+# vmcr v8s 16384 12 d12-kmin 20 80G 1G debiantesting
 
 # https://github.com/kubernetes/ingress-nginx/blob/main/deploy/static/provider/baremetal/deploy.yaml
 export NGINX_INGRESS_VERSION=1.12.2
