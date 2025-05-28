@@ -1020,41 +1020,10 @@ fi
 }
 
 ikube(){
-echo "install kubectl"
-
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "ubuntu" ]; then
-cat << EOF | chroot ${ROOTFS}
-    curl -fsSL https://pkgs.k8s.io/core:/stable:/$MAJOR_KUBE_VERSION/deb/Release.key | gpg --batch --yes --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
-    echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/$MAJOR_KUBE_VERSION/deb/ /' | tee /etc/apt/sources.list.d/kubernetes.list
-
-    apt update
-    apt install -y kubectl
-EOF
-
-echo "install helm"
-cat << EOF | chroot ${ROOTFS}
-    curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | tee /usr/share/keyrings/helm.gpg > /dev/null
-    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | tee /etc/apt/sources.list.d/helm-stable-debian.list
-    apt update
-    apt install helm -y
-EOF
-fi
-
-if [ "$OSNAME" = "openmandriva" ]; then
-
-cat <<EOF | tee ${ROOTFS}/etc/yum.repos.d/kubernetes.repo
-[kubernetes]
-name=Kubernetes
-baseurl=https://pkgs.k8s.io/core:/stable:/${MAJOR_KUBE_VERSION}/rpm/
-enabled=1
-gpgcheck=1
-gpgkey=https://pkgs.k8s.io/core:/stable:/${MAJOR_KUBE_VERSION}/rpm/repodata/repomd.xml.key
-exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
-EOF
-
+echo "install kube"
 
 cat << EOF | chroot ${ROOTFS}
-    dnf install -y kubectl --disableexcludes=kubernetes
+    curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_ENABLE="true" INSTALL_K3S_SKIP_START="true" INSTALL_K3S_VERSION="${K3S_VERSION}" K3S_KUBECONFIG_MODE="644" INSTALL_K3S_EXEC="server --disable=servicelb,traefik" sh -
 EOF
 
 cat << EOF | chroot ${ROOTFS}
@@ -1062,9 +1031,6 @@ cat << EOF | chroot ${ROOTFS}
     chmod 755 /tmp/get_helm.sh
     /tmp/get_helm.sh
 EOF
-
-
-fi
 
 cat << EOF | chroot ${ROOTFS}
     kubectl completion bash | tee /etc/bash_completion.d/kubectl > /dev/null
@@ -2724,6 +2690,31 @@ cleanupapt
 unmountraw
 rm /home/apham/virt/images/d12-kube.qcow2
 qemu-img convert -f raw -O qcow2 /home/apham/virt/images/d12-kube.raw /home/apham/virt/images/d12-kube.qcow2
+}
+
+rawkubeminimal(){
+#curl -Lo /home/apham/virt/images/debian-12-nocloud-amd64.raw https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw
+init apham p /home/apham/.ssh/authorized_keys /home/apham/virt/images/debian-12-nocloud-amd64.raw /home/apham/virt/images/d12-kmin.raw 4G
+mountraw
+bashaliases
+createuser
+setpasswd
+authkeys
+fastboot
+firstbootexpandfs
+smalllogs
+reposrc
+iessentials
+isshkey
+isudo
+allowsshpwd
+ikeyboard
+ikube
+isecret
+cleanupapt
+unmountraw
+rm /home/apham/virt/images/d12-kmin.qcow2
+qemu-img convert -f raw -O qcow2 /home/apham/virt/images/d12-kmin.raw /home/apham/virt/images/d12-kmin.qcow2
 }
 
 oboo(){
