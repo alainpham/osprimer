@@ -33,6 +33,11 @@ export focmicid="alsa_input.usb-Focusrite_Scarlett_2i2_USB_Y8QWAQ69B26B58-00.ana
 export focspeakervolume="45"
 export focmicvolume="100"
 
+export jbrspeakerid="alsa_output.usb-_Jabra_Link_390_6CFBED605E08-00.analog-stereo"
+export jbrmicid="alsa_input.usb-_Jabra_Link_390_6CFBED605E08-00.mono-fallback"
+export jbrspeakervolume="45"
+export jbrmicvolume="100"
+
 export zvspeakerid="alsa_output.usb-Logitech_Zone_Vibe_125_2216MH00LMF8-00.analog-stereo"
 export zvmicid="alsa_input.usb-Logitech_Zone_Vibe_125_2216MH00LMF8-00.mono-fallback"
 export zvspeakervolume="45"
@@ -60,6 +65,9 @@ shortsoundnames[${internalmicid}]="INT"
 
 shortsoundnames[${focspeakerid}]="2I2"
 shortsoundnames[${focmicid}]="2I2"
+
+shortsoundnames[${jbrspeakerid}]="JBR"
+shortsoundnames[${jbrmicid}]="JBR"
 
 shortsoundnames[${zvspeakerid}]="ZVI"
 shortsoundnames[${zvmicid}]="ZVI"

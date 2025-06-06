@@ -8,6 +8,9 @@ internalmic=$(pactl list short sources | grep ${internalmicid} | awk '{print $2}
 focspeaker=$(pactl list short sinks | grep ${focspeakerid} | awk '{print $2}')
 focmic=$(pactl list short sources | grep ${focmicid} | awk '{print $2}')
 
+jbrspeaker=$(pactl list short sinks | grep ${jbrspeakerid} | awk '{print $2}')
+jbrmic=$(pactl list short sources | grep ${jbrmicid} | awk '{print $2}')
+
 zvspeaker=$(pactl list short sinks | grep ${zvspeakerid} | awk '{print $2}')
 zvmic=$(pactl list short sources | grep ${zvmicid} | awk '{print $2}')
 
@@ -29,6 +32,15 @@ then
     selected_microphone_volume=$focmicvolume
 
     echo $selected_output $selected_input
+elif [ -n "$jbrspeaker" ]
+then
+    echo "Jabra speaker is present"
+    selected_output=$jbrspeaker
+    selected_input=$jbrmic
+    selected_speaker_volume=$jbrspeakervolume
+    selected_microphone_volume=$jbrmicvolume
+
+    echo $selected_output $selected_output
 elif [ -n "$zvspeaker" ]
 then
     echo "Logitech is present"

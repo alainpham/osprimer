@@ -3,6 +3,7 @@ source /usr/local/bin/asndenv
 
 speakers=$zvspeakerid
 mic=$zvmicid
+speakervolume=$zvspeakervolume
 micvolume=$zvmicvolume
 
-asnd $speakers $mic $micvolume
+asnd $speakers $mic $speakervolume $micvolume
