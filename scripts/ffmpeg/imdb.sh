@@ -7,7 +7,7 @@ if [ -z "$1" ]; then
 fi
 
 IMDB_ID="$1"
-API_KEY="XXX"
+API_KEY="$TMDB_API_KEY" # should bedefined in PATH ans env var
 
 # === Query TMDb API ===
 response=$(curl -s "https://api.themoviedb.org/3/find/$IMDB_ID?api_key=$API_KEY&external_source=imdb_id")

@@ -128,8 +128,6 @@ inputversions() {
     export TIMEZONE="Europe/Paris"
     echo "export TIMEZONE=${TIMEZONE}"
 
-    export KEYBOARD_LAYOUT="fr"
-    echo "export KEYBOARD_LAYOUT=${KEYBOARD_LAYOUT}"
 
     export APT_PROXY="http://192.168.8.100:3142"
     echo "export APT_PROXY=${APT_PROXY}"
@@ -145,17 +143,24 @@ inputtasks() {
     # Map input parameters
     export TARGET_USERNAME=${1:-apham}
     echo "export TARGET_USERNAME=${TARGET_USERNAME}"
+    
     export TARGET_PASSWD=$2
     echo "export TARGET_PASSWD=${TARGET_PASSWD}"
+    
     export AUTHSSHFILE=$3
     echo "export AUTHSSHFILE=${AUTHSSHFILE}"
+    
     export INPUT_IMG=$4
     echo "export INPUT_IMG=${INPUT_IMG}"
+    
     export OUTPUT_IMAGE=$5
     echo "export OUTPUT_IMAGE=${OUTPUT_IMAGE}"
+    
     export DISK_SIZE=$6
     echo "export DISK_SIZE=${DISK_SIZE}"
-    
+
+    export KEYBOARD_LAYOUT=${7:-fr}
+    echo "export KEYBOARD_LAYOUT=${KEYBOARD_LAYOUT}"
 
 }
 
@@ -899,7 +904,7 @@ if [ $retry -eq $max_retries ]; then
 fi
 
 if [[ -z "$(docker buildx ls | grep multibuilder.*linux)" ]] then
-     docker buildx create --name multibuilder --platform linux/amd64,linux/arm/v7,linux/arm64/v8 --use
+     docker buildx create --name multibuilder --platform linux/amd64,linux/arm/v7,linux/arm64 --use
      echo "firstboot-dockerbuildx.sh : docker multibuilder created"
      echo "✅ multibuilder docker buildx created !">/var/log/firstboot-dockerbuildx.log
 else
@@ -1185,10 +1190,12 @@ echo 'options nvidia NVreg_PreserveVideoMemoryAllocations=1' > ${ROOTFS}/etc/mod
 
 inumlocktty(){
 
+## add other exceptions here to disable numlock at start
 if [[ "$(dmidecode -t 1 | grep 'Product Name')" == *"MacBook"* ]]; then
     echo "Running on a MacBook, no numlock"
     return 0
 fi
+
 
 #enable numlock tty
 cat <<'EOF' | tee ${ROOTFS}/usr/local/bin/nlock
@@ -1269,6 +1276,8 @@ fi
 
 igui() {
 
+force_reinstall=${1:-0}
+
 echo "install gui"
 # if pulse replace by this apt install -y pulseaudio
     # apt install -y  pipewire-audio wireplumber pipewire-pulse pipewire-alsa libspa-0.2-bluetooth pulseaudio-utils qpwgraph pavucontrol
@@ -1295,6 +1304,9 @@ EOF
 fi
 
 
+if [ -d "${ROOTFS}/usr/share/fonts/nerd-fonts/" ] && [ "$force_reinstall" = "0" ]; then
+    echo "Nerd Fonts already installed, skipping."
+else
 echo "install nerdfonts"
 for font in ${NERDFONTS} ; do
  echo "installing $font"
@@ -1304,7 +1316,8 @@ for font in ${NERDFONTS} ; do
  rm -f /tmp/${font}.zip
  echo "installed $font"
 done
- 
+fi
+
 echo "additional gui packages"
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
@@ -2508,6 +2521,7 @@ smalllogs
 reposrc
 iaptproxy
 iessentials
+isshkey
 isudo
 allowsshpwd
 ikeyboard
