@@ -1542,7 +1542,6 @@ chmod 755 ${ROOTFS}/usr/local/bin/$file
 done
 
 
-
 # wireplumber and pipewire
 curl -Lo ${ROOTFS}/etc/udev/rules.d/89-pulseaudio-udev.rules https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/89-pulseaudio-udev.rules
 
@@ -1568,11 +1567,17 @@ done
 
 # install chrome browser
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
-mkdir -p ${ROOTFS}/opt/debs/
-wget -O /opt/debs/google-chrome-stable_current_amd64.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb 
+
+if [ -f "${ROOTFS}/opt/debs/google-chrome-stable_current_amd64.deb" ] && [ "$force_reinstall" = "0" ]; then
+    echo "Google Chrome already downloaded, skipping."
+else
+    mkdir -p ${ROOTFS}/opt/debs/
+    wget -O ${ROOTFS}/opt/debs/google-chrome-stable_current_amd64.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb 
 cat << EOF | chroot ${ROOTFS}
     apt install -y /opt/debs/google-chrome-stable_current_amd64.deb
 EOF
+fi
+
 fi
 
 if [ "$OSNAME" = "openmandriva" ]; then
@@ -1615,15 +1620,16 @@ cat << EOF | chroot ${ROOTFS}
     cd /home/$TARGET_USERNAME/wm/slock-flexipatch && make clean install
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/wm
 EOF
-# fi
+else
+echo "dwm already installed, skipping"
+cat << EOF | chroot ${ROOTFS}
+    cd /home/$TARGET_USERNAME/wm/dwm-flexipatch && git pull && make clean install
+    cd /home/$TARGET_USERNAME/wm/st-flexipatch && git pull && make clean install
+    cd /home/$TARGET_USERNAME/wm/dmenu-flexipatch && git pull && make clean install
+    cd /home/$TARGET_USERNAME/wm/dwmblocks && git pull && make clean install
 
-# if [ "$OSNAME" = "openmandriva" ]; then
-# cat << EOF | chroot ${ROOTFS}
-#     dnf install -y slock
-# EOF
-# fi
-
-# end dwm
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/wm
+EOF
 fi 
 
 # wallpaper
@@ -1641,7 +1647,12 @@ backend_files=(
 
 # Loop through the list and download each file
 for i in "${!backend_files[@]}"; do
-    wget -O "${ROOTFS}/usr/share/backgrounds/$(printf "%02d" $((i+1))).jpg" "${backend_files[$i]}"
+    if [ ! -f "${ROOTFS}/usr/share/backgrounds/$(printf "%02d" $((i+1))).jpg" ]; then
+        wget -O "${ROOTFS}/usr/share/backgrounds/$(printf "%02d" $((i+1))).jpg" "${backend_files[$i]}"
+        echo "Downloaded background image $(printf "%02d" $((i+1))).jpg"
+    else
+        echo "Background image $(printf "%02d" $((i+1))).jpg already exists, skipping."
+    fi
 done
 
 # switching backgounds
