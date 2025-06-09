@@ -784,6 +784,7 @@ EOF
 idev(){
 trap 'return 1' ERR
 
+force_reinstall=${1:-0}
 
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
@@ -809,7 +810,7 @@ lineinfile ${ROOTFS}/etc/bashrc ".*export.*PATH*=.*" "export PATH=\$PATH:${JAVA_
 
 fi
 
-imaven
+imaven $force_reinstall
 
 }
 
@@ -833,7 +834,6 @@ EOF
 rm -f /tmp/maven.tar.gz
 echo "maven installed"
 
-
 }
 
 idockerbuildx(){
@@ -850,11 +850,12 @@ mkdir -p ${ROOTFS}/usr/lib/docker/cli-plugins
 curl -SL https://github.com/docker/buildx/releases/download/${DOCKER_BUILDX_VERSION}/buildx-${DOCKER_BUILDX_VERSION}.linux-amd64 -o ${ROOTFS}/usr/lib/docker/cli-plugins/docker-buildx
 chmod 755 ${ROOTFS}/usr/lib/docker/cli-plugins/docker-buildx
 
-
 }
 
 idocker() {
 trap 'return 1' ERR
+
+force_reinstall=${1:-0}
 
 echo "install docker"
 
@@ -899,7 +900,7 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 fi
 
-idockerbuildx
+idockerbuildx $force_reinstall
 
 cat <<'EOF' | tee ${ROOTFS}/usr/local/bin/firstboot-dockernet.sh
 #!/bin/bash
@@ -1123,96 +1124,6 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 done
 
-}
-
-
-ikubeclassic() {
-trap 'return 1' ERR
-force_reinstall=${1:-0}
-
-if [ -f "${ROOTFS}/usr/local/bin/kubecr" ] && [ "$force_reinstall" = "0" ]; then
-    echo "docker buildx already installed, skipping"
-    return 0
-fi
-
-echo "install kube readiness"
-
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ]; then
-cat <<EOF | tee ${ROOTFS}/etc/modules-load.d/containerd.conf 
-overlay 
-br_netfilter
-EOF
-fi
-
-cat <<EOF | tee ${ROOTFS}/etc/sysctl.d/99-kubernetes-k8s.conf
-net.bridge.bridge-nf-call-iptables = 1
-net.ipv4.ip_forward = 1 
-net.bridge.bridge-nf-call-ip6tables = 1 
-EOF
-echo "kube readiness setup finished"
-
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
-cat << EOF | chroot ${ROOTFS}
-    apt install -y containerd
-EOF
-fi
-
-if [ "$OSNAME" = "openmandriva" ]; then
-cat << EOF | chroot ${ROOTFS}
-    dnf install -y containerd
-EOF
-fi
-
-echo "containerd setup"
-
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ]; then
-cat << EOF | chroot ${ROOTFS}
-    mkdir -p /etc/containerd
-    containerd config default | tee /etc/containerd/config.toml >/dev/null 2>&1
-    sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
-EOF
-fi
-
-
-echo "install kube server"
-
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
-cat << EOF | chroot ${ROOTFS}
-    apt install -y kubelet kubeadm
-    systemctl disable kubelet
-EOF
-fi
-
-if [ "$OSNAME" = "openmandriva" ]; then
-cat << EOF | chroot ${ROOTFS}
-    dnf install -y kubelet kubeadm --disableexcludes=kubernetes
-    systemctl disable kubelet
-    systemctl enable containerd
-    systemctl mask systemd-zram-setup@zram0.service
-EOF
-lineinfile ${ROOTFS}/usr/lib/systemd/system/docker.service ".*MountFlags.*=.*slave" "# MountFlags=slave"
-lineinfile ${ROOTFS}/usr/lib/systemd/system/docker.service ".*After.*=.*" "After=network.target containerd.service"
-
-fi
-
-kubescript="kubecr kubemon kubeotel"
-for script in $kubescript ; do
-curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/k8s/$script
-cat << EOF | chroot ${ROOTFS}
-    chmod 755 /usr/local/bin/$script
-EOF
-done
- 
-
-}
-
-idlkubeimg() {
-trap 'return 1' ERR
-
-echo "download kube images"
-cat << EOF | chroot ${ROOTFS}
-    kubeadm config images pull
-EOF
 }
 
 invidia() {
