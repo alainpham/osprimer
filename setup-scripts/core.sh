@@ -2567,7 +2567,6 @@ itouchpad
 idev
 idocker
 ikube
-idlkubeimg
 invidia
 igui
 iworkstation
