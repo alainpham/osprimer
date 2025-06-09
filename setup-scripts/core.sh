@@ -2327,6 +2327,9 @@ for i in $(seq 1 16); do
 lineinfile $RARCHCFG "input_player${i}_analog_dpad_mode.*=.*" "input_player${i}_analog_dpad_mode = \"1\""
 done
 
+cat << EOF | chroot ${ROOTFS}
+    chown $TARGET_USERNAME:$TARGET_USERNAME $RARCHCFG
+EOF
 # ### Per controller settings
 
 # PS3 controller
@@ -2799,6 +2802,7 @@ sudo reboot
 }
 
 postfuj(){
+    echo "Post Fujitsu setup"
     # install decklink drivers
     # install ff compiled with decklink https://github.com/alainpham/FFmpeg/blob/7.1.1-ap/README-ap.md
 }
