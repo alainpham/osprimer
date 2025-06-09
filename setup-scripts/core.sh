@@ -2582,11 +2582,11 @@ initdefault(){
 
 iupdate(){
     init apham "NA" "authorized_keys" "NA" "NA" "NA"
-    bashaliases
-    imaven
-    idockerbuild
-    ikube
-    iappimages
+    bashaliases 1
+    imaven 1
+    idockerbuildx 1
+    ikube 1
+    iappimages 1
 }
 
 ###############################
