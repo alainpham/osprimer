@@ -1896,9 +1896,7 @@ cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.local
 EOF
 
-inumlocktty
-ivmgui
-itheming
+
 }
 
 itheming() {
@@ -2569,6 +2567,9 @@ idocker
 ikube
 invidia
 igui
+inumlocktty
+ivmgui
+itheming
 iworkstation
 ivirt
 iemulation
@@ -2579,123 +2580,6 @@ unmountraw
 sudo reboot now
 }
 
-# baremetal workstation with virtualization and without nvidia cards
-wkstatvrt(){
-
-init $1 "ps" "authorized_keys" "NA" "NA" "NA"
-bashaliases
-rmnouveau
-fastboot
-disableturbo
-smalllogs
-reposrc
-iaptproxy
-iessentials
-isudo
-allowsshpwd
-itouchpad
-idev
-idocker
-ikube
-igui
-iworkstation
-ivirt
-itimezone
-sudo reboot now
-}
-
-# baremetal workstation without virtualization & nvidia
-wkstation(){
-if ! [ $# -eq 1 ]; then
-    echo "Usage: sudo $0 <1_TARGET_USERNAME>"
-    echo "sudo $0 apham"
-    return
-fi
-init $1 "ps" "authorized_keys" "NA" "NA" "NA"
-bashaliases
-rmnouveau
-fastboot
-disableturbo
-smalllogs
-reposrc
-iaptproxy
-iessentials
-isudo
-allowsshpwd
-itouchpad
-idev
-idocker
-ikube
-igui
-iworkstation
-itimezone
-sudo reboot now
-}
-
-#full gui server
-fullgui(){
-if ! [ $# -eq 1 ]; then
-    echo "Usage: sudo $0 <1_TARGET_USERNAME>"
-    echo "sudo $0 apham"
-    return
-fi
-init $1 "ps" "authorized_keys" "NA" "NA" "NA"
-bashaliases
-rmnouveau
-fastboot
-disableturbo
-smalllogs
-reposrc
-iaptproxy
-iessentials
-isudo
-allowsshpwd
-idev
-idocker
-ikube
-igui
-itimezone
-sudo reboot now
-}
-
-# for cloud servers like on oci, aws, gcp
-
-debianserver(){
-if ! [ $# -eq 1 ]; then
-    echo "Usage: sudo $0 <1_TARGET_USERNAME>"
-    echo "sudo $0 apham"
-    return
-fi
-init $1 "ps" "authorized_keys" "NA" "NA" "NA"
-bashaliases
-createuser
-authkeys
-smalllogs
-reposrc
-iaptproxy
-iessentials
-isudo
-idev
-idocker
-ikube
-sudo reboot now
-}
-
-gcpkube(){
-if ! [ $# -eq 1 ]; then
-    echo "Usage: sudo $0 <1_TARGET_USERNAME>"
-    echo "sudo $0 apham"
-    return
-fi
-init $1 "ps" "authorized_keys" "NA" "NA" "NA"
-bashaliases
-smalllogs
-iessentials
-idev
-idocker
-ikube
-sudo reboot now
-}
 
 kvmkube(){
 init apham "NA" "authorized_keys" "NA" "NA" "NA"
@@ -2779,6 +2663,7 @@ idev
 idocker
 ikube
 igui
+itheming
 iworkstation
 itimezone
 sudo reboot
@@ -2802,6 +2687,7 @@ idev
 idocker
 ikube
 igui
+itheming
 iworkstation
 iemulation
 iautologin
@@ -2823,6 +2709,8 @@ idev
 idocker
 ikube
 igui
+inumlocktty
+itheming
 iworkstation
 ivirt
 itimezone
@@ -2842,6 +2730,8 @@ idev
 idocker
 ikube
 igui
+inumlocktty
+itheming
 iworkstation
 ivirt
 iemulation
@@ -2871,14 +2761,14 @@ idev
 idocker
 ikube
 igui
+inumlocktty
+itheming
 iworkstation
 ivirt
 iemulation
 iautologin
 itimezone
 sudo reboot
-
-
 }
 
 function postaaon(){
