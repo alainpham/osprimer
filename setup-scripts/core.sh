@@ -1998,13 +1998,13 @@ force_reinstall=${1:-0}
 
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
-    apt install -y handbrake gimp rawtherapee krita mypaint inkscape blender obs-studio mgba-qt easytag audacity
+    apt install -y handbrake gimp rawtherapee krita mypaint inkscape blender obs-studio mgba-qt easytag audacity mixxx
 EOF
 fi
 
 if [ "$OSNAME" = "openmandriva" ]; then
 cat << EOF | chroot ${ROOTFS}
-    dnf install -y handbrake gimp rawtherapee krita python-numpy mypaint inkscape blender obs-studio audacity
+    dnf install -y handbrake gimp rawtherapee krita python-numpy mypaint inkscape blender obs-studio audacity mixxx
 EOF
 # install easytag flathub
 fi
