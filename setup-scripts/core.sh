@@ -12,6 +12,7 @@ inputversions() {
     export MAJOR_KUBE_VERSION=v1.32
     echo "export MAJOR_KUBE_VERSION=${MAJOR_KUBE_VERSION}"
     
+    # https://github.com/k3s-io/k3s/releases
     export K3S_VERSION="v1.32.5+k3s1"
     echo "export K3S_VERSION=${MAJOR_KUBE_VERSION}"
 
@@ -25,18 +26,18 @@ inputversions() {
 
     export NERDFONTS="Noto "
     echo "export NERDFONTS=${NERDFONTS}"
-
+    
     ### Corporate software
     # https://zoom.us/download?os=linux 
-    export ZOOM_VERSION=6.4.10.2027
+    export ZOOM_VERSION=6.4.13.2309
     echo "export ZOOM_VERSION=${ZOOM_VERSION}"
     
     # https://slack.com/release-notes/linux
-    export SLACK_VERSION=4.44.60
+    export SLACK_VERSION=4.43.52
     echo "export SLACK_VERSION=${SLACK_VERSION}"
 
     # https://github.com/IsmaelMartinez/teams-for-linux/releases/latest
-    export TEAMS_VERSION=2.0.13
+    export TEAMS_VERSION=2.0.14
     echo "export TEAMS_VERSION=${TEAMS_VERSION}"
 
     # https://github.com/sindresorhus/caprine/releases/tag/v2.60.3
@@ -62,7 +63,7 @@ inputversions() {
     echo "export FREAC_VERSION=${FREAC_VERSION}"
 
     # https://github.com/jgraph/drawio-desktop/releases
-    export DRAWIO_VERSION=27.0.5
+    export DRAWIO_VERSION=27.0.9
     echo "export DRAWIO_VERSION=${DRAWIO_VERSION}"
 
     # https://www.onlyoffice.com/download-desktop.aspx
@@ -88,7 +89,7 @@ inputversions() {
     echo "export LOCALSEND_VERSION=${LOCALSEND_VERSION}"
 
     # https://gitlab.com/librewolf-community/browser/appimage/-/releases
-    export LIBREWOLF_VERSION=138.0.4-1
+    export LIBREWOLF_VERSION=139.0.1-1
     echo "export LIBREWOLF_VERSION=${LIBREWOLF_VERSION}"
     
     ## end appimages
@@ -2086,7 +2087,23 @@ iappimages $force_reinstall
 iappimages(){
 trap 'return 1' ERR
 
+force_reinstall=${1:-0}
+
 # APPimages
+ikdenlive $force_reinstall
+ionlyoffice $force_reinstall
+imlvapp $force_reinstall
+idrawio $force_reinstall
+iviber $force_reinstall
+ibeeref $force_reinstall
+ifreac $force_reinstall
+ilocalsend $force_reinstall
+iavidemux $force_reinstall
+ilibrewolf $force_reinstall
+}
+
+ikdenlive(){
+trap 'return 1' ERR
 force_reinstall=${1:-0}
 
 #kdenlive
@@ -2099,7 +2116,11 @@ EOF
 else
 echo "kdenlive already installed, skipping"
 fi
+}
 
+ionlyoffice() {
+trap 'return 1' ERR
+force_reinstall=${1:-0}
 # Only Office
 if [ ! -f ${ROOTFS}/opt/appimages/onlyoffice.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/onlyoffice.AppImage https://github.com/ONLYOFFICE/appimage-desktopeditors/releases/download/${ONLYOFFICE_VERSION}/DesktopEditors-x86_64.AppImage
@@ -2110,7 +2131,11 @@ EOF
 else
 echo "onlyoffice already installed, skipping"
 fi
+}
 
+imlvapp(){
+trap 'return 1' ERR
+force_reinstall=${1:-0}
 # MLVP APP
 if [ ! -f ${ROOTFS}/opt/appimages/mlvapp.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/mlvapp.AppImage https://github.com/ilia3101/MLV-App/releases/download/QTv${MLVAPP_VERSION}/MLV.App.v${MLVAPP_VERSION}.Linux.x86_64.AppImage
@@ -2121,7 +2146,11 @@ EOF
 else
 echo "mlvapp already installed, skipping"
 fi
+}
 
+idrawio(){
+trap 'return 1' ERR
+force_reinstall=${1:-0}
 # Drawio
 if [ ! -f ${ROOTFS}/opt/appimages/drawio.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/drawio.AppImage https://github.com/jgraph/drawio-desktop/releases/download/v${DRAWIO_VERSION}/drawio-x86_64-${DRAWIO_VERSION}.AppImage
@@ -2132,7 +2161,11 @@ EOF
 else
 echo "drawio already installed, skipping"
 fi
+}
 
+iviber() {
+trap 'return 1' ERR
+force_reinstall=${1:-0}
 #viber
 if [ ! -f ${ROOTFS}/opt/appimages/viber.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/viber.AppImage https://download.cdn.viber.com/desktop/Linux/viber.AppImage
@@ -2143,7 +2176,11 @@ EOF
 else
 echo "viber already installed, skipping"
 fi
+}
 
+ibeeref() {
+trap 'return 1' ERR
+force_reinstall=${1:-0}
 # beeref
 if [ ! -f ${ROOTFS}/opt/appimages/beeref.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/beeref.AppImage https://github.com/rbreu/beeref/releases/download/v${BEEREF_VERSION}/BeeRef-${BEEREF_VERSION}.appimage
@@ -2154,7 +2191,11 @@ EOF
 else
 echo "beeref already installed, skipping"
 fi
+}
 
+ifreac() {
+trap 'return 1' ERR
+force_reinstall=${1:-0}
 #freac
 if [ ! -f ${ROOTFS}/opt/appimages/freac.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/freac.AppImage https://github.com/enzo1982/freac/releases/download/v${FREAC_VERSION}/freac-${FREAC_VERSION}-linux-x86_64.AppImage
@@ -2165,6 +2206,11 @@ EOF
 else
 echo "freac already installed, skipping"
 fi
+}
+
+ilocalsend() {
+trap 'return 1' ERR
+force_reinstall=${1:-0}
 
 # localsend
 if [ ! -f ${ROOTFS}/opt/appimages/localsend.AppImage ] || [ "$force_reinstall" = "1" ]; then
@@ -2176,7 +2222,11 @@ EOF
 else
 echo "localsend already installed, skipping"
 fi
+}
 
+iavidemux(){
+trap 'return 1' ERR
+force_reinstall=${1:-0}
 # avidemux
 if [ ! -f ${ROOTFS}/opt/appimages/avidemux.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/avidemux.AppImage https://altushost-swe.dl.sourceforge.net/project/avidemux/avidemux/${AVIDEMUX_VERSION}/avidemux_${AVIDEMUX_VERSION}.appImage?viasf=1
@@ -2187,6 +2237,11 @@ EOF
 else
 echo "avidemux already installed, skipping"
 fi
+}
+
+ilibrewolf(){
+trap 'return 1' ERR
+force_reinstall=${1:-0}
 
 # librewolf
 if [ ! -f ${ROOTFS}/opt/appimages/librewolf.AppImage ] || [ "$force_reinstall" = "1" ]; then
@@ -2198,7 +2253,6 @@ EOF
 else
 echo "librewolf already installed, skipping"
 fi
-
 }
 
 iemulation(){
@@ -2715,6 +2769,11 @@ iworkstation
 ivirt
 itimezone
 sudo reboot
+}
+
+postfuj(){
+    # install decklink drivers
+    # install ff compiled with decklink https://github.com/alainpham/FFmpeg/blob/7.1.1-ap/README-ap.md
 }
 
 hped(){
