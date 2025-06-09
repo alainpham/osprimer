@@ -2723,9 +2723,36 @@ itimezone
 sudo reboot
 }
 
+qair(){
+modprobe -r b43 brcmsmac
+init apham "NA" "authorized_keys" "NA" "NA" "NA" us
+bashaliases
+rmbroadcom
+fastboot
+disableturbo
+smalllogs
+reposrc
+iaptproxy
+iessentials
+isudo
+ikeyboard
+itouchpad
+idev
+idocker
+ikube
+igui
+itheming
+iworkstation
+iemulation
+iautologin
+itimezone
+sudo reboot
+}
+
+
 oair(){
 modprobe -r b43 brcmsmac
-init apham "NA" "authorized_keys" "NA" "NA" "NA"
+init apham "NA" "authorized_keys" "NA" "NA" "NA" fr
 bashaliases
 rmbroadcom
 fastboot
