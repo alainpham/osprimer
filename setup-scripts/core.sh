@@ -1,7 +1,9 @@
 #!/bin/bash
-
 # this is a script to install raw vm images, baremetal machines/laptops or cloud vms
+
 inputversions() {
+    trap 'return 1' ERR
+
     # https://github.com/docker/buildx/releases
     export DOCKER_BUILDX_VERSION=v0.24.0
     echo "export DOCKER_BUILDX_VERSION=${DOCKER_BUILDX_VERSION}"
@@ -18,7 +20,7 @@ inputversions() {
     echo "export K9S_VERSION=${K9S_VERSION}"
     
     # https://maven.apache.org/download.cgi
-    export MVN_VERSION=3.9.9
+    export MVN_VERSION=3.9.10
     echo "export MVN_VERSION=${MVN_VERSION}"
 
     export NERDFONTS="Noto "
@@ -128,13 +130,14 @@ inputversions() {
     export TIMEZONE="Europe/Paris"
     echo "export TIMEZONE=${TIMEZONE}"
 
-
     export APT_PROXY="http://192.168.8.100:3142"
     echo "export APT_PROXY=${APT_PROXY}"
 }
 
 
 inputtasks() {
+    trap 'return 1' ERR
+
     #default root
     
     export ROOTFS=/
@@ -166,6 +169,7 @@ inputtasks() {
 
 
 bashaliases() {
+trap 'return 1' ERR
 
 scripts="lineinfile"
 for script in $scripts ; do
@@ -238,6 +242,8 @@ echo "bash aliases setup finished"
 }
 
 mountraw() {
+    trap 'return 1' ERR
+
     # name devices
     export DEVICE=/dev/loop0
     export ROOTFS="/tmp/installing-rootfs"
@@ -272,6 +278,8 @@ mountraw() {
 }
 
 createuser() {
+trap 'return 1' ERR
+
 echo "setup users"
 cat << EOF | chroot ${ROOTFS}
     /usr/sbin/useradd -m -s /bin/bash $TARGET_USERNAME
@@ -281,6 +289,8 @@ EOF
 }
 
 isshkey(){
+trap 'return 1' ERR
+
 cat << EOF | chroot ${ROOTFS}
     if [ ! -f /home/${TARGET_USERNAME}/.ssh/id_rsa ]; then
         ssh-keygen -N "" -f /home/${TARGET_USERNAME}/.ssh/id_rsa
@@ -289,6 +299,7 @@ EOF
 }
 
 setpasswd() {
+trap 'return 1' ERR
 
 export TARGET_ENCRYPTED_PASSWD=$(openssl passwd -6 -salt xyz $TARGET_PASSWD)
 echo "setup users"
@@ -300,6 +311,7 @@ EOF
 }
 
 authkeys() {
+trap 'return 1' ERR
 
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.ssh/
 echo "Copy authorized_keys $AUTHSSHFILE"
@@ -313,6 +325,7 @@ echo "Copied authorized_keys"
 }
 
 rmnouveau() {
+trap 'return 1' ERR
 
 # deactivate nouveau drivers 
 sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/ {/modprobe.blacklist=nouveau/! s/"$/ modprobe.blacklist=nouveau"/}' ${ROOTFS}/etc/default/grub
@@ -324,12 +337,15 @@ echo "Deactivated nouveau drivers"
 }
 
 rmbroadcom() {
+trap 'return 1' ERR
+
 sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/ {/modprobe.blacklist=b43,brcmsmac,wl/! s/"$/ modprobe.blacklist=b43,brcmsmac,wl"/}' ${ROOTFS}/etc/default/grub
 update-grub2
 echo "Deactivated broadcom drivers"
 }
 
 fastboot() {
+trap 'return 1' ERR
 
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ] ; then
 echo debian
@@ -353,6 +369,7 @@ echo "fastboot activated"
 
 disableturbo() {
 # disable turbo boost
+trap 'return 1' ERR
 
 if [ ! -f /sys/devices/system/cpu/intel_pstate/no_turbo ]; then
     echo "no_turbo file not found, exiting"
@@ -452,12 +469,13 @@ cat << EOF | chroot ${ROOTFS}
     update-rc.d disable-intel-turboboost defaults
 EOF
 
-
 fi
 
 }
 
 firstbootexpandfs() {
+trap 'return 1' ERR
+
 # first boot script
 cat << 'EOF' | tee ${ROOTFS}/usr/local/bin/firstboot.sh
 #!/bin/bash
@@ -540,6 +558,7 @@ echo "firstboot script activated"
 }
 
 smalllogs() {
+trap 'return 1' ERR
 
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ]; then
 lineinfile ${ROOTFS}/etc/systemd/journald.conf ".*SystemMaxUse=.*" "SystemMaxUse=50M"
@@ -548,6 +567,7 @@ fi
 }
 
 reposrc() {
+trap 'return 1' ERR
 
 if [ "$OSNAME" = "debian" ]; then
 echo "setup apt"
@@ -598,6 +618,8 @@ fi
 }
 
 iaptproxy() {
+trap 'return 1' ERR
+
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | tee ${ROOTFS}/etc/apt/apt.conf.d/99proxy
 Acquire::HTTP::Proxy "${APT_PROXY}";
@@ -607,6 +629,8 @@ fi
 }
 
 iessentials() {
+trap 'return 1' ERR
+
 # Essentials packages
 echo "install essentials"
 
@@ -670,6 +694,8 @@ EOF
 }
 
 isudo() {
+trap 'return 1' ERR
+
 cat << EOF | chroot ${ROOTFS}
     echo '${TARGET_USERNAME} ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee' visudo -f /etc/sudoers.d/nopwd
 EOF
@@ -678,10 +704,14 @@ echo "sudo setup finished"
 }
 
 allowsshpwd() {
+trap 'return 1' ERR
+
 sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' ${ROOTFS}/etc/ssh/sshd_config
 }
 
 ikeyboard() {
+trap 'return 1' ERR
+
 # setup keyboard
 cat <<EOF | tee ${ROOTFS}/etc/default/keyboard
 XKBMODEL="pc105"
@@ -699,6 +729,8 @@ fi
 }
 
 itouchpad(){
+trap 'return 1' ERR
+
 mkdir -p ${ROOTFS}/etc/X11/xorg.conf.d/
 
 cat <<EOF | tee ${ROOTFS}/etc/X11/xorg.conf.d/30-touchpad.conf
@@ -750,6 +782,8 @@ EOF
 }
 
 idev(){
+trap 'return 1' ERR
+
 
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
@@ -780,6 +814,14 @@ imaven
 }
 
 imaven() {
+trap "return 1" ERR
+
+force_reinstall=${1:-0}
+
+if [ -f "${ROOTFS}/opt/appimages/apache-maven-${MVN_VERSION}/bin/mvn" ] && [ "$force_reinstall" = "0" ]; then
+    echo "maven already installed, skipping"
+    return 0
+fi
 
 mkdir -p ${ROOTFS}/opt/appimages/
 rm -rf ${ROOTFS}/opt/appimages/apache-maven-*
@@ -790,15 +832,29 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 rm -f /tmp/maven.tar.gz
 echo "maven installed"
+
+
 }
 
 idockerbuildx(){
-    mkdir -p ${ROOTFS}/usr/lib/docker/cli-plugins
-    curl -SL https://github.com/docker/buildx/releases/download/${DOCKER_BUILDX_VERSION}/buildx-${DOCKER_BUILDX_VERSION}.linux-amd64 -o ${ROOTFS}/usr/lib/docker/cli-plugins/docker-buildx
-    chmod 755 ${ROOTFS}/usr/lib/docker/cli-plugins/docker-buildx
+trap 'return 1' ERR
+
+force_reinstall=${1:-0}
+
+if [ -f "${ROOTFS}/usr/lib/docker/cli-plugins/docker-buildx" ] && [ "$force_reinstall" = "0" ]; then
+    echo "docker buildx already installed, skipping"
+    return 0
+fi
+
+mkdir -p ${ROOTFS}/usr/lib/docker/cli-plugins
+curl -SL https://github.com/docker/buildx/releases/download/${DOCKER_BUILDX_VERSION}/buildx-${DOCKER_BUILDX_VERSION}.linux-amd64 -o ${ROOTFS}/usr/lib/docker/cli-plugins/docker-buildx
+chmod 755 ${ROOTFS}/usr/lib/docker/cli-plugins/docker-buildx
+
+
 }
 
 idocker() {
+trap 'return 1' ERR
 
 echo "install docker"
 
@@ -1026,6 +1082,15 @@ fi
 }
 
 ikube(){
+trap 'return 1' ERR
+
+force_reinstall=${1:-0}
+
+if [ -f "${ROOTFS}/usr/local/bin/kubecr" ] && [ "$force_reinstall" = "0" ]; then
+    echo "docker buildx already installed, skipping"
+    return 0
+fi
+
 echo "install kube"
 
 cat << EOF | chroot ${ROOTFS}
@@ -1062,7 +1127,14 @@ done
 
 
 ikubeclassic() {
- 
+trap 'return 1' ERR
+force_reinstall=${1:-0}
+
+if [ -f "${ROOTFS}/usr/local/bin/kubecr" ] && [ "$force_reinstall" = "0" ]; then
+    echo "docker buildx already installed, skipping"
+    return 0
+fi
+
 echo "install kube readiness"
 
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ]; then
@@ -1135,6 +1207,8 @@ done
 }
 
 idlkubeimg() {
+trap 'return 1' ERR
+
 echo "download kube images"
 cat << EOF | chroot ${ROOTFS}
     kubeadm config images pull
@@ -1142,6 +1216,7 @@ EOF
 }
 
 invidia() {
+trap 'return 1' ERR
 
 echo "install nvidia drivers"
 
@@ -1189,6 +1264,7 @@ echo 'options nvidia NVreg_PreserveVideoMemoryAllocations=1' > ${ROOTFS}/etc/mod
 
 
 inumlocktty(){
+trap 'return 1' ERR
 
 ## add other exceptions here to disable numlock at start
 if [[ "$(dmidecode -t 1 | grep 'Product Name')" == *"MacBook"* ]]; then
@@ -1275,6 +1351,7 @@ fi
 ##############################################
 
 igui() {
+trap 'return 1' ERR
 
 force_reinstall=${1:-0}
 
@@ -1321,7 +1398,7 @@ fi
 echo "additional gui packages"
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
-    apt install -y ntfs-3g ifuse mousepad mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv network-manager dnsmasq acpitool lm-sensors fonts-noto libnotify-bin dunst ffmpeg mkvtoolnix-gui libfdk-aac2 python3-mutagen imagemagick mediainfo-gui mediainfo arandr picom brightnessctl cups xsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze-gtk-theme breeze-icon-theme joystick
+    apt install -y ntfs-3g ifuse mousepad mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv network-manager dnsmasq acpitool lm-sensors fonts-noto libnotify-bin dunst ffmpeg mkvtoolnix-gui libfdk-aac2 python3-mutagen imagemagick mediainfo-gui mediainfo arandr picom brightnessctl cups xsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze-gtk-theme breeze-icon-theme joystick firefox-esr
 EOF
 fi
 
@@ -1594,42 +1671,32 @@ EOF
 fi
 
 #begin dwm
-if [ ! -d ${ROOTFS}/home/$TARGET_USERNAME/wm ] ; then
+if [ -f ${ROOTFS}/usr/local/bin/dwm ]  && [ "$force_reinstall" = "0" ] ; then
+
+echo "dwm already installed, skipping"
+
+else
 
 echo "The does not exist, installing dwm"
 cat << EOF | chroot ${ROOTFS}
+    rm -rf /home/$TARGET_USERNAME/wm
     mkdir -p /home/$TARGET_USERNAME/wm
     cd /home/$TARGET_USERNAME/wm
     git clone https://github.com/alainpham/dwm-flexipatch.git
     git clone https://github.com/alainpham/st-flexipatch.git
     git clone https://github.com/alainpham/dmenu-flexipatch.git
     git clone https://github.com/alainpham/dwmblocks.git
+    git clone https://github.com/alainpham/slock-flexipatch.git
 
     cd /home/$TARGET_USERNAME/wm/dwm-flexipatch && make clean install
     cd /home/$TARGET_USERNAME/wm/st-flexipatch && make clean install
     cd /home/$TARGET_USERNAME/wm/dmenu-flexipatch && make clean install
     cd /home/$TARGET_USERNAME/wm/dwmblocks && make clean install
-
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/wm
-EOF
-
-# if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
-cat << EOF | chroot ${ROOTFS}
-    cd /home/$TARGET_USERNAME/wm
-    git clone https://github.com/alainpham/slock-flexipatch.git
     cd /home/$TARGET_USERNAME/wm/slock-flexipatch && make clean install
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/wm
-EOF
-else
-echo "dwm already installed, skipping"
-cat << EOF | chroot ${ROOTFS}
-    cd /home/$TARGET_USERNAME/wm/dwm-flexipatch && git pull && make clean install
-    cd /home/$TARGET_USERNAME/wm/st-flexipatch && git pull && make clean install
-    cd /home/$TARGET_USERNAME/wm/dmenu-flexipatch && git pull && make clean install
-    cd /home/$TARGET_USERNAME/wm/dwmblocks && git pull && make clean install
 
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/wm
 EOF
+
 fi 
 
 # wallpaper
@@ -2014,7 +2081,10 @@ fi
 }
 
 iworkstation() {
+trap 'return 1' ERR
+
 echo "additional workstation tools"
+force_reinstall=${1:-0}
 
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
@@ -2054,18 +2124,25 @@ fi
 
 #vscode
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
+
+if [ ! -f "${ROOTFS}/opt/debs/vscode.deb" ] || [ "$force_reinstall" = "1" ]; then
 mkdir -p ${ROOTFS}/opt/debs/
 wget -O ${ROOTFS}/opt/debs/vscode.deb "https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64"
 cat << EOF | chroot ${ROOTFS}
     DEBIAN_FRONTEND=noninteractive apt install -y /opt/debs/vscode.deb
 EOF
+fi
+
 
 # install dbeaver
+if [ ! -f "${ROOTFS}/opt/debs/dbeaver.deb" ] || [ "$force_reinstall" = "1" ]; then
 mkdir -p ${ROOTFS}/opt/debs/
 wget -O ${ROOTFS}/opt/debs/dbeaver.deb https://dbeaver.io/files/dbeaver-ce_latest_amd64.deb
 cat << EOF | chroot ${ROOTFS}
     apt install -y /opt/debs/dbeaver.deb
 EOF
+fi
+
 fi
 
 if [ "$OSNAME" = "openmandriva" ]; then
@@ -2093,97 +2170,148 @@ cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/obs-studio
 EOF
 
-iappimages
+iappimages $force_reinstall
 
 }
 
 iappimages(){
+trap 'return 1' ERR
+
 # APPimages
+force_reinstall=${1:-0}
 
 #kdenlive
+if [ ! -f ${ROOTFS}/opt/appimages/kdenlive.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/kdenlive.AppImage https://download.kde.org/stable/kdenlive/${KDENLIVE_MAIN_VERSION}/linux/kdenlive-${KDENLIVE_FULL_VERSION}-x86_64.AppImage
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/kdenlive.AppImage
     ln -sf /opt/appimages/kdenlive.AppImage /usr/local/bin/kdenlive
 EOF
+else
+echo "kdenlive already installed, skipping"
+fi
 
 # Only Office
+if [ ! -f ${ROOTFS}/opt/appimages/onlyoffice.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/onlyoffice.AppImage https://github.com/ONLYOFFICE/appimage-desktopeditors/releases/download/${ONLYOFFICE_VERSION}/DesktopEditors-x86_64.AppImage
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/onlyoffice.AppImage
     ln -sf /opt/appimages/onlyoffice.AppImage /usr/local/bin/onlyoffice
 EOF
+else
+echo "onlyoffice already installed, skipping"
+fi
 
 # MLVP APP
+if [ ! -f ${ROOTFS}/opt/appimages/mlvapp.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/mlvapp.AppImage https://github.com/ilia3101/MLV-App/releases/download/QTv${MLVAPP_VERSION}/MLV.App.v${MLVAPP_VERSION}.Linux.x86_64.AppImage
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/mlvapp.AppImage
     ln -sf /opt/appimages/mlvapp.AppImage /usr/local/bin/mlvapp
 EOF
+else
+echo "mlvapp already installed, skipping"
+fi
 
 # Drawio
+if [ ! -f ${ROOTFS}/opt/appimages/drawio.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/drawio.AppImage https://github.com/jgraph/drawio-desktop/releases/download/v${DRAWIO_VERSION}/drawio-x86_64-${DRAWIO_VERSION}.AppImage
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/drawio.AppImage
     ln -sf /opt/appimages/drawio.AppImage /usr/local/bin/drawio
 EOF
+else
+echo "drawio already installed, skipping"
+fi
 
 #viber
+if [ ! -f ${ROOTFS}/opt/appimages/viber.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/viber.AppImage https://download.cdn.viber.com/desktop/Linux/viber.AppImage
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/viber.AppImage
     ln -sf /opt/appimages/viber.AppImage /usr/local/bin/viber
 EOF
+else
+echo "viber already installed, skipping"
+fi
 
 # beeref
+if [ ! -f ${ROOTFS}/opt/appimages/beeref.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/beeref.AppImage https://github.com/rbreu/beeref/releases/download/v${BEEREF_VERSION}/BeeRef-${BEEREF_VERSION}.appimage
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/beeref.AppImage
     ln -sf /opt/appimages/beeref.AppImage /usr/local/bin/beeref
 EOF
+else
+echo "beeref already installed, skipping"
+fi
 
 #freac
+if [ ! -f ${ROOTFS}/opt/appimages/freac.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/freac.AppImage https://github.com/enzo1982/freac/releases/download/v${FREAC_VERSION}/freac-${FREAC_VERSION}-linux-x86_64.AppImage
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/freac.AppImage
     ln -sf /opt/appimages/freac.AppImage /usr/local/bin/freac
 EOF
+else
+echo "freac already installed, skipping"
+fi
 
 # localsend
+if [ ! -f ${ROOTFS}/opt/appimages/localsend.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/localsend.AppImage https://github.com/localsend/localsend/releases/download/v${LOCALSEND_VERSION}/LocalSend-${LOCALSEND_VERSION}-linux-x86-64.AppImage
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/localsend.AppImage
     ln -sf /opt/appimages/localsend.AppImage /usr/local/bin/localsend
 EOF
+else
+echo "localsend already installed, skipping"
+fi
 
 # avidemux
+if [ ! -f ${ROOTFS}/opt/appimages/avidemux.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/avidemux.AppImage https://altushost-swe.dl.sourceforge.net/project/avidemux/avidemux/${AVIDEMUX_VERSION}/avidemux_${AVIDEMUX_VERSION}.appImage?viasf=1
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/avidemux.AppImage
     ln -sf /opt/appimages/avidemux.AppImage /usr/local/bin/avidemux
 EOF
+else
+echo "avidemux already installed, skipping"
+fi
 
 # librewolf
+if [ ! -f ${ROOTFS}/opt/appimages/librewolf.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/librewolf.AppImage https://gitlab.com/api/v4/projects/24386000/packages/generic/librewolf/${LIBREWOLF_VERSION}/LibreWolf.x86_64.AppImage
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/librewolf.AppImage
     ln -sf /opt/appimages/librewolf.AppImage /usr/local/bin/librewolf
 EOF
+else
+echo "librewolf already installed, skipping"
+fi
 
 }
 
 iemulation(){
 
+force_reinstall=${1:-0}
+
 lineinfile ${ROOTFS}/etc/bluetooth/input.conf ".*ClassicBondedOnly.*" "ClassicBondedOnly=false"
 
+# Install RetroArch AppImage if not present or force_reinstall is 1
+if [ ! -f ${ROOTFS}/opt/appimages/emustation.AppImage ] || [ "$force_reinstall" = "1" ]; then
 echo "emulation tools"
 wget -O ${ROOTFS}/opt/appimages/emustation.AppImage https://gitlab.com/es-de/emulationstation-de/-/package_files/${ESDE_VERSION_ID}/download
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/emustation.AppImage
     ln -sf /opt/appimages/emustation.AppImage /usr/local/bin/estation
 EOF
+fi
+
+
 
 # https://buildbot.libretro.com/stable/
+if [ ! -f ${ROOTFS}/opt/appimages/emustation.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/tmp/RetroArch.7z https://buildbot.libretro.com/stable/${RETROARCH_VERSION}/linux/x86_64/RetroArch.7z
 wget -O ${ROOTFS}/tmp/RetroArch_cores.7z https://buildbot.libretro.com/stable/${RETROARCH_VERSION}/linux/x86_64/RetroArch_cores.7z
 cd ${ROOTFS}/tmp/
@@ -2192,7 +2320,7 @@ cd ${ROOTFS}/tmp/
 
 wget -O ${ROOTFS}/tmp/bios.zip https://github.com/Abdess/retroarch_system/releases/download/v20220308/RetroArch_v1.10.1.zip
 unzip ${ROOTFS}/tmp/bios.zip 'system/*' -d /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/
-
+fi
 
 
 export RARCHCFG=${ROOTFS}/tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/retroarch.cfg
@@ -2507,17 +2635,7 @@ iupdateworkstation(){
 # Model to run all the script
 all(){
 
-if ! [ $# -eq 7 ]; then
-
-    echo "make sure to download debian cloud image : rm debian-12-nocloud-amd64.raw && wget https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw"
-
-    echo "Usage: sudo $0 <1_TARGET_USERNAME> <2_TARGET_PASSWD> <3AUTHSSHFILE> <4_INPUT_IMG> <5_OUTPUT_IMAGE> <6_DISK_SIZE>"
-    echo "sudo $0 apham ps authorized_keys debian-12-nocloud-amd64.raw d12-fgui.raw 5G"
-
-    return
-fi
-
-init $@
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr"
 mountraw
 bashaliases
 createuser
@@ -2555,11 +2673,6 @@ sudo reboot now
 
 # baremetal workstation with virtualization and without nvidia cards
 wkstatvrt(){
-if ! [ $# -eq 1 ]; then
-    echo "Usage: sudo $0 <1_TARGET_USERNAME>"
-    echo "sudo $0 apham"
-    return
-fi
 
 init $1 "ps" "authorized_keys" "NA" "NA" "NA"
 bashaliases
