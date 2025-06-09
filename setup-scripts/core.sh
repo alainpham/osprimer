@@ -2528,7 +2528,7 @@ initdefault(){
     init apham "NA" "authorized_keys" "NA" "NA" "NA"
 }
 
-iupdateworkstation(){
+iupdate(){
     init apham "NA" "authorized_keys" "NA" "NA" "NA"
     bashaliases
     imaven
