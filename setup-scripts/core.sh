@@ -2306,12 +2306,14 @@ cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/emustation.AppImage
     ln -sf /opt/appimages/emustation.AppImage /usr/local/bin/estation
 EOF
+else
+echo "emulationstation already installed, skipping"
 fi
 
 
 
 # https://buildbot.libretro.com/stable/
-if [ ! -f ${ROOTFS}/opt/appimages/emustation.AppImage ] || [ "$force_reinstall" = "1" ]; then
+if [ ! -f ${ROOTFS}/opt/appimages/RetroArch-Linux-x86_64.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/tmp/RetroArch.7z https://buildbot.libretro.com/stable/${RETROARCH_VERSION}/linux/x86_64/RetroArch.7z
 wget -O ${ROOTFS}/tmp/RetroArch_cores.7z https://buildbot.libretro.com/stable/${RETROARCH_VERSION}/linux/x86_64/RetroArch_cores.7z
 cd ${ROOTFS}/tmp/
@@ -2320,10 +2322,32 @@ cd ${ROOTFS}/tmp/
 
 wget -O ${ROOTFS}/tmp/bios.zip https://github.com/Abdess/retroarch_system/releases/download/v20220308/RetroArch_v1.10.1.zip
 unzip ${ROOTFS}/tmp/bios.zip 'system/*' -d /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/
+
+
+cat << EOF | chroot ${ROOTFS}
+    mv /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage /opt/appimages/RetroArch-Linux-x86_64.AppImage
+    chmod 755 /opt/appimages/RetroArch-Linux-x86_64.AppImage
+    ln -sf /opt/appimages/RetroArch-Linux-x86_64.AppImage /usr/local/bin/retroarch
+    rm -rf /home/$TARGET_USERNAME/.config/retroarch
+    
+    mv /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch /home/$TARGET_USERNAME/.config/
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/retroarch
+EOF
+else
+echo "RetroArch already installed, skipping"
 fi
 
+cat << EOF | chroot ${ROOTFS}
+    mkdir -p /home/${TARGET_USERNAME}/ROMs
+    mkdir -p /home/${TARGET_USERNAME}/ES-DE/downloaded_media
+    mkdir -p /home/${TARGET_USERNAME}/.config/retroarch/states
+    mkdir -p /home/${TARGET_USERNAME}/.config/retroarch/saves
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/${TARGET_USERNAME}/ROMs
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/${TARGET_USERNAME}/ES-DE
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/${TARGET_USERNAME}/.config/retroarch
+EOF
 
-export RARCHCFG=${ROOTFS}/tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/retroarch.cfg
+export RARCHCFG=${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/retroarch.cfg
 # export RARCHCFG=/home/$TARGET_USERNAME/.config/retroarch/retroarch.cfg
 touch $RARCHCFG
 lineinfile $RARCHCFG "video_windowed_fullscreen.*=.*" 'video_windowed_fullscreen = "false"'
@@ -2343,7 +2367,7 @@ done
 # ### Per controller settings
 
 # PS3 controller
-export CTRLCFG=${ROOTFS}/tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/autoconfig/udev/Sony-PlayStation3-DualShock3-Controller-USB.cfg
+export CTRLCFG=${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/autoconfig/udev/Sony-PlayStation3-DualShock3-Controller-USB.cfg
 # export CTRLCFG=/home/$TARGET_USERNAME/.config/retroarch/autoconfig/udev/Sony-PlayStation3-DualShock3-Controller-USB.cfg
 touch "$CTRLCFG"
 lineinfile "$CTRLCFG" "input_enable_hotkey_btn.*=.*" 'input_enable_hotkey_btn = "10"'
@@ -2354,7 +2378,7 @@ lineinfile "$CTRLCFG" "input_state_slot_decrease_btn.*=.*" 'input_state_slot_dec
 lineinfile "$CTRLCFG" "input_state_slot_increase_btn.*=.*" 'input_state_slot_increase_btn = "1"'
 
 # Xbox 360 Controller
-export CTRLCFG="${ROOTFS}/tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/autoconfig/udev/Microsoft X-Box 360 pad.cfg"
+export CTRLCFG="${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/autoconfig/udev/Microsoft X-Box 360 pad.cfg"
 # export CTRLCFG="/home/$TARGET_USERNAME/.config/retroarch/autoconfig/udev/Microsoft X-Box 360 pad.cfg"
 touch "$CTRLCFG"
 lineinfile "$CTRLCFG" "input_enable_hotkey_btn.*=.*" 'input_enable_hotkey_btn = "8"'
@@ -2365,7 +2389,7 @@ lineinfile "$CTRLCFG" "input_state_slot_decrease_btn.*=.*" 'input_state_slot_dec
 lineinfile "$CTRLCFG" "input_state_slot_increase_btn.*=.*" 'input_state_slot_increase_btn = "1"'
 
 # "ShanWan PS3/PC Wired GamePad
-export CTRLCFG="${ROOTFS}/tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/autoconfig/udev/Spartan Gear Oplon.cfg"
+export CTRLCFG="${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/autoconfig/udev/Spartan Gear Oplon.cfg"
 # export CTRLCFG="/home/$TARGET_USERNAME/.config/retroarch/autoconfig/udev/Microsoft X-Box 360 pad.cfg"
 touch "$CTRLCFG"
 lineinfile "$CTRLCFG" "input_enable_hotkey_btn.*=.*" 'input_enable_hotkey_btn = "12"'
@@ -2375,31 +2399,6 @@ lineinfile "$CTRLCFG" "input_save_state_btn.*=.*" 'input_save_state_btn = "3"'
 lineinfile "$CTRLCFG" "input_state_slot_decrease_btn.*=.*" 'input_state_slot_decrease_btn = "0"'
 lineinfile "$CTRLCFG" "input_state_slot_increase_btn.*=.*" 'input_state_slot_increase_btn = "1"'
 
-
-cat << EOF | chroot ${ROOTFS}
-    mv /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage /opt/appimages/RetroArch-Linux-x86_64.AppImage
-    chmod 755 /opt/appimages/RetroArch-Linux-x86_64.AppImage
-    ln -sf /opt/appimages/RetroArch-Linux-x86_64.AppImage /usr/local/bin/retroarch
-    rm -rf /home/$TARGET_USERNAME/.config/retroarch
-
-    
-    mv /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch /home/$TARGET_USERNAME/.config/
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/retroarch
-EOF
-
-# get bios
-
-
-cat << EOF | chroot ${ROOTFS}
-mkdir -p /home/${TARGET_USERNAME}/ROMs
-mkdir -p /home/${TARGET_USERNAME}/ES-DE/downloaded_media
-mkdir -p /home/${TARGET_USERNAME}/.config/retroarch/states
-mkdir -p /home/${TARGET_USERNAME}/.config/retroarch/saves
-chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/${TARGET_USERNAME}/ROMs
-chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/${TARGET_USERNAME}/ES-DE
-chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/${TARGET_USERNAME}/.config/retroarch
-EOF
-
 emuscripts="emumount.sh emustop.sh"
 for script in $emuscripts ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/$script
@@ -2408,7 +2407,6 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 done
 
-# 
 
 }
 
