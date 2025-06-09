@@ -2981,7 +2981,7 @@ function postaaon(){
 # /etc/fstab 
 # /dev/disk/by-label/m01  /media/m01      ext4    defaults,nofail   0 0
 # /dev/disk/by-label/m02  /media/m02      ext4    defaults,nofail   0 0
-# /dev/disk/by-label/m03  /media/m03      ntfs    defaults,nofail   0 0
+# /dev/disk/by-label/m03  /media/m03      ext4    defaults,nofail   0 0
 
 ln -s /media/m01/apps/media-content /home/$TARGET_USERNAME/apps/media-content/m01
 ln -s /media/m02/apps/media-content /home/$TARGET_USERNAME/apps/media-content/m02
