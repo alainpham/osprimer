@@ -681,7 +681,7 @@ EOF
 
 cat << EOF | chroot ${ROOTFS}
     dnf install -y ncurses-extraterms gettext
-    dnf install -y sudo git tmux vim curl wget rsync ncdu bind-utils htop bash-completion gnupg2 whois zip unzip virt-what wireguard-tools iptables jq sshfs
+    dnf install -y sudo git tmux vim curl wget rsync ncdu bind-utils htop bash-completion gnupg2 whois zip unzip virt-what wireguard-tools iptables jq sshfs iotop
     dnf install -y cloud-utils openssh-server console-setup
 EOF
 fi
