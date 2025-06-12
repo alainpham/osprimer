@@ -349,7 +349,6 @@ fastboot() {
 trap 'return 1' ERR
 
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ] ; then
-echo debian
 # accelerate grub startup
 mkdir -p ${ROOTFS}/etc/default/grub.d/
 echo 'GRUB_TIMEOUT=1' | tee ${ROOTFS}/etc/default/grub.d/15_timeout.cfg
@@ -1360,60 +1359,6 @@ EOF
 
 fi
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ]; then
-cat << EOF | chroot ${ROOTFS}
-    systemctl disable dnsmasq
-EOF
-fi
-
-if [ "$OSNAME" = "devuan" ]; then
-cat << EOF | chroot ${ROOTFS}
-    rm /etc/insserv.conf.d/dnsmasq
-    update-rc.d -f dnsmasq remove
-EOF
-fi
-
-
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
-cat << 'EOF' | tee ${ROOTFS}/etc/network/interfaces
-# This file describes the network interfaces available on your system
-# and how to activate them. For more information, see interfaces(5).
-
-source /etc/network/interfaces.d/*
-
-# The loopback network interface
-auto lo
-iface lo inet loopback
-EOF
-fi
-
-if [ "$OSNAME" = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ]; then
-cat <<EOF | chroot ${ROOTFS}
-    systemctl disable systemd-resolved
-    rm -f ${ROOTFS}/etc/resolv.conf
-EOF
-fi
-
-if [ "$OSNAME" = "ubuntu" ]; then
-#TODO
-cat <<EOF | chroot ${ROOTFS}
-    rm /etc/netplan/*
-    apt -y install ifupdown
-    apt -y remove resolvconf
-EOF
-fi
-
-cat << 'EOF' | tee ${ROOTFS}/etc/NetworkManager/conf.d/00-use-dnsmasq.conf
-[main]
-dns=dnsmasq
-EOF
-
-cat << 'EOF' | tee ${ROOTFS}/etc/NetworkManager/dnsmasq.d/dev.conf
-#/etc/NetworkManager/dnsmasq.d/dev.conf
-local=/zez.duckdns.org/
-address=/zez.duckdns.org/172.18.0.1
-EOF
-
 # dunst notification
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/dunst
 
@@ -1897,6 +1842,69 @@ EOF
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /home/$TARGET_USERNAME/.local/share/dwm/autostart.sh
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.local
+EOF
+
+
+
+# networking config to network manager
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ]; then
+cat << EOF | chroot ${ROOTFS}
+    systemctl disable dnsmasq
+EOF
+fi
+
+if [ "$OSNAME" = "devuan" ]; then
+cat << EOF | chroot ${ROOTFS}
+    rm /etc/insserv.conf.d/dnsmasq
+    update-rc.d -f dnsmasq remove
+EOF
+fi
+
+
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
+cat << 'EOF' | tee ${ROOTFS}/etc/network/interfaces
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+source /etc/network/interfaces.d/*
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+EOF
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+cat <<EOF | chroot ${ROOTFS}
+    systemctl disable systemd-resolved
+    rm -f ${ROOTFS}/etc/resolv.conf
+EOF
+fi
+
+if [ "$OSNAME" = "ubuntu" ]; then
+cat <<EOF | chroot ${ROOTFS}
+    systemctl enable NetworkManager
+    rm -f ${ROOTFS}/etc/resolv.conf
+    systemctl disable systemd-networkd
+    systemctl disable systemd-resolved
+    ln -sf /run/NetworkManager/resolv.conf /etc/resolv.conf
+EOF
+cat << 'EOF' | tee ${ROOTFS}/etc/netplan/50-cloud-init.yaml
+network:
+  version: 2
+  renderer: NetworkManager
+EOF
+fi
+
+cat << 'EOF' | tee ${ROOTFS}/etc/NetworkManager/conf.d/00-use-dnsmasq.conf
+[main]
+dns=dnsmasq
+EOF
+
+cat << 'EOF' | tee ${ROOTFS}/etc/NetworkManager/dnsmasq.d/dev.conf
+#/etc/NetworkManager/dnsmasq.d/dev.conf
+local=/zez.duckdns.org/
+address=/zez.duckdns.org/172.18.0.1
 EOF
 
 
@@ -2901,4 +2909,22 @@ ln -s /media/m01/apps/media-content /home/$TARGET_USERNAME/apps/media-content/m0
 ln -s /media/m02/apps/media-content /home/$TARGET_USERNAME/apps/media-content/m02
 ln -s /media/m02/apps/media-content /home/$TARGET_USERNAME/apps/media-content/m03
 
+}
+
+# ubuntu workstation
+lpro(){
+init apham "NA" "authorized_keys" "NA" "NA" "NA" fr
+bashaliases
+fastboot
+smalllogs
+iessentials
+itouchpad
+idev
+idocker
+igui
+sudo reboot now
+itheming
+iworkstation
+itimezone
+sudo reboot now
 }
