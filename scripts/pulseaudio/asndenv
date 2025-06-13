@@ -33,7 +33,7 @@ if [ "${PRODUCT_NAME}" == "21MCCTO1WW" ]; then
 export internalspeakerid="alsa_output.pci-0000_c4_00.6.HiFi__hw_Generic_1__sink"
 export internalmicid="alsa_input.pci-0000_c4_00.6.HiFi__hw_acp63__source"
 export internalspeakervolume="45"
-export internalmicvolume="70"
+export internalmicvolume="95"
 fi
 
 # end of internal mic/speaker

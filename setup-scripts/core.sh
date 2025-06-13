@@ -1311,7 +1311,7 @@ fi
 echo "additional gui packages"
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
-    apt install -y ntfs-3g ifuse mousepad mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv network-manager dnsmasq acpitool lm-sensors fonts-noto libnotify-bin dunst ffmpeg mkvtoolnix-gui libfdk-aac2 python3-mutagen imagemagick mediainfo-gui mediainfo arandr picom brightnessctl cups xsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze-gtk-theme breeze-icon-theme joystick
+    apt install -y ntfs-3g ifuse mousepad mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv acpitool lm-sensors fonts-noto libnotify-bin dunst ffmpeg mkvtoolnix-gui libfdk-aac2 python3-mutagen imagemagick mediainfo-gui mediainfo arandr picom brightnessctl cups xsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze-gtk-theme breeze-icon-theme joystick
 EOF
 fi
 
@@ -1335,7 +1335,7 @@ fi
 
 cat << EOF | chroot ${ROOTFS}
     dnf install -y libgtk+3.0-devel python-gobject3-devel
-    dnf install -y ntfs-3g ifuse mousepad mpv haruna vlc nmon neofetch feh qimgv NetworkManager dnsmasq acpitool lm_sensors noto-sans-fonts noto-serif-fonts fonts-ttf-awesome fonts-otf-awesome libnotify dunst ffmpeg mutagen imagemagick mediainfo arandr  cups xsane sane-backends filezilla lxappearance
+    dnf install -y ntfs-3g ifuse mousepad mpv haruna vlc nmon neofetch feh qimgv acpitool lm_sensors noto-sans-fonts noto-serif-fonts fonts-ttf-awesome fonts-otf-awesome libnotify dunst ffmpeg mutagen imagemagick mediainfo arandr  cups xsane sane-backends filezilla lxappearance
     cd /tmp/
     wget -O picom.zip "https://github.com/yshui/picom/archive/refs/tags/v${PICOM_VERSION}.zip"
     unzip picom.zip
@@ -1844,7 +1844,22 @@ cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.local
 EOF
 
+}
 
+inetworking(){
+trap 'return 1' ERR
+
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
+cat << EOF | chroot ${ROOTFS}
+    apt install -y network-manager dnsmasq
+EOF
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y NetworkManager dnsmasq
+EOF
+fi
 
 # networking config to network manager
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ]; then
@@ -1907,7 +1922,13 @@ local=/zez.duckdns.org/
 address=/zez.duckdns.org/172.18.0.1
 EOF
 
-
+# video and audio group
+if [ "$OSNAME" = "ubuntu" ]; then
+cat << EOF | chroot ${ROOTFS}
+    adduser $TARGET_USERNAME audio
+    adduser $TARGET_USERNAME video
+EOF
+fi
 }
 
 itheming() {
@@ -2642,6 +2663,7 @@ ivirt
 iemulation
 iautologin
 itimezone
+inetworking
 cleanupapt
 unmountraw
 sudo reboot now
@@ -2682,6 +2704,7 @@ itheming
 iworkstation
 iautologin
 itimezone
+inetworking
 sudo reboot now
 }
 
@@ -2755,6 +2778,7 @@ igui
 itheming
 iworkstation
 itimezone
+inetworking
 sudo reboot
 }
 
@@ -2781,6 +2805,7 @@ iworkstation
 iemulation
 iautologin
 itimezone
+inetworking
 sudo reboot
 }
 
@@ -2808,6 +2833,7 @@ iworkstation
 iemulation
 iautologin
 itimezone
+inetworking
 sudo reboot
 }
 
@@ -2830,6 +2856,7 @@ itheming
 iworkstation
 ivirt
 itimezone
+inetworking
 sudo reboot
 }
 
@@ -2859,6 +2886,7 @@ ivirt
 iemulation
 iautologin
 itimezone
+inetworking
 sudo reboot
 }
 
@@ -2890,6 +2918,7 @@ ivirt
 iemulation
 iautologin
 itimezone
+inetworking
 sudo reboot
 }
 
@@ -2917,14 +2946,16 @@ init apham "NA" "authorized_keys" "NA" "NA" "NA" fr
 bashaliases
 fastboot
 smalllogs
+reposrc
 iessentials
 itouchpad
 idev
 idocker
 igui
-sudo reboot now
 itheming
 iworkstation
+ivirt
 itimezone
+inetworking
 sudo reboot now
 }
