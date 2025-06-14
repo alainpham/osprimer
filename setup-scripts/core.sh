@@ -2104,11 +2104,12 @@ fi
 
 # configure OBS
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/obs-studio
-
+mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/recordings
 cat << EOF | chroot ${ROOTFS}
     curl -Lo /tmp/obs-studio.tar https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/obs/obs-studio.tar
     tar xvf /tmp/obs-studio.tar -C /home/$TARGET_USERNAME/.config/
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/obs-studio
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/recordings
 EOF
 
 iappimages $force_reinstall
