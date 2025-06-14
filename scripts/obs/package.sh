@@ -1,0 +1,1 @@
+tar cvf obs-studio.tar obs-studio
