@@ -685,12 +685,14 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 fi
 
-echo "essentials installed"
 
-cat << EOF | chroot ${ROOTFS}
-    git config --global core.editor "vim"
+# configure git to use vim as editor
+cat << EOF | tee ${ROOTFS}/home/${TARGET_USERNAME}/.gitconfig
+[core]
+    editor = vim
 EOF
 
+echo "essentials installed"
 }
 
 isudo() {
@@ -1470,7 +1472,6 @@ curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
 chmod 755 ${ROOTFS}/usr/local/bin/$file
 done
 
-# install scripts for sound and monitor
 gitroot=https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/x11/
 files="mon"
 for file in $files ; do
@@ -1660,7 +1661,7 @@ fi
 
 cat << 'EOF' | tee -a ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
 dunst > ~/.dunst.log &
-echo 0 | tee ~/.rebootdwm
+echo 1 | tee ~/.rebootdwm
 export rebootdwm=$(cat ~/.rebootdwm)
 while true; do
     piddwmblocks=$(pgrep dwmblocks)
