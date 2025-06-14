@@ -1,1 +1,2 @@
-sudo cp 09-monitors.conf /etc/X11/xorg.conf.d/09-monitors.conf
+sudo cp mon /usr/local/bin/mon
+sudo chmod 755 /usr/local/bin/mon

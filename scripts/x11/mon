@@ -1,0 +1,112 @@
+#!/bin/bash
+# This script is used to set the monitor configuration for X11.
+
+command=$1
+
+if [ "$command" == "help" ]; then
+    echo "Usage: $0 <command>"
+    echo "Commands:"
+    echo "  lap        - Show only laptop screen"
+    echo "  hdmi       - Show HDMI only"
+    echo "  mirror     - Mirror HDMI to laptop screen"
+    echo "  <empty>    - Default docking station or laptop only"
+    exit 1
+fi
+
+# List available monitors using xrandr
+monitors=$(xrandr --query | grep " connected" | awk '{ print $1 }')
+
+echo "Available monitors:"
+for monitor in $monitors; do
+    echo "- $monitor"
+done
+
+function lap() {
+    echo "Showing only laptop screen."
+    xrandr \
+        --output eDP --mode 1920x1200 --pos 0x0 --rate 60 --rotate normal --primary
+
+    for monitor in $monitors; do
+        if [ "$monitor" != "eDP" ]; then
+            xrandr --output "$monitor" --off
+        fi
+    done
+
+}
+
+if [ "$command" == "lap" ]; then
+    lap
+elif [ "$command" == "hdmi" ]; then
+    echo "Show HDMI only"
+
+    if [ "$PRODUCT_NAME" == "21MCCTO1WW" ] ; then
+        echo "Lenovo T14 AMD detected, setting monitor configuration..."
+        
+        if echo "$monitors" | grep -q "HDMI-A-0"; then
+            xrandr \
+                --output HDMI-A-0       --mode 1920x1080    --pos 0x0      --rate 60   --rotate normal --primary
+            for monitor in $monitors; do
+                if [ "$monitor" != "HDMI-A-0" ]; then
+                    xrandr --output "$monitor" --off
+                fi
+            done    
+        else
+            lap
+        fi
+            
+    elif [ "$PRODUCT_NAME" == "Dell G15 5520" ]; then
+        echo "Dell G15 5520 detected, setting monitor configuration... TODO"
+    else
+        echo "Unknown product name: $PRODUCT_NAME"
+    fi
+
+elif [ "$command" == "mirror" ]; then
+    echo "Show HDMI mirrored to laptop screen"
+    if [ "$PRODUCT_NAME" == "21MCCTO1WW" ] ; then
+        echo "Lenovo T14 AMD detected, setting monitor configuration..."
+        
+        if echo "$monitors" | grep -q "HDMI-A-0"; then
+            xrandr \
+                --output eDP        --mode 1920x1080 --pos 0x0 --rate 60 --rotate normal --primary \
+                --output HDMI-A-0   --mode 1920x1080 --pos 0x0 --rate 60 --rotate normal
+            for monitor in $monitors; do
+                if [ "$monitor" != "HDMI-A-0" ] && [ "$monitor" != "eDP" ]; then
+                    xrandr --output "$monitor" --off
+                fi
+            done
+        else
+            lap
+        fi
+            
+    elif [ "$PRODUCT_NAME" == "Dell G15 5520" ]; then
+        echo "Dell G15 5520 detected, setting monitor configuration... TODO"
+    else
+        echo "Unknown product name: $PRODUCT_NAME"
+    fi
+else
+    echo "Default behavior when detecting monitors that is on the dock otherwise laptop only"
+    if [ "$PRODUCT_NAME" == "21MCCTO1WW" ] ; then
+        echo "Lenovo T14 AMD detected, setting monitor configuration..."
+
+        if echo "$monitors" | grep -q "DisplayPort-6" && echo "$monitors" | grep -q "DisplayPort-7"; then
+            echo "DisplayPort-6 and DisplayPort-7 are connected."
+            xrandr \
+                --output DisplayPort-6   --mode 1920x1080   --pos 0x0       --rate 60   --rotate normal --primary\
+                --output DisplayPort-7   --mode 1920x1080   --pos 1920x0    --rate 60   --rotate normal \
+                --output eDP             --mode 1920x1200   --pos 3840x0    --rate 60   --rotate normal
+            for monitor in $monitors; do
+                if [ "$monitor" != "DisplayPort-6" ] && [ "$monitor" != "DisplayPort-7" ] && [ "$monitor" != "eDP" ]; then
+                    xrandr --output "$monitor" --off
+                fi
+            done
+        else
+            lap
+        fi
+
+    elif [ "$PRODUCT_NAME" == "Dell G15 5520" ]; then
+        echo "Dell G15 5520 detected, setting monitor configuration... TODO"
+    else
+        echo "Unknown product name: $PRODUCT_NAME"
+    fi
+
+fi

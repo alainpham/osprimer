@@ -1179,13 +1179,6 @@ echo 'options nvidia NVreg_PreserveVideoMemoryAllocations=1' > ${ROOTFS}/etc/mod
 inumlocktty(){
 trap 'return 1' ERR
 
-## add other exceptions here to disable numlock at start
-if [[ "$(dmidecode -t 1 | grep 'Product Name')" == *"MacBook"* ]]; then
-    echo "Running on a MacBook, no numlock"
-    return 0
-fi
-
-
 #enable numlock tty
 cat <<'EOF' | tee ${ROOTFS}/usr/local/bin/nlock
 #!/bin/bash
@@ -1365,7 +1358,7 @@ mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/dunst
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.config/dunst/dunstrc
 [global]
-monitor = 2
+monitor = 0
 # follow = keyboard
 font = Noto Sans 11
 frame_width = 2
@@ -1377,7 +1370,7 @@ fi
 if [ "$OSNAME" = "openmandriva" ]; then
 cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.config/dunst/dunstrc
 [global]
-monitor = 2
+monitor = 0
 # follow = keyboard
 font = Noto Sans 11
 frame_width = 2
@@ -1469,7 +1462,7 @@ lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-sample-format.*" "default-
 # lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-fragments.*" "default-fragments = 4"
 lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*resample-method.*" "resample-method = soxr-hq"
 
-# install scripts
+# install scripts for sound and monitor
 gitroot=https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/
 files="snd asnd asndenv asnddef csndfoczv csndjbr csndzv csndh6 csndacer csndint clrmix clrmixoff"
 for file in $files ; do
@@ -1477,6 +1470,13 @@ curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
 chmod 755 ${ROOTFS}/usr/local/bin/$file
 done
 
+# install scripts for sound and monitor
+gitroot=https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/x11/
+files="mon"
+for file in $files ; do
+curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
+chmod 755 ${ROOTFS}/usr/local/bin/$file
+done
 
 # wireplumber and pipewire
 curl -Lo ${ROOTFS}/etc/udev/rules.d/89-pulseaudio-udev.rules https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/89-pulseaudio-udev.rules
@@ -1837,6 +1837,7 @@ EOF
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm
 cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm/autostart.sh
 asnddef &
+mon &
 EOF
 
 cat << EOF | chroot ${ROOTFS}
@@ -2694,7 +2695,6 @@ reposrc
 iaptproxy
 iessentials
 ikeyboard
-inumlocktty
 idev
 idocker
 ikube
@@ -2923,7 +2923,7 @@ inetworking
 sudo reboot
 }
 
-function postaaon(){
+postaaon(){
 # install apt cacher ng.
 # create ssh keys -> github
 # mount disks to good mediafolder.
@@ -2953,10 +2953,18 @@ itouchpad
 idev
 idocker
 igui
+inumlocktty
 itheming
 iworkstation
 ivirt
 itimezone
 inetworking
 sudo reboot now
+}
+
+lpropost(){
+    snap install firefox
+    snap install slack
+    snap install red-app
+    echo "Install Kolide manually.."
 }
