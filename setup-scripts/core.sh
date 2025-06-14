@@ -166,6 +166,9 @@ inputtasks() {
     export KEYBOARD_LAYOUT=${7:-fr}
     echo "export KEYBOARD_LAYOUT=${KEYBOARD_LAYOUT}"
 
+    # for macbook use value "macbook79"
+    export KEYBOARD_MODEL=${8:-pc105} 
+    echo "export KEYBOARD_MODEL=${KEYBOARD_MODEL}"
 }
 
 
@@ -236,6 +239,7 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*DUCKDNS_TOKEN*=.*" "export DUCKDNS_TOKE
 lineinfile ${ROOTFS}${BASHRC} ".*export.*PRODUCT_NAME*=.*" "export PRODUCT_NAME='${PRODUCT_NAME}'"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*TIMEZONE*=.*" "export TIMEZONE=${TIMEZONE}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*KEYBOARD_LAYOUT*=.*" "export KEYBOARD_LAYOUT=${KEYBOARD_LAYOUT}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*KEYBOARD_MODEL*=.*" "export KEYBOARD_MODEL=${KEYBOARD_MODEL}"
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*APT_PROXY*=.*" "export APT_PROXY='${APT_PROXY}'"
 
@@ -716,19 +720,13 @@ trap 'return 1' ERR
 
 # setup keyboard
 cat <<EOF | tee ${ROOTFS}/etc/default/keyboard
-XKBMODEL="pc105"
+XKBMODEL="${KEYBOARD_MODEL}"
 XKBLAYOUT="${KEYBOARD_LAYOUT}"
 EOF
 echo "keyboard setup finished"
 
-if [[ "$(dmidecode -t 1 | grep 'Product Name')" == *"MacBook"* ]]; then
-cat <<EOF | tee ${ROOTFS}/etc/default/keyboard
-XKBMODEL="macbook79"
-XKBLAYOUT="${KEYBOARD_LAYOUT}"
-EOF
-fi
-
 }
+
 
 itouchpad(){
 trap 'return 1' ERR
@@ -1097,6 +1095,12 @@ fi
 echo "install kube"
 
 curl -Lo ${ROOTFS}/usr/local/bin/k3s https://github.com/k3s-io/k3s/releases/download/${K3S_VERSION}/k3s
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /usr/local/bin/k3s
+    ln -sf /usr/local/bin/k3s /usr/local/bin/kubectl
+    ln -sf /usr/local/bin/k3s /usr/local/bin/crictl
+    ln -sf /usr/local/bin/k3s /usr/local/bin/ctr
+EOF
 
 # cat << EOF | chroot ${ROOTFS}
 #     curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_ENABLE="true" INSTALL_K3S_SKIP_START="true" INSTALL_K3S_VERSION="${K3S_VERSION}" K3S_KUBECONFIG_MODE="644" INSTALL_K3S_EXEC="server --disable=servicelb,traefik" sh -
@@ -2413,8 +2417,11 @@ done
 iautologin(){
 if [ "$OSNAME" = "devuan" ]; then
 lineinfile ${ROOTFS}/etc/inittab "1.2345.respawn./sbin/getty.*tty1" "1:2345:respawn:/sbin/getty --autologin ${TARGET_USERNAME} --noclear 38400 tty1"
-lineinfile ${ROOTFS}/home/$TARGET_USERNAME/.bashrc .*startx.* '[ -z "$DISPLAY" ] && [ $(tty) = /dev/tty1 ] && startx'
 fi
+}
+
+istartx(){
+lineinfile ${ROOTFS}/home/$TARGET_USERNAME/.bashrc .*startx.* '[ -z "$DISPLAY" ] && [ $(tty) = /dev/tty1 ] && startx'
 }
 
 icorporate(){
@@ -2633,7 +2640,7 @@ iupdate(){
 # Model to run all the script
 all(){
 
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr"
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
 mountraw
 bashaliases
 createuser
@@ -2665,16 +2672,26 @@ iworkstation
 ivirt
 iemulation
 iautologin
+istartx
 itimezone
 inetworking
 cleanupapt
 unmountraw
-sudo reboot now
+reboot
 }
 
+gcpvm(){
+init alain_pham_grafana_com "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
+bashaliases
+smalllogs
+iessentials
+idocker
+ikube
+reboot
+}
 
 kvmkube(){
-init apham "NA" "authorized_keys" "NA" "NA" "NA"
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
 bashaliases
 smalllogs
 reposrc
@@ -2685,11 +2702,11 @@ inumlocktty
 idev
 idocker
 ikube
-sudo reboot now
+reboot
 }
 
 kvmworkstation(){
-init apham "NA" "authorized_keys" "NA" "NA" "NA"
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
 bashaliases
 smalllogs
 reposrc
@@ -2705,14 +2722,15 @@ ivmgui
 itheming
 iworkstation
 iautologin
+istartx
 itimezone
 inetworking
-sudo reboot now
+reboot
 }
 
 rawkube(){
 #curl -Lo /home/apham/virt/images/debian-12-nocloud-amd64.raw https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw
-init apham p /home/apham/.ssh/authorized_keys /home/apham/virt/images/debian-12-nocloud-amd64.raw /home/apham/virt/images/d12-kube.raw 6G
+init apham p /home/apham/.ssh/authorized_keys /home/apham/virt/images/debian-12-nocloud-amd64.raw /home/apham/virt/images/d12-kube.raw 6G  "fr" "pc105"
 mountraw
 bashaliases
 createuser
@@ -2739,7 +2757,7 @@ qemu-img convert -f raw -O qcow2 /home/apham/virt/images/d12-kube.raw /home/apha
 
 rawkubeminimal(){
 #curl -Lo /home/apham/virt/images/debian-12-nocloud-amd64.raw https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw
-init apham p /home/apham/.ssh/authorized_keys /home/apham/virt/images/debian-12-nocloud-amd64.raw /home/apham/virt/images/d12-kmin.raw 4G
+init apham p /home/apham/.ssh/authorized_keys /home/apham/virt/images/debian-12-nocloud-amd64.raw /home/apham/virt/images/d12-kmin.raw 4G  "fr" "pc105"
 mountraw
 bashaliases
 createuser
@@ -2762,31 +2780,7 @@ rm /home/apham/virt/images/d12-kmin.qcow2
 qemu-img convert -f raw -O qcow2 /home/apham/virt/images/d12-kmin.raw /home/apham/virt/images/d12-kmin.qcow2
 }
 
-oboo(){
-init apham "NA" "authorized_keys" "NA" "NA" "NA"
-bashaliases
-fastboot
-smalllogs
-reposrc
-iaptproxy
-iessentials
-isudo
-ikeyboard
-itouchpad
-idev
-idocker
-ikube
-igui
-itheming
-iworkstation
-itimezone
-inetworking
-sudo reboot
-}
-
-qair(){
-modprobe -r b43 brcmsmac
-init apham "NA" "authorized_keys" "NA" "NA" "NA" us
+macs_common(){
 bashaliases
 rmbroadcom
 fastboot
@@ -2806,47 +2800,30 @@ itheming
 iworkstation
 iemulation
 iautologin
+istartx
 itimezone
 inetworking
-sudo reboot
 }
 
-
-oair(){
+macus(){
 modprobe -r b43 brcmsmac
-init apham "NA" "authorized_keys" "NA" "NA" "NA" fr
-bashaliases
-rmbroadcom
-fastboot
-disableturbo
-smalllogs
-reposrc
-iaptproxy
-iessentials
-isudo
-ikeyboard
-itouchpad
-idev
-idocker
-ikube
-igui
-itheming
-iworkstation
-iemulation
-iautologin
-itimezone
-inetworking
-sudo reboot
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "us" "macbook79"
+macs_common
+reboot
 }
 
+macfr(){
+modprobe -r b43 brcmsmac
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "macbook79"
+macs_common
+reboot
+}
 
-fuj(){
-init apham "NA" "authorized_keys" "NA" "NA" "NA"
+desktop_common(){
 bashaliases
 fastboot
 smalllogs
 reposrc
-iaptproxy
 iessentials
 isudo
 idev
@@ -2857,71 +2834,26 @@ inumlocktty
 itheming
 iworkstation
 ivirt
+iemulation
+iautologin
+istartx
 itimezone
 inetworking
-sudo reboot
 }
 
-postfuj(){
-    echo "Post Fujitsu setup"
-    # install decklink drivers
-    # install ff compiled with decklink https://github.com/alainpham/FFmpeg/blob/7.1.1-ap/README-ap.md
+fuj(){
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
+desktop_common
+echo "Post Fujitsu setup"
+# install decklink drivers
+# install ffmpeg compiled with decklink https://github.com/alainpham/FFmpeg/blob/7.1.1-ap/README-ap.md
+reboot
 }
 
 hped(){
-init apham "NA" "authorized_keys" "NA" "NA" "NA"
-bashaliases
-fastboot
-smalllogs
-reposrc
-iaptproxy
-iessentials
-isudo
-idev
-idocker
-ikube
-igui
-inumlocktty
-itheming
-iworkstation
-ivirt
-iemulation
-iautologin
-itimezone
-inetworking
-sudo reboot
-}
-
-gcpvm(){
-init alain_pham_grafana_com "NA" "authorized_keys" "NA" "NA" "NA"
-bashaliases
-smalllogs
-iessentials
-idocker
-}
-
-aaon(){
-init apham "NA" "authorized_keys" "NA" "NA" "NA"
-bashaliases
-fastboot
-disableturbo
-smalllogs
-reposrc
-iessentials
-isudo
-idev
-idocker
-ikube
-igui
-inumlocktty
-itheming
-iworkstation
-ivirt
-iemulation
-iautologin
-itimezone
-inetworking
-sudo reboot
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
+desktop_common
+reboot
 }
 
 postaaon(){
@@ -2942,9 +2874,21 @@ ln -s /media/m02/apps/media-content /home/$TARGET_USERNAME/apps/media-content/m0
 
 }
 
+laptop_common(){
+desktop_common
+itouchpad
+disableturbo
+}
+
+aaon(){
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
+laptop_common
+reboot
+}
+
 # ubuntu workstation
 lpro(){
-init apham "NA" "authorized_keys" "NA" "NA" "NA" fr
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
 bashaliases
 fastboot
 smalllogs
@@ -2953,14 +2897,16 @@ iessentials
 itouchpad
 idev
 idocker
+ikube
 igui
 inumlocktty
 itheming
 iworkstation
+istartx
 ivirt
 itimezone
 inetworking
-sudo reboot now
+reboot
 }
 
 lpropost(){
