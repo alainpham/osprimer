@@ -1843,6 +1843,7 @@ mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm
 cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm/autostart.sh
 asnddef &
 mon &
+sleep 5 && sbg &
 EOF
 
 cat << EOF | chroot ${ROOTFS}
@@ -2918,6 +2919,7 @@ lpropost(){
 cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm/autostart.sh
 asnddef &
 mon &
+sleep 5 && sbg &
 slack &
 EOF
 }
