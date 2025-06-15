@@ -56,6 +56,12 @@ for monitor in $monitors; do
     echo "- $monitor"
 done
 
+echo "Using the following configuration:"
+echo "Laptop: $laptop (mode: $laptop_mode)"
+echo "HDMI: $hdmi"
+echo "Dock Left: $dock_left"
+echo "Dock Center: $dock_center"
+
 lap() {
     echo "Laptop screen only."
     xrandr --output $laptop --mode $laptop_mode --pos 0x0 --rate 60 --rotate normal --primary
@@ -119,7 +125,7 @@ elif [ "$command" == "hright" ] && echo "$monitors" | grep -q "$hdmi" ; then
         fi
     done
 
-elif echo "$monitors" | grep -q "$dock_left" && echo "$monitors" | grep -q "$dock_center"; then
+elif [ "$command" == "" ] && echo "$monitors" | grep -q "$dock_left" && echo "$monitors" | grep -q "$dock_center"; then
     echo "Docking station detected, setting up DisplayPort monitors."
         xrandr \
             --output $dock_left   --mode 1920x1080      --pos 0x0       --rate 60   --rotate normal --primary \
