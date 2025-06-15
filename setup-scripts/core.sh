@@ -2939,7 +2939,6 @@ reboot
 lpropost(){
     snap install firefox
     snap install slack
-    snap install red-app
     echo "Install Kolide manually.."
     
 cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm/autostart.sh
