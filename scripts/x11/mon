@@ -15,29 +15,36 @@ if [ "$command" == "help" ]; then
     exit 1
 fi
 
+# List available monitors using xrandr
+monitors=$(xrandr --query | grep " connected" | awk '{ print $1 }')
+echo "Available monitors: $monitors"
 if [ "$PRODUCT_NAME" == "21MCCTO1WW" ] ; then
     echo "Lenovo T14 AMD detected, setting monitor configuration..."
     dock_left="DisplayPort-6"
-    dock_center="DisplayPort-7"
+    if echo "$monitors" | grep -q "DisplayPort-7"; then
+        dock_center="DisplayPort-7"
+    else
+        dock_center="DisplayPort-8"
+    fi
     laptop="eDP"
     laptop_mode="1920x1200"
     hdmi="HDMI-A-0"
 elif [ "$PRODUCT_NAME" == "Dell G15 5520" ]; then
     echo "Dell G15 5520 detected, setting monitor configuration..."
-    dock_left="DP-1-3"
+    if echo "$monitors" | grep -q "DP-1-3"; then
+        dock_left="DP-1-3"
+    else
+        dock_left="DP-1-1"
+    fi
     dock_center="DP-1-2"
     laptop="eDP-1"
     laptop_mode="1920x1080"
-    hdmi=""
-    echo "TODO"
-    exit 0
+    hdmi="HDMI-1-0"
 else
     echo "Unknown product name: $PRODUCT_NAME"
     exit 0
 fi
 
-# List available monitors using xrandr
-monitors=$(xrandr --query | grep " connected" | awk '{ print $1 }')
 
 echo "Available monitors:"
 for monitor in $monitors; do
@@ -110,9 +117,9 @@ elif [ "$command" == "hright" ] && echo "$monitors" | grep -q "$hdmi" ; then
 elif echo "$monitors" | grep -q "$dock_left" && echo "$monitors" | grep -q "$dock_center"; then
     echo "Docking station detected, setting up DisplayPort monitors."
         xrandr \
-            --output $dock_left   --mode 1920x1080   --pos 0x0       --rate 60   --rotate normal --primary \
-            --output $dock_center --mode 1920x1080   --pos 1920x0    --rate 60   --rotate normal \
-            --output $laptop      --mode 1920x1200   --pos 3840x0    --rate 60   --rotate normal
+            --output $dock_left   --mode 1920x1080      --pos 0x0       --rate 60   --rotate normal --primary \
+            --output $dock_center --mode 1920x1080      --pos 1920x0    --rate 60   --rotate normal \
+            --output $laptop      --mode $laptop_mode   --pos 3840x0    --rate 60   --rotate normal
 
         for monitor in $monitors; do
             if [ "$monitor" != "$dock_left" ] && [ "$monitor" != "$dock_center" ] && [ "$monitor" != "$laptop" ]; then
