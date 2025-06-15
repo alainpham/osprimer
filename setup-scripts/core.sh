@@ -2142,6 +2142,7 @@ ifreac $force_reinstall
 ilocalsend $force_reinstall
 iavidemux $force_reinstall
 ilibrewolf $force_reinstall
+ipostman $force_reinstall
 }
 
 ikdenlive(){
@@ -2295,6 +2296,28 @@ EOF
 else
 echo "librewolf already installed, skipping"
 fi
+}
+
+ipostman(){
+trap "return 1" ERR
+
+force_reinstall=${1:-0}
+
+if [ -f "${ROOTFS}/opt/appimages/postman/Postman" ] && [ "$force_reinstall" = "0" ]; then
+    echo "postman already installed, skipping"
+    return 0
+fi
+
+mkdir -p ${ROOTFS}/opt/appimages/postman
+rm -rf ${ROOTFS}/opt/appimages/postman/*
+
+curl -L -o /tmp/postman.tar.gz https://dl.pstmn.io/download/latest/linux_64
+tar --strip-components=1 -xzvf /tmp/postman.tar.gz -C ${ROOTFS}/opt/appimages/postman
+cat << EOF | chroot ${ROOTFS}
+    ln -sf /opt/appimages/postman/Postman /usr/local/bin/postman
+EOF
+rm -f /tmp/postman.tar.gz
+echo "postman installed"
 }
 
 iemulation(){
@@ -2917,6 +2940,7 @@ lpropost(){
     snap install firefox
     snap install slack
     snap install red-app
+    snap ins
     echo "Install Kolide manually.."
     
 cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm/autostart.sh
