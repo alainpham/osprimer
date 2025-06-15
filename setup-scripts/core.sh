@@ -1824,17 +1824,17 @@ cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.config/xfce4/xfconf/xfce-per
 </channel>
 EOF
 
-videomimetype=$(find /usr/share/mime/video -name '*.xml' | sed -E 's#.*/(video/.*)\.xml#\1#')
-
 # Set default apps
 cat << EOF | chroot ${ROOTFS}
     sudo -u $TARGET_USERNAME xdg-mime default thunar.desktop inode/directory
-
-    for mime in $videomimetype; do
-        sudo -u $TARGET_USERNAME xdg-mime default org.kde.haruna.desktop "$mime"
-    done
 EOF
 
+videomimetype=$(find /usr/share/mime/video -name '*.xml' | sed -E 's#.*/(video/.*)\.xml#\1#')
+for mime in $videomimetype; do
+cat << EOF | chroot ${ROOTFS}
+    sudo -u $TARGET_USERNAME xdg-mime default org.kde.haruna.desktop "$mime"
+EOF
+done
 
 cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config
