@@ -372,7 +372,6 @@ echo "fastboot activated"
 }
 
 disableturbo() {
-# disable turbo boost
 trap 'return 1' ERR
 
 if [ ! -f /sys/devices/system/cpu/intel_pstate/no_turbo ]; then
@@ -1942,7 +1941,7 @@ fi
 }
 
 itheming() {
-
+trap 'return 1' ERR
 cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.gtkrc-2.0
 # DO NOT EDIT! This file will be overwritten by LXAppearance.
 # Any customization should be done in ~/.gtkrc-2.0.mine instead.
@@ -1999,7 +1998,7 @@ EOF
 }
 
 ivmgui() {
-
+trap 'return 1' ERR
 # if inside virtual machine
 # video=Virtual-1:1600x900
 
@@ -2321,7 +2320,7 @@ echo "postman installed"
 }
 
 iemulation(){
-
+trap 'return 1' ERR
 force_reinstall=${1:-0}
 
 lineinfile ${ROOTFS}/etc/bluetooth/input.conf ".*ClassicBondedOnly.*" "ClassicBondedOnly=false"
@@ -2442,16 +2441,19 @@ done
 }
 
 iautologin(){
+trap 'return 1' ERR
 if [ "$OSNAME" = "devuan" ]; then
 lineinfile ${ROOTFS}/etc/inittab "1.2345.respawn./sbin/getty.*tty1" "1:2345:respawn:/sbin/getty --autologin ${TARGET_USERNAME} --noclear 38400 tty1"
 fi
 }
 
 istartx(){
+trap 'return 1' ERR
 lineinfile ${ROOTFS}/home/$TARGET_USERNAME/.bashrc .*startx.* '[ -z "$DISPLAY" ] && [ $(tty) = /dev/tty1 ] && startx'
 }
 
 icorporate(){
+trap 'return 1' ERR
 ## corporate apps
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 
@@ -2492,6 +2494,7 @@ fi
 }
 
 ivirt() {
+trap 'return 1' ERR
 echo "virtualization tools"
 
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
@@ -2611,6 +2614,7 @@ fi
 }
 
 isecret(){
+    trap 'return 1' ERR
     if [ -f ".secret/run.sh" ]; then
         echo "Running .secret/run.sh"
         bash .secret/run.sh
@@ -2620,6 +2624,7 @@ isecret(){
 }
 
 itimezone(){
+trap 'return 1' ERR
 cat << EOF | chroot ${ROOTFS}
     ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime
     echo $TIMEZONE > /etc/timezone
@@ -2627,6 +2632,7 @@ EOF
 }
 
 cleanupapt() {
+trap 'return 1' ERR
 echo "cleaning up"
 cat << EOF | chroot ${ROOTFS}
     apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -2634,6 +2640,7 @@ EOF
 }
 
 unmountraw() {
+trap 'return 1' ERR
 echo "Unmounting filesystems"
 umount ${ROOTFS}/{dev/pts,boot/efi,dev,run,proc,sys,tmp,}
 
@@ -2642,17 +2649,20 @@ losetup -D
 }
 
 init() {
+    trap 'return 1' ERR
     # Set the default values
     inputversions
     inputtasks $@
 }
 
 initdefault(){
-    init apham "NA" "authorized_keys" "NA" "NA" "NA"
+    trap 'return 1' ERR
+    init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
 }
 
 iupdate(){
-    init apham "NA" "authorized_keys" "NA" "NA" "NA"
+    trap 'return 1' ERR
+    init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
     bashaliases 1
     imaven 1
     idockerbuildx 1
@@ -2666,7 +2676,7 @@ iupdate(){
 
 # Model to run all the script
 all(){
-
+trap 'return 1' ERR
 init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
 mountraw
 bashaliases
@@ -2708,6 +2718,7 @@ reboot
 }
 
 gcpvm(){
+trap 'return 1' ERR
 init alain_pham_grafana_com "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
 bashaliases
 smalllogs
@@ -2718,6 +2729,7 @@ reboot
 }
 
 kvmkube(){
+trap 'return 1' ERR
 init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
 bashaliases
 smalllogs
@@ -2733,6 +2745,7 @@ reboot
 }
 
 kvmworkstation(){
+trap 'return 1' ERR
 init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
 bashaliases
 smalllogs
@@ -2756,6 +2769,7 @@ reboot
 }
 
 rawkube(){
+trap 'return 1' ERR
 #curl -Lo /home/apham/virt/images/debian-12-nocloud-amd64.raw https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw
 init apham p /home/apham/.ssh/authorized_keys /home/apham/virt/images/debian-12-nocloud-amd64.raw /home/apham/virt/images/d12-kube.raw 6G  "fr" "pc105"
 mountraw
@@ -2783,6 +2797,7 @@ qemu-img convert -f raw -O qcow2 /home/apham/virt/images/d12-kube.raw /home/apha
 }
 
 rawkubeminimal(){
+trap 'return 1' ERR
 #curl -Lo /home/apham/virt/images/debian-12-nocloud-amd64.raw https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw
 init apham p /home/apham/.ssh/authorized_keys /home/apham/virt/images/debian-12-nocloud-amd64.raw /home/apham/virt/images/d12-kmin.raw 4G  "fr" "pc105"
 mountraw
@@ -2808,6 +2823,7 @@ qemu-img convert -f raw -O qcow2 /home/apham/virt/images/d12-kmin.raw /home/apha
 }
 
 desktop_common(){
+trap 'return 1' ERR
 bashaliases
 fastboot
 smalllogs
@@ -2831,17 +2847,20 @@ inetworking
 }
 
 laptop_common(){
+trap 'return 1' ERR
 desktop_common
 itouchpad
 disableturbo
 }
 
 macs_common(){
+trap 'return 1' ERR
 laptop_common
 rmbroadcom
 }
 
 macus(){
+trap 'return 1' ERR
 modprobe -r b43 brcmsmac
 init apham "NA" "authorized_keys" "NA" "NA" "NA" "us" "macbook79"
 macs_common
@@ -2849,6 +2868,7 @@ reboot
 }
 
 macfr(){
+trap 'return 1' ERR
 modprobe -r b43 brcmsmac
 init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "macbook79"
 macs_common
@@ -2856,6 +2876,7 @@ reboot
 }
 
 aaon(){
+trap 'return 1' ERR
 init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
 laptop_common
 reboot
@@ -2880,18 +2901,21 @@ ln -s /media/m02/apps/media-content /home/$TARGET_USERNAME/apps/media-content/m0
 }
 
 fujb(){
+trap 'return 1' ERR
 init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
 desktop_common
 reboot
 }
 
 fujb_postinstall(){
+trap 'return 1' ERR
 echo "Post Fujitsu setup"
 # install decklink drivers
 # install ffmpeg compiled with decklink https://github.com/alainpham/FFmpeg/blob/7.1.1-ap/README-ap.md
 }
 
 hped(){
+trap 'return 1' ERR
 init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
 desktop_common
 reboot
@@ -2899,6 +2923,7 @@ reboot
 
 # dell G15
 lg15(){
+trap 'return 1' ERR
 init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
 laptop_common
 reboot
@@ -2906,6 +2931,7 @@ reboot
 
 # lenovo T14 amd ubuntu workstation for work
 lpro(){
+trap 'return 1' ERR
 init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
 bashaliases
 fastboot
@@ -2928,6 +2954,7 @@ reboot
 }
 
 lpro_postinstall(){
+    trap 'return 1' ERR
     snap install firefox
     snap install slack
 
