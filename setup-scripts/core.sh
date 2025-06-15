@@ -2445,6 +2445,19 @@ trap 'return 1' ERR
 if [ "$OSNAME" = "devuan" ]; then
 lineinfile ${ROOTFS}/etc/inittab "1.2345.respawn./sbin/getty.*tty1" "1:2345:respawn:/sbin/getty --autologin ${TARGET_USERNAME} --noclear 38400 tty1"
 fi
+
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ]; then
+
+lineinfile $ROOTFS/etc/systemd/logind.conf ".*NAutoVTs.*" "NAutoVTs=1"
+lineinfile $ROOTFS/etc/systemd/logind.conf ".*ReserveVT.*" "ReserveVT=2"
+
+mkdir -p $ROOTFS/etc/systemd/system/getty@tty1.service.d/
+cat << EOF | tee ${ROOTFS}/etc/systemd/system/getty@tty1.service.d/override.conf
+[Service]
+ExecStart=
+ExecStart=-/sbin/getty --autologin ${TARGET_USERNAME} --noclear %I \$TERM
+EOF
+fi
 }
 
 istartx(){
@@ -2831,6 +2844,7 @@ reposrc
 iessentials
 isudo
 ikeyboard
+itouchpad
 idev
 idocker
 ikube
@@ -2849,7 +2863,6 @@ inetworking
 laptop_common(){
 trap 'return 1' ERR
 desktop_common
-itouchpad
 disableturbo
 }
 
