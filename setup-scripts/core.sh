@@ -2807,29 +2807,38 @@ rm /home/apham/virt/images/d12-kmin.qcow2
 qemu-img convert -f raw -O qcow2 /home/apham/virt/images/d12-kmin.raw /home/apham/virt/images/d12-kmin.qcow2
 }
 
-macs_common(){
+desktop_common(){
 bashaliases
-rmbroadcom
 fastboot
-disableturbo
 smalllogs
 reposrc
-iaptproxy
 iessentials
 isudo
 ikeyboard
-itouchpad
 idev
 idocker
 ikube
 igui
+inumlocktty
 itheming
 iworkstation
+ivirt
 iemulation
 iautologin
 istartx
 itimezone
 inetworking
+}
+
+laptop_common(){
+desktop_common
+itouchpad
+disableturbo
+}
+
+macs_common(){
+laptop_common
+rmbroadcom
 }
 
 macus(){
@@ -2846,44 +2855,13 @@ macs_common
 reboot
 }
 
-desktop_common(){
-bashaliases
-fastboot
-smalllogs
-reposrc
-iessentials
-isudo
-idev
-idocker
-ikube
-igui
-inumlocktty
-itheming
-iworkstation
-ivirt
-iemulation
-iautologin
-istartx
-itimezone
-inetworking
-}
-
-fuj(){
+aaon(){
 init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
-desktop_common
-echo "Post Fujitsu setup"
-# install decklink drivers
-# install ffmpeg compiled with decklink https://github.com/alainpham/FFmpeg/blob/7.1.1-ap/README-ap.md
+laptop_common
 reboot
 }
 
-hped(){
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
-desktop_common
-reboot
-}
-
-postaaon(){
+aaon_postinstall(){
 # install apt cacher ng.
 # create ssh keys -> github
 # mount disks to good mediafolder.
@@ -2901,19 +2879,32 @@ ln -s /media/m02/apps/media-content /home/$TARGET_USERNAME/apps/media-content/m0
 
 }
 
-laptop_common(){
+fujb(){
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
 desktop_common
-itouchpad
-disableturbo
+reboot
 }
 
-aaon(){
+fujb_postinstall(){
+echo "Post Fujitsu setup"
+# install decklink drivers
+# install ffmpeg compiled with decklink https://github.com/alainpham/FFmpeg/blob/7.1.1-ap/README-ap.md
+}
+
+hped(){
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
+desktop_common
+reboot
+}
+
+# dell G15
+lg15(){
 init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
 laptop_common
 reboot
 }
 
-# ubuntu workstation
+# lenovo T14 amd ubuntu workstation for work
 lpro(){
 init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
 bashaliases
@@ -2936,15 +2927,11 @@ inetworking
 reboot
 }
 
-lpropost(){
+lpro_postinstall(){
     snap install firefox
     snap install slack
-    echo "Install Kolide manually.."
-    
-cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm/autostart.sh
-asnddef &
-mon &
-sleep 5 && sbg &
-slack &
-EOF
+
+    sudo -u $TARGET_USERNAME lineinfile ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm/autostart.sh ".*slack.*" 'sleep 5 \&\& slack \&'
+
+    echo "make sure to install kolide
 }
