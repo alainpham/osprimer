@@ -64,13 +64,18 @@ echo "Dock Left: $dock_left"
 echo "Dock Center: $dock_center"
 
 lap() {
+
     echo "Laptop screen only."
-    xrandr --output $laptop --auto --primary
+
+    appendcommand=""
+
     for monitor in $monitors; do
         if [ "$monitor" != "$laptop" ]; then
-            xrandr --output "$monitor" --off
+            appendcommand+=" --output $monitor --off"
         fi
     done
+    xrandr --output $laptop --auto --primary  \
+        $appendcommand
 }
 
 
@@ -81,12 +86,16 @@ if [ "$command" == "lap" ]; then
 elif [ "$command" == "hdmi" ] && echo "$monitors" | grep -q "$hdmi" ; then
     
     echo "HDMI screen only"
-    xrandr --output $hdmi --auto --primary
+
+    appendcommand=""
     for monitor in $monitors; do
         if [ "$monitor" != "$hdmi" ]; then
-            xrandr --output "$monitor" --off
+            appendcommand+=" --output $monitor --off"
         fi
     done
+
+    xrandr --output $hdmi --auto --primary \
+        $appendcommand
 
 elif [ "$command" == "copy" ]; then
 
