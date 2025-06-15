@@ -8,7 +8,7 @@ if [ "$command" == "help" ]; then
     echo "Commands:"
     echo "  lap     - Show only laptop screen"
     echo "  hdmi    - Show HDMI only"
-    echo "  mirror  - Mirror HDMI to laptop screen"
+    echo "  copy    - Mirror HDMI to laptop screen"
     echo "  hleft   - Show HDMI left of laptop screen"
     echo "  hright  - Show HDMI right of laptop screen"
     echo "  <empty> - Default docking station or laptop only"
@@ -41,8 +41,13 @@ elif [ "$PRODUCT_NAME" == "Dell G15 5520" ]; then
     laptop_mode="1920x1080"
     hdmi="HDMI-1-0"
 else
-    echo "Unknown product name: $PRODUCT_NAME"
-    exit 0
+    echo "Unknown product name: $PRODUCT_NAME, applying default on the first monitor found"
+    first_monitor=$(echo "$monitors" | head -n1)
+    laptop="$first_monitor"
+    laptop_mode=$(xrandr | grep -A1 "^$laptop connected" | tail -n1 | awk '{print $1}')
+    hdmi="HDMI_NOT_FOUND"
+    dock_left="DOCK_LEFT_NOT_FOUND"
+    dock_center="DOCK_CENTER_NOT_FOUND"
 fi
 
 
@@ -75,11 +80,11 @@ elif [ "$command" == "hdmi" ] && echo "$monitors" | grep -q "$hdmi" ; then
         fi
     done
 
-elif [ "$command" == "mirror" ] && echo "$monitors" | grep -q "$hdmi" ; then
+elif [ "$command" == "copy" ] && echo "$monitors" | grep -q "$hdmi" ; then
 
     echo "HDMI & Laptop screen mirroring"
     xrandr \
-        --output $laptop --mode $laptop_mode --pos 0x0 --rate 60 --rotate normal --primary \
+        --output $laptop --mode 1920x1080 --pos 0x0 --rate 60 --rotate normal --primary \
         --output $hdmi --mode 1920x1080 --pos 0x0 --rate 60 --rotate normal
 
     for monitor in $monitors; do
