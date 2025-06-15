@@ -2942,6 +2942,12 @@ laptop_common
 reboot
 }
 
+lg15_postinstall(){
+trap 'return 1' ERR
+sudo ubuntu-drivers install
+reboot
+}
+
 # lenovo T14 amd ubuntu workstation for work
 lpro(){
 trap 'return 1' ERR
