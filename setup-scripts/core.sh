@@ -1855,6 +1855,10 @@ EOF
 
 }
 
+iprinter(){
+    lpadmin -p hp-smart-tank-cp -E -v ipp://192.168.8.200/ipp/print -m everywhere
+}
+
 inetworking(){
 trap 'return 1' ERR
 
