@@ -1827,10 +1827,13 @@ EOF
 
 
 
-# Set Thunar as the default file manager
+# Set default apps
 cat << EOF | chroot ${ROOTFS}
-    sudo -u $TARGET_USERNAME xdg-mime default Thunar.desktop inode/directory
-    sudo -u $TARGET_USERNAME xdg-mime default vlc.desktop video/*
+    sudo -u $TARGET_USERNAME xdg-mime default thunar.desktop inode/directory
+    
+    for mime in $(find /usr/share/mime/video -name '*.xml' | sed -E 's#.*/(video/.*)\.xml#\1#'); do
+        sudo -u $TARGET_USERNAME xdg-mime default org.kde.haruna.desktop "$mime"
+    done
 EOF
 
 
