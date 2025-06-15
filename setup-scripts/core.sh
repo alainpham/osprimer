@@ -2933,5 +2933,5 @@ lpro_postinstall(){
 
     sudo -u $TARGET_USERNAME lineinfile ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm/autostart.sh ".*slack.*" 'sleep 5 \&\& slack \&'
 
-    echo "make sure to install kolide
+    echo "make sure to install kolide"
 }
