@@ -250,16 +250,15 @@ mountraw() {
     trap 'return 1' ERR
 
     # name devices
-    export DEVICE=/dev/loop0
+    export DEVICE=/dev/loop999
     export ROOTFS="/tmp/installing-rootfs"
-
     # resize image
     cp $INPUT_IMG $OUTPUT_IMAGE
     qemu-img  resize -f raw $OUTPUT_IMAGE $DISK_SIZE
 
     # setup loopback
     losetup -D 
-    losetup -fP $OUTPUT_IMAGE
+    losetup -P $DEVICE $OUTPUT_IMAGE
 
     # fix partition
     printf "fix\n" | parted ---pretend-input-tty $DEVICE print
@@ -275,6 +274,9 @@ mountraw() {
     echo "Get ready for chroot"
     mount --bind /dev ${ROOTFS}/dev
     mount --bind /run ${ROOTFS}/run
+
+    mv ${ROOTFS}/etc/resolv.conf ${ROOTFS}/etc/resolv.conf.back
+    cp /etc/resolv.conf ${ROOTFS}/etc/resolv.conf
 
     mount -t devpts /dev/pts ${ROOTFS}/dev/pts
     mount -t proc proc ${ROOTFS}/proc
@@ -2657,12 +2659,10 @@ EOF
 }
 
 unmountraw() {
-trap 'return 1' ERR
 echo "Unmounting filesystems"
+mv ${ROOTFS}/etc/resolv.conf.back ${ROOTFS}/etc/resolv.conf
 umount ${ROOTFS}/{dev/pts,boot/efi,dev,run,proc,sys,tmp,}
-
 losetup -D
-
 }
 
 init() {
@@ -2789,6 +2789,7 @@ rawkube(){
 trap 'return 1' ERR
 #curl -Lo /home/apham/virt/images/debian-12-nocloud-amd64.raw https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw
 init apham p /home/apham/.ssh/authorized_keys /home/apham/virt/images/debian-12-nocloud-amd64.raw /home/apham/virt/images/d12-kube.raw 6G  "fr" "pc105"
+export OSNAME=debian
 mountraw
 bashaliases
 createuser
@@ -2806,10 +2807,15 @@ ikeyboard
 idev
 idocker
 ikube
+
+curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_ENABLE="true" INSTALL_K3S_SKIP_START="true" INSTALL_K3S_VERSION="${K3S_VERSION}" K3S_KUBECONFIG_MODE="644" INSTALL_K3S_EXEC="server --disable=servicelb,traefik" sh -
+
 isecret
 cleanupapt
 unmountraw
-rm /home/apham/virt/images/d12-kube.qcow2
+if [ -f /home/apham/virt/images/d12-kube.qcow2 ]; then
+    rm /home/apham/virt/images/d12-kube.qcow2
+fi
 qemu-img convert -f raw -O qcow2 /home/apham/virt/images/d12-kube.raw /home/apham/virt/images/d12-kube.qcow2
 }
 
@@ -2817,6 +2823,7 @@ rawkubeminimal(){
 trap 'return 1' ERR
 #curl -Lo /home/apham/virt/images/debian-12-nocloud-amd64.raw https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw
 init apham p /home/apham/.ssh/authorized_keys /home/apham/virt/images/debian-12-nocloud-amd64.raw /home/apham/virt/images/d12-kmin.raw 4G  "fr" "pc105"
+export OSNAME=debian
 mountraw
 bashaliases
 createuser
@@ -2832,10 +2839,13 @@ isudo
 allowsshpwd
 ikeyboard
 ikube
+curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_ENABLE="true" INSTALL_K3S_SKIP_START="true" INSTALL_K3S_VERSION="${K3S_VERSION}" K3S_KUBECONFIG_MODE="644" INSTALL_K3S_EXEC="server --disable=servicelb,traefik" sh -
 isecret
 cleanupapt
 unmountraw
-rm /home/apham/virt/images/d12-kmin.qcow2
+if [ -f /home/apham/virt/images/d12-kmin.qcow2 ]; then
+    rm /home/apham/virt/images/d12-kmin.qcow2
+fi
 qemu-img convert -f raw -O qcow2 /home/apham/virt/images/d12-kmin.raw /home/apham/virt/images/d12-kmin.qcow2
 }
 

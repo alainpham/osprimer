@@ -36,7 +36,7 @@ OS_VARIANT=$8
 echo "$(date -R) creating machine named $1 with $MEM MB of RAM and $CPUS vcpu(s) ...."
 
 echo "$(date -R) creating cloud-init iso"
-SSH_PUB_KEY=`cat ~/.ssh/id_rsa.pub`
+SSH_PUB_KEY=`cat ~/.ssh/id_*.pub`
 
 SSH_PRIVVM_KEY=`cat ~/ssh/vm | sed 's/^/    /'`
 SSH_PUBVM_KEY=`cat ~/ssh/vm.pub`
