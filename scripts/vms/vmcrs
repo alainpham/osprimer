@@ -1,4 +1,4 @@
 #!/bin/bash
 vmname=${1:-v8s}
 ipaddrsuffix=${2:-20}
-vmcr $1 4096 2 d12-kube $ipaddrsuffix 80G 1G debiantesting
+vmcr $vmname 4096 2 d12-kube $ipaddrsuffix 80G 1G debiantesting

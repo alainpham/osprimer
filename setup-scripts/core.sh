@@ -2531,14 +2531,14 @@ EOF
 fi
 
 
-curl -Lo ${ROOTFS}/usr/local/bin/vmcr https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/vms/vmcr
-curl -Lo ${ROOTFS}/usr/local/bin/vmdl https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/vms/vmdl
-curl -Lo ${ROOTFS}/usr/local/bin/vmls https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/vms/vmls
-curl -Lo ${ROOTFS}/usr/local/bin/vmsh https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/vms/vmsh
+gitroot=https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/vms
+files="vmcr vmcrs vmcrm vmcrl vmdl vmls vmsh"
+for file in $files ; do
+    curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
+    chmod 755 ${ROOTFS}/usr/local/bin/$file
+done
 
 cat << EOF | chroot ${ROOTFS}
-    chmod 755 /usr/local/bin/vmcr /usr/local/bin/vmdl /usr/local/bin/vmls /usr/local/bin/vmsh
-
     mkdir -p /home/${TARGET_USERNAME}/ssh
     if [ ! -f /home/${TARGET_USERNAME}/ssh/vm ]; then
         ssh-keygen -f /home/${TARGET_USERNAME}/ssh/vm -N ""

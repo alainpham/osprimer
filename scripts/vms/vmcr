@@ -24,8 +24,8 @@ DATA_DISK=$1-data.qcow2
 
 BRIDGE=virbr0
 
-USER_DATA=user-data
-META_DATA=meta-data
+USER_DATA=/tmp/user-data
+META_DATA=/tmp/meta-data
 CI_ISO=$VMS_DIR/$1-cidata.iso
 MAC="52:54:00:00:00:$5"
 IP="192.168.122.$5"
