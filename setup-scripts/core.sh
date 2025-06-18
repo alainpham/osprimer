@@ -2994,6 +2994,8 @@ lpro_postinstall(){
     cp ~/.ssh/id_ed25519* ~/ssh/
     ssh-keygen -p ~/.ssh/id_ed25519
 
+    git config core.sshCommand 'ssh -i /home/apham/ssh/id_ed25519'
+
     lineinfile /etc/bash.bashrc ".*alias.*ssh=.*" 'alias ssh="/usr/bin/ssh -i ~/ssh/id_ed25519"'
     lineinfile /etc/bash.bashrc ".*alias.*scp=.*" 'alias scp="/usr/bin/scp -i ~/ssh/id_ed25519"'
     lineinfile /etc/bash.bashrc ".*alias.*sshfs=.*" "alias sshfs=\"/usr/bin/sshfs -o ssh_command='ssh -i ~/ssh/id_ed25519'\""
