@@ -2990,4 +2990,12 @@ lpro_postinstall(){
     sudo -u $TARGET_USERNAME lineinfile ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm/autostart.sh ".*slack.*" 'sleep 5 \&\& slack \&'
 
     echo "make sure to install kolide"
+    mkdir -p ~/ssh/
+    cp ~/.ssh/id_ed25519* ~/ssh/
+    ssh-keygen -p ~/.ssh/id_ed25519
+
+    lineinfile /etc/bash.bashrc ".*alias.*ssh=.*" 'alias ssh="/usr/bin/ssh -i ~/ssh/id_ed25519"'
+    lineinfile /etc/bash.bashrc ".*alias.*scp=.*" 'alias scp="/usr/bin/scp -i ~/ssh/id_ed25519"'
+    lineinfile /etc/bash.bashrc ".*alias.*sshfs=.*" "alias sshfs=\"/usr/bin/sshfs -o ssh_command='ssh -i ~/ssh/id_ed25519'\""
+
 }
