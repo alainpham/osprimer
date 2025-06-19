@@ -1,11 +1,10 @@
 #!/bin/bash
-
 helm repo add grafana https://grafana.github.io/helm-charts &&
   helm repo update &&
-  helm upgrade --install --version ^2 --atomic --timeout 300s grafana-k8s-monitoring grafana/k8s-monitoring \
-    --namespace "agents" --create-namespace --values - <<EOF
+  helm upgrade --install --atomic --timeout 300s grafana-k8s-monitoring grafana/k8s-monitoring \
+    --namespace "default" --create-namespace --values - <<EOF
 cluster:
-  name: kubernetes
+  name: codersandbox.com
 destinations:
   - name: grafana-cloud-metrics
     type: prometheus
@@ -13,45 +12,38 @@ destinations:
     auth:
       type: basic
       username: "${PROM_USER}"
-      password: ${GCLOUD_PASSWORD}
+      password: $PROM_PASSWORD
   - name: grafana-cloud-logs
     type: loki
     url: ${LOKI_URL}/loki/api/v1/push
     auth:
       type: basic
       username: "${LOKI_USER}"
-      password: ${GCLOUD_PASSWORD}
-  - name: grafana-cloud-traces
+      password: $LOKI_PASSWORD
+  - name: grafana-cloud-otlp-endpoint
     type: otlp
-    url: ${TEMPO_URL}
-    protocol: grpc
+    url: ${OTLP_URL}/otlp
+    protocol: http
     auth:
       type: basic
-      username: "${TEMPO_USER}"
-      password: ${GCLOUD_PASSWORD}
+      username: "${OTLP_USER}"
+      password: $OTLP_PASSWORD
     metrics:
-      enabled: false
+      enabled: true
     logs:
-      enabled: false
+      enabled: true
     traces:
       enabled: true
+  - name: grafana-cloud-profiles
+    type: pyroscope
+    url: ${PROFILES_URL}
+    auth:
+      type: basic
+      username: "${PROFILES_USER}"
+      password: $PROFILES_PASSWORD
 clusterMetrics:
   enabled: true
-  opencost:
-    enabled: true
-    metricsSource: grafana-cloud-metrics
-    opencost:
-      exporter:
-        defaultClusterId: kubernetes
-      prometheus:
-        existingSecretName: grafana-cloud-metrics-grafana-k8s-monitoring
-        external:
-          url: ${PROM_URL}/api/prom
-  kepler:
-    enabled: true
 annotationAutodiscovery:
-  enabled: true
-prometheusOperatorObjects:
   enabled: true
 clusterEvents:
   enabled: true
@@ -75,6 +67,29 @@ applicationObservability:
   connectors:
     grafanaCloudMetrics:
       enabled: true
+profiling:
+  enabled: true
+  ebpf:
+    enabled: false
+  java:
+    enabled: true
+    annotationSelectors:
+      profiles.grafana.com/java.enabled: "true"
+    extraDiscoveryRules: |
+      rule {
+        source_labels = ["__meta_kubernetes_pod_annotation_resource_opentelemetry_io_service_name"]
+        regex = "(.+)"
+        target_label = "service_name"
+      }
+    
+      rule {
+        action="replace"    
+        regex = "(.+)"
+        source_labels = ["__meta_kubernetes_pod_annotation_resource_opentelemetry_io_service_namespace"]
+        target_label = "namespace"
+      }
+  pprof:
+    enabled: false
 integrations:
   alloy:
     instances:
@@ -85,6 +100,7 @@ integrations:
             - alloy-singleton
             - alloy-logs
             - alloy-receiver
+            - alloy-profiles
 alloy-metrics:
   enabled: true
 alloy-singleton:
@@ -107,4 +123,6 @@ alloy-receiver:
         port: 9411
         targetPort: 9411
         protocol: TCP
+alloy-profiles:
+  enabled: true
 EOF

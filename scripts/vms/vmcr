@@ -14,7 +14,7 @@ VMS_DIR=/home/${USER}/virt/runtime
 # Location of cloud image
 IMAGE=$DIR/$4.qcow2
 
- MEM=$2
+MEM=$2
 
 # Number of virtual CPUs
 CPUS=$3
@@ -95,7 +95,7 @@ echo "virt-install --import \
   --noautoconsole \
   --cpu host-passthrough"
 
-sudo virt-install --import \
+virt-install --import \
   --name $1 \
   --ram $MEM \
   --vcpus $CPUS \
@@ -108,7 +108,7 @@ sudo virt-install --import \
   --cpu host-passthrough
 
 counter=0
-MAC=$(sudo virsh dumpxml $1 | awk -F\' '/mac address/ {print $2}')
+MAC=$(virsh dumpxml $1 | awk -F\' '/mac address/ {print $2}')
     while true
     do
         IP=$(grep -B1 $MAC /var/lib/libvirt/dnsmasq/$BRIDGE.status | head \

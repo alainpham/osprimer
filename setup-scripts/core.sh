@@ -1945,6 +1945,21 @@ local=/zez.duckdns.org/
 address=/zez.duckdns.org/172.18.0.1
 EOF
 
+# allow nmcli reload
+cat << EOF | tee ${ROOTFS}/etc/polkit-1/rules.d/49-nmcli-reload.rules
+polkit.addRule(function(action, subject) {
+    if (action.id == "org.freedesktop.NetworkManager.reload" &&
+        subject.isInGroup("${TARGET_USERNAME}")) {
+        return polkit.Result.YES;
+    }
+});
+EOF
+
+cat <<EOF | chroot ${ROOTFS}
+mkdir -p /home/$TARGET_USERNAME/virt/runtime
+ln -s /home/$TARGET_USERNAME/virt/runtime/vms /etc/NetworkManager/dnsmasq.d/vms
+chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/virt/runtime
+EOF
 
 }
 
