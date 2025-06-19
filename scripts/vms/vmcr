@@ -79,17 +79,17 @@ qemu-img create -f qcow2 $VMS_DIR/$DATA_DISK $DATADSIZE
 
 
 echo "$(date -R) Setting up dhcp ip server..."
-sudo virsh net-update default add ip-dhcp-host "<host mac='$MAC' name='$1' ip='$IP' />" --live --config
+virsh net-update default add ip-dhcp-host "<host mac='$MAC' name='$1' ip='$IP' />" --live --config
 
 echo "$(date -R) Installing the domain and adjusting the configuration..."
 
-echo "sudo virt-install --import \ 
+echo "virt-install --import \
   --name $1 \
   --ram $MEM \
   --vcpus $CPUS \
-  --disk $VMS_DIR/$DISK,format=qcow2,bus=virtio \ 
+  --disk $VMS_DIR/$DISK,format=qcow2,bus=virtio \
   --disk $VMS_DIR/$DATA_DISK,format=qcow2,bus=virtio \
-  --disk $CI_ISO,readonly=on \ 
+  --disk $CI_ISO,readonly=on \
   --network bridge=$BRIDGE,model=virtio,mac=$MAC \
   --os-variant=$OS_VARIANT \
   --noautoconsole \
@@ -129,5 +129,5 @@ MAC=$(sudo virsh dumpxml $1 | awk -F\' '/mac address/ {print $2}')
 rm $USER_DATA $META_DATA
 
 echo "$(date -R) DONE. SSH to $1 using ${USER}@$IP , with  username '${USER}'."
-
-ansible 127.0.0.1 -m lineinfile --become -a "path=/etc/hosts regexp='^.*$IP\s.*$' line='$IP $1' state=present"
+lineinfile "$VMS_DIR/vms" ".address=.$1" "address=/$1/$IP"
+nmcli general reload
