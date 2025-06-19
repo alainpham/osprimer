@@ -1855,6 +1855,14 @@ cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.local
 EOF
 
+# video and audio group
+if [ "$OSNAME" = "ubuntu" ]; then
+cat << EOF | chroot ${ROOTFS}
+    adduser $TARGET_USERNAME audio
+    adduser $TARGET_USERNAME video
+EOF
+fi
+
 }
 
 iprinter(){
@@ -1937,13 +1945,7 @@ local=/zez.duckdns.org/
 address=/zez.duckdns.org/172.18.0.1
 EOF
 
-# video and audio group
-if [ "$OSNAME" = "ubuntu" ]; then
-cat << EOF | chroot ${ROOTFS}
-    adduser $TARGET_USERNAME audio
-    adduser $TARGET_USERNAME video
-EOF
-fi
+
 }
 
 itheming() {
