@@ -2788,6 +2788,8 @@ reboot
 rawkube(){
 trap 'return 1' ERR
 #curl -Lo /home/apham/virt/images/debian-12-nocloud-amd64.raw https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw
+#curl -Lo /home/apham/virt/images/noble-server-cloudimg-amd64.img https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
+
 init apham p /home/apham/.ssh/authorized_keys /home/apham/virt/images/debian-12-nocloud-amd64.raw /home/apham/virt/images/d12-kube.raw 6G  "fr" "pc105"
 export OSNAME=debian
 mountraw

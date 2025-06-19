@@ -1,5 +1,5 @@
 #!/bin/bash
-instances=`sudo virsh list --name`
+instances=`sudo virsh list --name --all`
 for instance in $instances
 do
     MAC=$(sudo virsh dumpxml $instance | awk -F\' '/mac address/ {print $2}')
