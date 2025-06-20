@@ -3019,4 +3019,10 @@ lpro_postinstall(){
     lineinfile /etc/bash.bashrc ".*alias.*scp=.*" 'alias scp="/usr/bin/scp -i ~/ssh/id_ed25519"'
     lineinfile /etc/bash.bashrc ".*alias.*sshfs=.*" "alias sshfs=\"/usr/bin/sshfs -o ssh_command='ssh -i ~/ssh/id_ed25519'\""
 
+    #install gcp
+    sudo apt-get update
+    sudo apt-get install apt-transport-https ca-certificates gnupg curl
+    curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg    
+    sudo apt-get update && sudo apt-get install google-cloud-cli
+
 }

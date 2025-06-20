@@ -43,6 +43,18 @@ destinations:
       password: $PROFILES_PASSWORD
 clusterMetrics:
   enabled: true
+  opencost:
+    enabled: true
+    metricsSource: grafana-cloud-metrics
+    opencost:
+      exporter:
+        defaultClusterId: codersandbox.com
+      prometheus:
+        existingSecretName: grafana-cloud-metrics-grafana-k8s-monitoring
+        external:
+          url: ${PROM_URL}/api/prom
+  kepler:
+    enabled: true
 annotationAutodiscovery:
   enabled: true
 clusterEvents:
