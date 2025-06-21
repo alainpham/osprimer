@@ -1125,7 +1125,7 @@ cat << EOF | chroot ${ROOTFS}
     rm -f k9s_Linux_amd64.tar.gz
 EOF
 
-kubescript="kubecr kubemon kubeotel"
+kubescript="kubecr kubecrlocal kubemon kubeotel"
 for script in $kubescript ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/k8s/$script
 cat << EOF | chroot ${ROOTFS}
