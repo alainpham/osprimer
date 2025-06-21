@@ -12,6 +12,7 @@ if [ "$command" == "help" ]; then
     echo "  hleft   - Show HDMI left of laptop screen"
     echo "  hright  - Show HDMI right of laptop screen"
     echo "  center  - Center screen only"
+    echo "  cl      - Center and left screen only no laptop screen"
     echo "  <empty> - Default docking station or laptop only"
     exit 1
 fi
@@ -170,6 +171,19 @@ elif [ "$command" == "center" ] && echo "$monitors" | grep -q "$dock_center" ; t
     done
     xrandr \
         --output $dock_center --auto --pos 0x0 --primary \
+        $appendcommand
+
+elif [ "$command" == "cl" ] && echo "$monitors" | grep -q "$dock_left" && echo "$monitors" | grep -q "$dock_center"; then
+    echo "Center dock screen"
+    appendcommand=""
+    for monitor in $monitors; do
+        if [ "$monitor" != "$dock_center" ]; then
+            appendcommand+=" --output $monitor --off"
+        fi
+    done
+    xrandr \
+        --output $dock_left   --mode 1920x1080      --pos 0x0       --rate 60   --rotate normal --primary \
+        --output $dock_center --mode 1920x1080      --pos 1920x0    --rate 60   --rotate normal \
         $appendcommand
 
 elif [ "$command" == "" ] && echo "$monitors" | grep -q "$dock_left" && echo "$monitors" | grep -q "$dock_center"; then
