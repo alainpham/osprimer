@@ -3035,15 +3035,20 @@ lpro_postinstall(){
 
     git config core.sshCommand 'ssh -i /home/apham/ssh/id_ed25519'
 
-    sudo lineinfile /etc/bash.bashrc ".*alias.*ssh=.*" 'alias ssh="/usr/bin/ssh -i ~/ssh/id_ed25519"'
-    sudo lineinfile /etc/bash.bashrc ".*alias.*scp=.*" 'alias scp="/usr/bin/scp -i ~/ssh/id_ed25519"'
-    sudo lineinfile /etc/bash.bashrc ".*alias.*sshfs=.*" "alias sshfs=\"/usr/bin/sshfs -o ssh_command='ssh -i ~/ssh/id_ed25519'\""
+    echo '/usr/bin/ssh -i ~/ssh/id_ed25519 $@' | sudo tee /usr/local/bin/ssh
+    sudo chmod 755 /usr/local/bin/ssh
+    echo '/usr/bin/scp -i ~/ssh/id_ed25519 $@' | sudo tee /usr/local/bin/scp
+    sudo chmod 755 /usr/local/bin/scp
+    echo '/usr/bin/sshfs -o ssh_command=/usr/local/bin/ssh $@' | sudo tee /usr/local/bin/sshfs
+    sudo chmod 755 /usr/local/bin/sshfs
+
+
 
     #install gcp
     sudo apt-get update
     sudo apt-get install apt-transport-https ca-certificates gnupg curl
     curl https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg
-    echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee -a /etc/apt/sources.list.d/google-cloud-sdk.list
+    echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list
 
     sudo apt-get update && sudo apt-get install google-cloud-cli
 
