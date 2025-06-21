@@ -1957,6 +1957,7 @@ EOF
 
 cat <<EOF | chroot ${ROOTFS}
 mkdir -p /home/$TARGET_USERNAME/virt/runtime
+touch /home/$TARGET_USERNAME/virt/runtime/vms
 ln -s /home/$TARGET_USERNAME/virt/runtime/vms /etc/NetworkManager/dnsmasq.d/vms
 chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/virt/runtime
 EOF
@@ -2565,7 +2566,6 @@ cat << EOF | chroot ${ROOTFS}
     
     mkdir -p /home/${TARGET_USERNAME}/virt/images
     mkdir -p /home/${TARGET_USERNAME}/virt/runtime
-    touch /home/${TARGET_USERNAME}/virt/runtime/vms
     chown -R ${TARGET_USERNAME}:${TARGET_USERNAME} /home/${TARGET_USERNAME}/virt
     chown -R ${TARGET_USERNAME}:${TARGET_USERNAME} /home/${TARGET_USERNAME}/ssh
 EOF
