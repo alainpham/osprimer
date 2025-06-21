@@ -11,6 +11,7 @@ if [ "$command" == "help" ]; then
     echo "  copy    - mirror all screens"
     echo "  hleft   - Show HDMI left of laptop screen"
     echo "  hright  - Show HDMI right of laptop screen"
+    echo "  center  - Center screen only"
     echo "  <empty> - Default docking station or laptop only"
     exit 1
 fi
@@ -159,6 +160,17 @@ elif [ "$command" == "hright" ] && echo "$monitors" | grep -q "$hdmi" ; then
         --output $hdmi --mode 1920x1080 --pos 1920x0 --rate 60 --rotate normal \
         $appendcommand
 
+elif [ "$command" == "center" ] && echo "$monitors" | grep -q "$dock_center" ; then
+    echo "Center dock screen"
+    appendcommand=""
+    for monitor in $monitors; do
+        if [ "$monitor" != "$dock_center" ]; then
+            appendcommand+=" --output $monitor --off"
+        fi
+    done
+    xrandr \
+        --output $dock_center --auto --pos 0x0 --primary \
+        $appendcommand
 
 elif [ "$command" == "" ] && echo "$monitors" | grep -q "$dock_left" && echo "$monitors" | grep -q "$dock_center"; then
     echo "Docking station detected, setting up DisplayPort monitors."
