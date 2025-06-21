@@ -660,6 +660,13 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 fi
 
+# deactivate unattended upgrades
+if [ "$OSNAME" = "ubuntu" ]; then
+cat << EOF | tee ${ROOTFS}/etc/apt/apt.conf.d/20auto-upgrades
+APT::Periodic::Update-Package-Lists "0";
+APT::Periodic::Unattended-Upgrade "0";
+EOF
+fi
 
 if [ "$OSNAME" = "openmandriva" ]; then
 
