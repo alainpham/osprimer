@@ -2988,6 +2988,7 @@ sudo dkms autoinstall -k $(uname -r)
 
 sudo wget -o /usr/local/bin/ffmpeg http://192.168.8.100:28000/blackmagic/ffmpeg_ubuntu
 sudo wget -o /usr/local/bin/ffprobe http://192.168.8.100:28000/blackmagic/ffprobe_ubuntu
+
 sudo chmod 755 /usr/local/bin/ffmpeg
 sudo chmod 755 /usr/local/bin/ffprobe
 }
