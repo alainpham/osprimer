@@ -2961,9 +2961,9 @@ ln -s /media/m02/apps/media-content /home/$TARGET_USERNAME/apps/media-content/m0
 ln -s /media/m02/apps/media-content /home/$TARGET_USERNAME/apps/media-content/m03
 
 rm -rf /home/$TARGET_USERNAME/.config/retroarch/saves
-ln -s /media/m03/apps/retroarch/saves  /home/$TARGET_USERNAME/.config/retroarch/saves
+cp -r /media/m03/apps/retroarch/saves  /home/$TARGET_USERNAME/.config/retroarch/saves
 rm -rf /home/$TARGET_USERNAME/.config/retroarch/states
-ln -s /media/m03/apps/retroarch/states  /home/$TARGET_USERNAME/.config/retroarch/states
+cp -r /media/m03/apps/retroarch/states  /home/$TARGET_USERNAME/.config/retroarch/states
 
 }
 
