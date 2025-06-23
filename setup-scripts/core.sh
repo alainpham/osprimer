@@ -2979,9 +2979,17 @@ sudo mv desktopvideo_12.9a3_amd64.deb /opt/debs/desktopvideo_12.9a3_amd64.deb
 sudo mv desktopvideo-gui_12.9a3_amd64.deb /opt/debs/desktopvideo-gui_12.9a3_amd64.deb
 
 sudo apt install -y /opt/debs/desktopvideo_12.9a3_amd64.deb /opt/debs/desktopvideo-gui_12.9a3_amd64.deb
-wget -O /tmp
+wget -O /tmp/blackmagic-io-12.9a3-001-fix_for_kernel_6.8.patch https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/decklink/blackmagic-io-12.9a3-001-fix_for_kernel_6.8.patch
+cd /usr/src/
+patch -p1 </path_to_your_patch_directory/blackmagic-io-12.9a3-001-fix_for_kernel_6.8.patch
+sudo dkms autoinstall -k $(uname -r)
 
 # install ffmpeg compiled with decklink https://github.com/alainpham/FFmpeg/blob/7.1.1-ap/README-ap.md
+
+sudo wget -o /usr/local/bin/ffmpeg http://192.168.8.100:28000/blackmagic/ffmpeg_ubuntu
+sudo wget -o /usr/local/bin/ffprobe http://192.168.8.100:28000/blackmagic/ffprobe_ubuntu
+sudo chmod 755 /usr/local/bin/ffmpeg
+sudo chmod 755 /usr/local/bin/ffprobe
 }
 
 hped(){
