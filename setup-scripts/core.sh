@@ -2960,6 +2960,11 @@ ln -s /media/m01/apps/media-content /home/$TARGET_USERNAME/apps/media-content/m0
 ln -s /media/m02/apps/media-content /home/$TARGET_USERNAME/apps/media-content/m02
 ln -s /media/m02/apps/media-content /home/$TARGET_USERNAME/apps/media-content/m03
 
+rm -rf /home/$TARGET_USERNAME/.config/retroarch/saves
+ln -sf /media/m03/apps/retroarch/saves  /home/$TARGET_USERNAME/.config/retroarch/saves
+rm -rf /home/$TARGET_USERNAME/.config/retroarch/states
+ln -sf /media/m03/apps/retroarch/states  /home/$TARGET_USERNAME/.config/retroarch/states
+
 }
 
 fujb(){
