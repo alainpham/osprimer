@@ -2986,8 +2986,8 @@ sudo dkms autoinstall -k $(uname -r)
 
 # install ffmpeg compiled with decklink https://github.com/alainpham/FFmpeg/blob/7.1.1-ap/README-ap.md
 
-sudo wget -o /usr/local/bin/ffmpeg http://192.168.8.100:28000/blackmagic/ffmpeg_ubuntu
-sudo wget -o /usr/local/bin/ffprobe http://192.168.8.100:28000/blackmagic/ffprobe_ubuntu
+sudo wget -O /usr/local/bin/ffmpeg http://192.168.8.100:28000/blackmagic/ffmpeg_ubuntu
+sudo wget -O /usr/local/bin/ffprobe http://192.168.8.100:28000/blackmagic/ffprobe_ubuntu
 
 sudo chmod 755 /usr/local/bin/ffmpeg
 sudo chmod 755 /usr/local/bin/ffprobe
@@ -3069,4 +3069,10 @@ lpro_postinstall(){
 
     sudo apt-get update && sudo apt-get install google-cloud-cli
 
+    #ffmpeg
+    sudo wget -O /usr/local/bin/ffmpeg http://192.168.8.100:28000/blackmagic/ffmpeg_ubuntu
+    sudo wget -O /usr/local/bin/ffprobe http://192.168.8.100:28000/blackmagic/ffprobe_ubuntu
+
+    sudo chmod 755 /usr/local/bin/ffmpeg
+    sudo chmod 755 /usr/local/bin/ffprobe
 }
