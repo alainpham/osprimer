@@ -2973,6 +2973,14 @@ fujb_postinstall(){
 trap 'return 1' ERR
 echo "Post Fujitsu setup"
 # install decklink drivers
+wget http://192.168.8.100:28000/blackmagic/drivers/desktopvideo_12.9a3_amd64.deb
+wget http://192.168.8.100:28000/blackmagic/drivers/desktopvideo-gui_12.9a3_amd64.deb
+sudo mv desktopvideo_12.9a3_amd64.deb /opt/debs/desktopvideo_12.9a3_amd64.deb
+sudo mv desktopvideo-gui_12.9a3_amd64.deb /opt/debs/desktopvideo-gui_12.9a3_amd64.deb
+
+sudo apt install -y /opt/debs/desktopvideo_12.9a3_amd64.deb /opt/debs/desktopvideo-gui_12.9a3_amd64.deb
+wget -O /tmp
+
 # install ffmpeg compiled with decklink https://github.com/alainpham/FFmpeg/blob/7.1.1-ap/README-ap.md
 }
 
