@@ -1,1 +1,4 @@
-{"cqp":18,"rate_control":"CQP"}
+{
+    "cqp": 18,
+    "rate_control": "CQP"
+}
