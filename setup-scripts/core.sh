@@ -1318,7 +1318,8 @@ fi
 echo "additional gui packages"
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
-    apt install -y ntfs-3g ifuse mousepad mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv acpitool lm-sensors fonts-noto libnotify-bin dunst ffmpeg mkvtoolnix-gui libfdk-aac2 python3-mutagen imagemagick mediainfo-gui mediainfo arandr picom brightnessctl cups xsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze-gtk-theme breeze-icon-theme joystick
+    apt install -y ntfs-3g ifuse mousepad mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv acpitool lm-sensors fonts-noto libnotify-bin dunst mkvtoolnix-gui python3-mutagen imagemagick mediainfo-gui mediainfo arandr picom brightnessctl cups xsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze-gtk-theme breeze-icon-theme joystick
+    apt install -y ffmpeg libfdk-aac2 libnppig12 libnppicc12 libnppidei12 libnppif12
 EOF
 fi
 
@@ -1879,6 +1880,16 @@ fi
 
 iprinter(){
     lpadmin -p hp-smart-tank-cp -E -v ipp://192.168.8.200/ipp/print -m everywhere
+}
+
+iffmpeg(){
+    wget -O /usr/local/bin/ffmpeg http://192.168.8.100:28000/ffmpeg/ubuntu/ffmpeg
+    wget -O /usr/local/bin/ffprobe http://192.168.8.100:28000/ffmpeg/ubuntu/ffprobe
+    wget -O /usr/local/bin/ffplay http://192.168.8.100:28000/ffmpeg/ubuntu/ffplay
+
+    chmod 755 /usr/local/bin/ffmpeg
+    chmod 755 /usr/local/bin/ffprobe
+    chmod 755 /usr/local/bin/ffplay
 }
 
 inetworking(){
@@ -2760,8 +2771,9 @@ idocker
 ikube
 invidia
 igui
-inumlocktty
 ivmgui
+iffmpeg
+inumlocktty
 itheming
 iworkstation
 ivirt
@@ -2817,8 +2829,9 @@ idev
 idocker
 ikube
 igui
-inumlocktty
 ivmgui
+iffmpeg
+inumlocktty
 itheming
 iworkstation
 iautologin
@@ -2904,6 +2917,7 @@ idev
 idocker
 ikube
 igui
+iffmpeg
 inumlocktty
 itheming
 iworkstation
@@ -2995,13 +3009,6 @@ cd /usr/src/
 patch -p1 </path_to_your_patch_directory/blackmagic-io-12.9a3-001-fix_for_kernel_6.8.patch
 sudo dkms autoinstall -k $(uname -r)
 
-# install ffmpeg compiled with decklink https://github.com/alainpham/FFmpeg/blob/7.1.1-ap/README-ap.md
-
-sudo wget -O /usr/local/bin/ffmpeg http://192.168.8.100:28000/blackmagic/ffmpeg_ubuntu
-sudo wget -O /usr/local/bin/ffprobe http://192.168.8.100:28000/blackmagic/ffprobe_ubuntu
-
-sudo chmod 755 /usr/local/bin/ffmpeg
-sudo chmod 755 /usr/local/bin/ffprobe
 }
 
 hped(){

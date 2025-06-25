@@ -14,17 +14,7 @@ x264paramsrarbg=cabac=1:ref=4:deblock=-1,-1:analyse=0x3,0x113:me=umh:subme=9:psy
 
 x264minimal=cabac=1:ref=5:deblock=-1,-1:me=umh:subme=9:psy-rd=1.00,0.15:merange=24:trellis=2:chroma-qp-offset=0:bframes=5:b-adapt=2:direct=auto:rc-lookahead=60:vbv-maxrate=10000:vbv-bufsize=10000:aq-mode=3:partitions=all
 
-
 x264params=$x264minimal
-
-# echo "ffmpeg -y -i $1  -pix_fmt yuv420p -vf scale=${width}:-2 -c:v libx264 -b:v ${bitrate}k -x264-params $x264params -an -pass 1 -f ${format} -movflags +faststart /dev/null"
-
-# ffmpeg -y -i $1  -pix_fmt yuv420p -vf scale=${width}:-2 -c:v libx264 -b:v ${bitrate}k -x264-params $x264params -an -pass 1 -f ${format} -movflags +faststart /dev/null
-
-# echo "ffmpeg -i $1  -pix_fmt yuv420p -vf scale=${width}:-2 -c:v libx264 -b:v ${bitrate}k -x264-params $x264params -c:a aac -b:a ${ab}k -pass 2 -f ${format} -movflags +faststart ${filename}-x264-vbr${bitrate}k-aac-ab${ab}k-720p.${format}"
-
-# ffmpeg -i $1  -pix_fmt yuv420p -vf scale=${width}:-2 -c:v libx264 -b:v ${bitrate}k -x264-params $x264params -c:a aac -b:a ${ab}k -pass 2 -f ${format} -movflags +faststart ${filename}-x264-vbr${bitrate}k-aac-ab${ab}k-720p.${format}
-
 
 
 ffmpeg -y -i $1  -pix_fmt yuv420p -vf scale=${width}:-2 -c:v libx264 -b:v ${bitrate}k  -an -pass 1 -f ${format} -movflags +faststart /dev/null
