@@ -15,4 +15,4 @@ ffmpeg -y -i $1 \
     -c:a libfdk_aac \
     -b:a ${ab}k \
     -f ${format} \
-    ${filename}-x264-crf${crf}k-fdk_aac-ab${ab}k.${format}
+    ${filename}-x264-crf${crf}-fdk_aac-ab${ab}k.${format}
