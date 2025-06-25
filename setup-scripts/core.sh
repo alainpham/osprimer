@@ -1833,6 +1833,11 @@ cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.config/xfce4/xfconf/xfce-per
 </channel>
 EOF
 
+# deactivate thumbler cause it causes issues with usb
+if [ -f "${ROOTFS}/etc/xdg/tumbler/tumbler.rc" ]; then
+    sed -i 's/Disabled=false/Disabled=true/g' ${ROOTFS}/etc/xdg/tumbler/tumbler.rc
+fi
+
 # Set default apps
 cat << EOF | chroot ${ROOTFS}
     sudo -u $TARGET_USERNAME xdg-mime default thunar.desktop inode/directory
