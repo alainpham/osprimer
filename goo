@@ -1,3 +1,0 @@
-#/bin/bash
-
-./mac 1 0 apham ps authorized_keys debian-12-nocloud-amd64.raw d12-fgui.raw 5G 1 1 1 1 1 1 0
