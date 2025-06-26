@@ -1883,6 +1883,7 @@ iprinter(){
 }
 
 iffmpeg(){
+
     wget -O /usr/local/bin/ffmpeg http://192.168.8.100:28000/ffmpeg/ubuntu/ffmpeg
     wget -O /usr/local/bin/ffprobe http://192.168.8.100:28000/ffmpeg/ubuntu/ffprobe
     wget -O /usr/local/bin/ffplay http://192.168.8.100:28000/ffmpeg/ubuntu/ffplay
