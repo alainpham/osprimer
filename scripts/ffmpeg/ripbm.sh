@@ -12,7 +12,7 @@ export FFREPORT=file="${filename}.log:level=48"
 ffmpeg  \
     -f decklink \
         -i 'DeckLink Mini Recorder' \
-        \
+    -f matroska
         -t ${duration} \
         -fps_mode cfr \
         -preset $preset \
@@ -23,4 +23,4 @@ ffmpeg  \
         -c:a libfdk_aac \
         -b:a ${ab}k \
         -report \
-        -f matroska $filename
+        $filename
