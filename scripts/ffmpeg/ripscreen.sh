@@ -87,7 +87,7 @@ ffmpeg
         -pix_fmt yuv420p  
         -c:v libx264 
         -crf ${crf} 
-        -c:a libfdk_aac 
+        -c:a aac 
         -b:a ${ab}k 
         $filename
 "

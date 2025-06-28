@@ -16,6 +16,6 @@ ffmpeg \
     -i $1 -vf 'format=nv12|vaapi,hwupload' \
     -vcodec h264_vaapi \
     -qp ${qp} \
-    -acodec libfdk_aac \
+    -acodec aac \
     -ab ${ab}k \
     ${filename}-h264-vaapi-qp${qp}-fdk_aac-ab${ab}k.${format}

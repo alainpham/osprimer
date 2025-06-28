@@ -12,7 +12,7 @@ ffmpeg -y -i $1 \
     -pix_fmt yuv420p \
     -c:v libx264 \
     -crf ${crf} \
-    -c:a libfdk_aac \
+    -c:a aac \
     -b:a ${ab}k \
     -f ${format} \
     ${filename}-x264-crf${crf}-fdk_aac-ab${ab}k.${format}
