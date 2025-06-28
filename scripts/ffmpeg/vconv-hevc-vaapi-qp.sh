@@ -11,4 +11,4 @@ format=${4:-mp4}
 
 echo "ffmpeg -vaapi_device /dev/dri/renderD128 -hwaccel vaapi -hwaccel_output_format vaapi -i $1 -vf 'format=nv12|vaapi,hwupload' -vcodec hevc_vaapi -qp ${qp} -acodec aac -ab ${ab}k ${filename}-hevc-vaapi-qp${qp}-aac-ab${ab}k.${format}"
 
-ffmpeg -vaapi_device /dev/dri/renderD128 -hwaccel vaapi -hwaccel_output_format vaapi -i $1 -vf 'format=nv12|vaapi,hwupload' -vcodec hevc_vaapi -qp ${qp} -acodec aac -ab ${ab}k ${filename}-hevc-vaapi-qp${qp}-aac-ab${ab}k.${format}
+ffmpeg -vaapi_device /dev/dri/renderD128 -hwaccel vaapi -hwaccel_output_format vaapi -i $1 -vf 'format=nv12|vaapi,hwupload' -vcodec hevc_vaapi -qp ${qp} -acodec libfdk_aac -ab ${ab}k ${filename}-hevc-vaapi-qp${qp}-aac-ab${ab}k.${format}

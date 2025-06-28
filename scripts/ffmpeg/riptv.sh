@@ -31,7 +31,7 @@ ffmpeg  \
         -c:v libx264 \
         -crf ${crf} \
         -g 24 \
-        -c:a aac \
+        -c:a libfdk_aac \
         -b:a ${ab}k \
         -report \
         $filename

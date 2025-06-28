@@ -11,6 +11,6 @@ format=${4:-mp4}
 
 echo "backup ffmpeg -threads 6 -vaapi_device /dev/dri/renderD128 -hwaccel vaapi -hwaccel_output_format vaapi -i $1 -vf 'format=nv12|vaapi,hwupload' -vcodec vp9_vaapi -global_quality ${qp} -bf 2 -bsf:v vp9_raw_reorder,vp9_superframe -acodec aac -ab ${ab}k ${filename}-vp9-vaapi-qp${qp}-aac-ab${ab}k.${format}"
 
-echo "ffmpeg -vaapi_device /dev/dri/renderD128 -hwaccel vaapi -hwaccel_output_format vaapi -i $1 -vf 'format=nv12|vaapi,hwupload' -vcodec vp9_vaapi -global_quality ${qp} -acodec aac -ab ${ab}k ${filename}-vp9-vaapi-qp${qp}-aac-ab${ab}k.${format}"
+echo "ffmpeg -vaapi_device /dev/dri/renderD128 -hwaccel vaapi -hwaccel_output_format vaapi -i $1 -vf 'format=nv12|vaapi,hwupload' -vcodec vp9_vaapi -global_quality ${qp} -acodec libfdk_aac -ab ${ab}k ${filename}-vp9-vaapi-qp${qp}-aac-ab${ab}k.${format}"
 
-ffmpeg -vaapi_device /dev/dri/renderD128 -hwaccel vaapi -hwaccel_output_format vaapi -i $1 -vf 'format=nv12|vaapi,hwupload' -vcodec vp9_vaapi -global_quality ${qp} -acodec aac -ab ${ab}k ${filename}-vp9-vaapi-qp${qp}-aac-ab${ab}k.${format}
+ffmpeg -vaapi_device /dev/dri/renderD128 -hwaccel vaapi -hwaccel_output_format vaapi -i $1 -vf 'format=nv12|vaapi,hwupload' -vcodec vp9_vaapi -global_quality ${qp} -acodec libfdk_aac -ab ${ab}k ${filename}-vp9-vaapi-qp${qp}-aac-ab${ab}k.${format}

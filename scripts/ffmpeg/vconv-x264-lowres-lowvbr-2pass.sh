@@ -19,4 +19,4 @@ x264params=$x264minimal
 
 ffmpeg -y -i $1  -pix_fmt yuv420p -vf scale=${width}:-2 -c:v libx264 -b:v ${bitrate}k  -an -pass 1 -f ${format} -movflags +faststart /dev/null
 
-ffmpeg -i $1  -pix_fmt yuv420p -vf scale=${width}:-2 -c:v libx264 -b:v ${bitrate}k -maxrate 3500K -bufsize 1000K -c:a aac -b:a ${ab}k -pass 2 -f ${format} -movflags +faststart ${filename}-x264-vbr${bitrate}k-aac-ab${ab}k-720p.${format}
+ffmpeg -i $1  -pix_fmt yuv420p -vf scale=${width}:-2 -c:v libx264 -b:v ${bitrate}k -maxrate 3500K -bufsize 1000K -c:a libfdk_aac -b:a ${ab}k -pass 2 -f ${format} -movflags +faststart ${filename}-x264-vbr${bitrate}k-aac-ab${ab}k-720p.${format}

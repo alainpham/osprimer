@@ -21,6 +21,6 @@ echo "ffmpeg -y -i $1  -pix_fmt yuv420p -vf scale=${width}:-2 -c:v libx264 -b:v 
 
 ffmpeg -y -i $1  -pix_fmt yuv420p -vf scale=${width}:-2 -c:v libx264 -b:v ${bitrate}k -x264-params $x264params -an -pass 1 -f ${format} -movflags +faststart /dev/null
 
-echo "ffmpeg -i $1  -pix_fmt yuv420p -vf scale=${width}:-2 -c:v libx264 -b:v ${bitrate}k -x264-params $x264params -c:a aac -b:a ${ab}k -pass 2 -f ${format} -movflags +faststart ${filename}-x264-vbr${bitrate}k-aac-ab${ab}k-720p.${format}"
+echo "ffmpeg -i $1  -pix_fmt yuv420p -vf scale=${width}:-2 -c:v libx264 -b:v ${bitrate}k -x264-params $x264params -c:a libfdk_aac -b:a ${ab}k -pass 2 -f ${format} -movflags +faststart ${filename}-x264-vbr${bitrate}k-aac-ab${ab}k-720p.${format}"
 
-ffmpeg -i $1  -pix_fmt yuv420p -vf scale=${width}:-2 -c:v libx264 -b:v ${bitrate}k -x264-params $x264params -c:a aac -b:a ${ab}k -pass 2 -f ${format} -movflags +faststart ${filename}-x264-vbr${bitrate}k-aac-ab${ab}k-720p.${format}
+ffmpeg -i $1  -pix_fmt yuv420p -vf scale=${width}:-2 -c:v libx264 -b:v ${bitrate}k -x264-params $x264params -c:a libfdk_aac -b:a ${ab}k -pass 2 -f ${format} -movflags +faststart ${filename}-x264-vbr${bitrate}k-aac-ab${ab}k-720p.${format}
