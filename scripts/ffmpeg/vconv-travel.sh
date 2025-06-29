@@ -23,6 +23,9 @@ ffmpeg -y \
     $inputparam \
     -i "$1" \
     -f mp4 \
+    -map 0:v:0 \
+    -map 0:a:0 \
+    -map 0:s:0? \
     $video_codec \
     -c:a libfdk_aac \
     -b:a 32k \
