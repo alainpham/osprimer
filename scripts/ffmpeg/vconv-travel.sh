@@ -27,8 +27,24 @@ ffmpeg -y \
     -map 0:a:0 \
     -map 0:s:0? \
     $video_codec \
-    -c:a libfdk_aac \
-    -b:a 32k \
-    -ac 1 \
+    -c:a copy \
+    -c:s mov_text \
     -movflags +faststart \
     "${filename} - travel.mp4"
+
+
+# with rencode audio
+# ffmpeg -y \
+#     $inputparam \
+#     -i "$1" \
+#     -f mp4 \
+#     -map 0:v:0 \
+#     -map 0:a:0 \
+#     -map 0:s:0? \
+#     $video_codec \
+#     -c:a libfdk_aac \
+#     -b:a 64k \
+#     -ac 1 \
+#     -c:s mov_text \
+#     -movflags +faststart \
+#     "${filename} - travel.mp4"
