@@ -3,14 +3,22 @@ extension="${1##*.}"
 filename="${1%.*}"
 
 encoder=${2}
-quality=28
+quality=26
 
 if [[ "$encoder" == "vaapi" ]]; then
-    inputparam="-vaapi_device /dev/dri/renderD128
+    inputparam="
+    -init_hw_device vaapi=hw:/dev/dri/renderD128 -filter_hw_device hw
+    -vaapi_device /dev/dri/renderD128
     -hwaccel vaapi
     -hwaccel_output_format vaapi
     "
-    video_codec="-c:v h264_vaapi -vaapi_device /dev/dri/renderD128 -vf format=nv12|vaapi,hwupload,scale_vaapi=w=1024:h=-2 -qp ${quality}"
+    video_codec="
+    -c:v h264_vaapi
+    -bsf:v h264_mp4toannexb
+    -vaapi_device /dev/dri/renderD128 
+    -vf format=nv12|vaapi,hwupload,scale_vaapi=w=1024:h=-2 
+    -qp ${quality}
+    "
 elif [[ "$encoder" == "nvenc" ]]; then
     inputparam="-hwaccel cuda -hwaccel_output_format cuda"
     video_codec="-preset p1 -c:v h264_nvenc -vf scale_cuda=w=1024:h=-2 -rc:v vbr -cq:v ${quality} -b:v 0"
