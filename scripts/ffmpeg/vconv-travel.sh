@@ -13,9 +13,8 @@ if [[ "$encoder" == "vaapi" ]]; then
     -hwaccel_output_format vaapi
     "
     video_codec="
-    -c:v h264_vaapi
-    -bsf:v h264_mp4toannexb
     -vaapi_device /dev/dri/renderD128 
+    -c:v h264_vaapi
     -vf format=nv12|vaapi,hwupload,scale_vaapi=w=1024:h=-2 
     -qp ${quality}
     "
