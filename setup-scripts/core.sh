@@ -2762,7 +2762,7 @@ initdefault(){
 
 iupdate(){
     trap 'return 1' ERR
-    init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
+    init $TARGET_USERNAME "NA" "authorized_keys" "NA" "NA" "NA" "$KEYBOARD_LAYOUT" "$KEYBOARD_MODEL"
     bashaliases 1
     imaven 1
     idockerbuildx 1
