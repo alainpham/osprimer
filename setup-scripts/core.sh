@@ -756,10 +756,12 @@ Section "InputClass"
 EndSection
 EOF
 
-cd /tmp/
-git clone https://github.com/bulletmark/libinput-gestures.git
-cd libinput-gestures
-./libinput-gestures-setup install
+    cd /tmp/
+    git clone https://github.com/bulletmark/libinput-gestures.git
+    cd libinput-gestures
+if [ ! -f /usr/bin/libinput-gestures ]; then
+    ./libinput-gestures-setup install
+fi
 
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
