@@ -760,9 +760,7 @@ cd /tmp/
 rm -rf libinput-gestures
 git clone https://github.com/bulletmark/libinput-gestures.git
 cd libinput-gestures
-if [ ! -f /usr/bin/libinput-gestures ]; then
-    ./libinput-gestures-setup install
-fi
+./libinput-gestures-setup install
 
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
@@ -2770,6 +2768,7 @@ iupdate(){
     idockerbuildx 1
     ikube 1
     iappimages 1
+    iemulation 1
 }
 
 ###############################
