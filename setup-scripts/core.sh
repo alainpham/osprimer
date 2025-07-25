@@ -756,9 +756,10 @@ Section "InputClass"
 EndSection
 EOF
 
-    cd /tmp/
-    git clone https://github.com/bulletmark/libinput-gestures.git
-    cd libinput-gestures
+cd /tmp/
+rm -rf libinput-gestures
+git clone https://github.com/bulletmark/libinput-gestures.git
+cd libinput-gestures
 if [ ! -f /usr/bin/libinput-gestures ]; then
     ./libinput-gestures-setup install
 fi
