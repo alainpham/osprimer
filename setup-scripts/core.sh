@@ -4,24 +4,27 @@
 inputversions() {
     trap 'return 1' ERR
 
+    export CORE_VERSION=20250725
+    echo "export CORE_VERSION=${CORE_VERSION}"
+
     # https://github.com/docker/buildx/releases
-    export DOCKER_BUILDX_VERSION=v0.24.0
+    export DOCKER_BUILDX_VERSION=v0.26.1
     echo "export DOCKER_BUILDX_VERSION=${DOCKER_BUILDX_VERSION}"
     
     # https://kubernetes.io/releases/  https://cloud.google.com/kubernetes-engine/docs/release-notes
-    export MAJOR_KUBE_VERSION=v1.32
+    export MAJOR_KUBE_VERSION=v1.33
     echo "export MAJOR_KUBE_VERSION=${MAJOR_KUBE_VERSION}"
     
     # https://github.com/k3s-io/k3s/releases
-    export K3S_VERSION="v1.32.5+k3s1"
+    export K3S_VERSION="v1.33.2+k3s1"
     echo "export K3S_VERSION=${MAJOR_KUBE_VERSION}"
 
     # https://github.com/derailed/k9s/releases
-    export K9S_VERSION=v0.50.6
+    export K9S_VERSION=v0.50.9
     echo "export K9S_VERSION=${K9S_VERSION}"
     
     # https://maven.apache.org/download.cgi
-    export MVN_VERSION=3.9.10
+    export MVN_VERSION=3.9.11
     echo "export MVN_VERSION=${MVN_VERSION}"
 
     export NERDFONTS="Noto "
@@ -29,15 +32,15 @@ inputversions() {
     
     ### Corporate software
     # https://zoom.us/download?os=linux 
-    export ZOOM_VERSION=6.4.13.2309
+    export ZOOM_VERSION=6.5.7.3298
     echo "export ZOOM_VERSION=${ZOOM_VERSION}"
-    
+
     # https://slack.com/release-notes/linux
-    export SLACK_VERSION=4.43.52
+    export SLACK_VERSION=4.45.64
     echo "export SLACK_VERSION=${SLACK_VERSION}"
 
     # https://github.com/IsmaelMartinez/teams-for-linux/releases/latest
-    export TEAMS_VERSION=2.0.14
+    export TEAMS_VERSION=2.1.0
     echo "export TEAMS_VERSION=${TEAMS_VERSION}"
 
     # https://github.com/sindresorhus/caprine/releases/tag/v2.60.3
@@ -63,17 +66,17 @@ inputversions() {
     echo "export FREAC_VERSION=${FREAC_VERSION}"
 
     # https://github.com/jgraph/drawio-desktop/releases
-    export DRAWIO_VERSION=27.0.9
+    export DRAWIO_VERSION=28.0.6
     echo "export DRAWIO_VERSION=${DRAWIO_VERSION}"
 
     # https://www.onlyoffice.com/download-desktop.aspx
-    export ONLYOFFICE_VERSION=v8.3.3
+    export ONLYOFFICE_VERSION=v9.0.3
     echo "export ONLYOFFICE_VERSION=${ONLYOFFICE_VERSION}"
 
-    # https://kdenlive.org/download/
+    # https://kdenlive.org/download/ https://download.kde.org/stable/kdenlive/25.04/linux/kdenlive-25.04.3-x86_64.AppImage
     export KDENLIVE_MAIN_VERSION=25.04
     echo "export KDENLIVE_MAIN_VERSION=${KDENLIVE_MAIN_VERSION}"
-    export KDENLIVE_FULL_VERSION=25.04.1
+    export KDENLIVE_FULL_VERSION=25.04.3
     echo "export KDENLIVE_FULL_VERSION=${KDENLIVE_FULL_VERSION}"
 
     # https://heldercorreia.bitbucket.io/speedcrunch/download.html
@@ -89,7 +92,7 @@ inputversions() {
     echo "export LOCALSEND_VERSION=${LOCALSEND_VERSION}"
 
     # https://gitlab.com/librewolf-community/browser/appimage/-/releases
-    export LIBREWOLF_VERSION=139.0.1-1
+    export LIBREWOLF_VERSION=140.0.4-1
     echo "export LIBREWOLF_VERSION=${LIBREWOLF_VERSION}"
     
     ## end appimages
@@ -103,16 +106,16 @@ inputversions() {
     echo "export BRIGHTNESSCTL_VERSION=${BRIGHTNESSCTL_VERSION}"
 
     # https://github.com/naelstrof/slop/releases
-    export SLOP_VERSION=7.6
+    export SLOP_VERSION=7.7
     echo "export SLOP_VERSION=${SLOP_VERSION}"
 
     # https://github.com/naelstrof/maim/releases
-    export MAIM_VERSION=5.8.0
+    export MAIM_VERSION=5.8.1
     echo "export MAIM_VERSION=${MAIM_VERSION}"
-    # https://gitlab.com/es-de/emulationstation-de/-/releases
-    export ESDE_VERSION=3.2.0
+    # https://gitlab.com/es-de/emulationstation-de/-/releases https://gitlab.com/es-de/emulationstation-de/-/package_files/210210324/download
+    export ESDE_VERSION=3.3.0
     echo "export ESDE_VERSION=${ESDE_VERSION}"
-    export ESDE_VERSION_ID=184126704
+    export ESDE_VERSION_ID=210210324
     echo "export ESDE_VERSION_ID=${ESDE_VERSION_ID}"
 
     # https://buildbot.libretro.com/stable/
@@ -242,6 +245,9 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*KEYBOARD_LAYOUT*=.*" "export KEYBOARD_L
 lineinfile ${ROOTFS}${BASHRC} ".*export.*KEYBOARD_MODEL*=.*" "export KEYBOARD_MODEL=${KEYBOARD_MODEL}"
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*APT_PROXY*=.*" "export APT_PROXY='${APT_PROXY}'"
+
+lineinfile ${ROOTFS}${BASHRC} ".*export.*CORE_VERSION*=.*" "export CORE_VERSION='${CORE_VERSION}'"
+
 
 echo "bash aliases setup finished"
 }
