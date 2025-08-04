@@ -2453,6 +2453,20 @@ cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/${TARGET_USERNAME}/.config/retroarch
 EOF
 
+emuscripts="emumount.sh emustop.sh"
+for script in $emuscripts ; do
+curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/$script
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /usr/local/bin/$script
+EOF
+done
+
+iemucfg
+
+}
+
+iemucfg(){
+
 export RARCHCFG=${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/retroarch.cfg
 # export RARCHCFG=/home/$TARGET_USERNAME/.config/retroarch/retroarch.cfg
 touch $RARCHCFG
@@ -2516,16 +2530,6 @@ lineinfile "$CTRLCFG" "input_load_state_btn.*=.*" 'input_load_state_btn = "4"'
 lineinfile "$CTRLCFG" "input_save_state_btn.*=.*" 'input_save_state_btn = "3"'
 lineinfile "$CTRLCFG" "input_state_slot_decrease_btn.*=.*" 'input_state_slot_decrease_btn = "0"'
 lineinfile "$CTRLCFG" "input_state_slot_increase_btn.*=.*" 'input_state_slot_increase_btn = "1"'
-
-
-emuscripts="emumount.sh emustop.sh"
-for script in $emuscripts ; do
-curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/$script
-cat << EOF | chroot ${ROOTFS}
-    chmod 755 /usr/local/bin/$script
-EOF
-done
-
 
 }
 
