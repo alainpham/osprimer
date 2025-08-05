@@ -2465,9 +2465,15 @@ iemucfg
 
 }
 
-iemucfg(){
 
-export RARCHCFG=${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/retroarch.cfg
+
+iemucfg(){
+export RARCHFLD=${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch
+export RARCHCFG=${RARCHFLD}/retroarch.cfg
+
+rm -r $RARCHFLD/{playlists,cheats,config,logs}
+rm $RARCHCFG
+
 # export RARCHCFG=/home/$TARGET_USERNAME/.config/retroarch/retroarch.cfg
 touch $RARCHCFG
 lineinfile $RARCHCFG "video_windowed_fullscreen.*=.*" 'video_windowed_fullscreen = "false"'
@@ -2476,6 +2482,14 @@ lineinfile $RARCHCFG "quit_press_twice.*=.*" 'quit_press_twice = "false"'
 lineinfile $RARCHCFG "menu_swap_ok_cancel_buttons.*=.*" 'menu_swap_ok_cancel_buttons = "true"'
 lineinfile $RARCHCFG "savestate_auto_index.*=.*" 'savestate_auto_index = "true"'
 lineinfile $RARCHCFG "savestate_thumbnail_enable.*=.*" 'savestate_thumbnail_enable = "true"'
+lineinfile $RARCHCFG "video_driver.*=.*" 'video_driver = "glcore"'
+lineinfile $RARCHCFG "audio_latency.*=.*" 'audio_latency = "128"'
+lineinfile $RARCHCFG "microphone_latency.*=.*" 'microphone_latency = "128"'
+lineinfile $RARCHCFG "video_swap_interval.*=.*" 'video_swap_interval = "0"'
+
+
+# lineinfile $RARCHCFG "video_vsync.*=.*" 'video_vsync = "false"'
+
 # deactivate menu button
 lineinfile $RARCHCFG "input_menu_toggle_btn.*=.*" 'input_menu_toggle_btn = "200"'
 
