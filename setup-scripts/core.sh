@@ -2487,8 +2487,7 @@ lineinfile $RARCHCFG "audio_latency.*=.*" 'audio_latency = "128"'
 lineinfile $RARCHCFG "microphone_latency.*=.*" 'microphone_latency = "128"'
 lineinfile $RARCHCFG "video_swap_interval.*=.*" 'video_swap_interval = "0"'
 
-
-# lineinfile $RARCHCFG "video_vsync.*=.*" 'video_vsync = "false"'
+lineinfile $RARCHCFG "video_vsync.*=.*" 'video_vsync = "false"'
 
 # deactivate menu button
 lineinfile $RARCHCFG "input_menu_toggle_btn.*=.*" 'input_menu_toggle_btn = "200"'
