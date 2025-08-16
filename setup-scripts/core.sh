@@ -2483,6 +2483,12 @@ EOF
 else
 echo "pcsx2 already installed, skipping"
 fi
+
+mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/bios
+wget -O ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/bios/ps2-0230a-20080220.bin https://github.com/archtaurus/RetroPieBIOS/raw/master/BIOS/pcsx2/bios/ps2-0230a-20080220.bin 
+cat << EOF | chroot ${ROOTFS}
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/PCSX2
+EOF
 }
 
 
