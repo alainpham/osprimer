@@ -2463,8 +2463,27 @@ done
 
 iemucfg
 
+#PCSX2
+ipcsx2
+
 }
 
+ipcsx2(){
+trap 'return 1' ERR
+force_reinstall=${1:-0}
+#TODO put in env vars
+export PCSX2_VERSION=2.4.0
+# Drawio
+if [ ! -f ${ROOTFS}/opt/appimages/pcsx2.AppImage ] || [ "$force_reinstall" = "1" ]; then
+wget -O ${ROOTFS}/opt/appimages/pcsx2.AppImage https://github.com/PCSX2/pcsx2/releases/download/v${PCSX2_VERSION}/pcsx2-v${PCSX2_VERSION}-linux-appimage-x64-Qt.AppImage
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /opt/appimages/pcsx2.AppImage
+    ln -sf /opt/appimages/pcsx2.AppImage /usr/local/bin/pcsx2
+EOF
+else
+echo "pcsx2 already installed, skipping"
+fi
+}
 
 
 iemucfg(){
