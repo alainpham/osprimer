@@ -74,6 +74,8 @@ https://buildbot.libretro.com/stable/1.21.0/windows/x86_64/
 https://buildbot.libretro.com/stable/1.21.0/windows/x86_64/RetroArch.7z
 https://buildbot.libretro.com/stable/1.21.0/windows/x86_64/RetroArch_cores.7z
 
+pcsx2 bios:
+https://emulation.gametechwiki.com/index.php/Emulator_files#PlayStation_2
 
 optional 
 https://www.nirsoft.net/utils/multimonitortool-x64.zip
