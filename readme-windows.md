@@ -59,6 +59,14 @@ PS3 controller
 https://github.com/nefarius/DsHidMini/releases/latest
 https://github.com/nefarius/BthPS3/releases/latest
 
+reg add HKCR\ms-gamebar /f /ve /d URL:ms-gamebar 2>&1 >''
+reg add HKCR\ms-gamebar /f /v "URL Protocol" /d "" 2>&1 >''
+reg add HKCR\ms-gamebar /f /v "NoOpenWith" /d "" 2>&1 >''
+reg add HKCR\ms-gamebar\shell\open\command /f /ve /d "\`"$env:SystemRoot\System32\systray.exe\`"" 2>&1 >''
+reg add HKCR\ms-gamebarservices /f /ve /d URL:ms-gamebarservices 2>&1 >''
+reg add HKCR\ms-gamebarservices /f /v "URL Protocol" /d "" 2>&1 >''
+reg add HKCR\ms-gamebarservices /f /v "NoOpenWith" /d "" 2>&1 >''
+reg add HKCR\ms-gamebarservices\shell\open\command /f /ve /d "\`"$env:SystemRoot\System32\systray.exe\`"" 2>&1 >''
 
 Retroarch
 https://buildbot.libretro.com/stable/1.21.0/windows/x86_64/
