@@ -48,6 +48,7 @@ winget install --id=Microsoft.WSL  -e
 winget install --id=Canonical.Ubuntu.2404  -e
 winget install --id=ONLYOFFICE.DesktopEditors  -e
 winget install --id=Inkscape.Inkscape  -e
+winget install --id=MoonlightGameStreamingProject.Moonlight  -e
 
 install vscode from website & sync with account 
 
