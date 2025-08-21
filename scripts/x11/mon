@@ -64,6 +64,7 @@ echo "Laptop: $laptop (mode: $laptop_mode)"
 echo "HDMI: $hdmi"
 echo "Dock Left: $dock_left"
 echo "Dock Center: $dock_center"
+echo "Moonlight screen: $moonlight"
 
 lap() {
 
