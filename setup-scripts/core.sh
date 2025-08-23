@@ -1325,7 +1325,7 @@ fi
 echo "additional gui packages"
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
-    apt install -y ntfs-3g ifuse mousepad mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv acpitool lm-sensors fonts-noto libnotify-bin dunst mkvtoolnix-gui python3-mutagen imagemagick mediainfo-gui mediainfo arandr picom brightnessctl cups xsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze-gtk-theme breeze-icon-theme joystick
+    apt install -y ntfs-3g ifuse mousepad mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv acpitool lm-sensors fonts-noto libnotify-bin dunst mkvtoolnix-gui python3-mutagen imagemagick mediainfo-gui mediainfo arandr picom brightnessctl cups xsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze-gtk-theme breeze-icon-theme joystick gparted vulkan-tools
     apt install -y ffmpeg libfdk-aac2 libnppig12 libnppicc12 libnppidei12 libnppif12
 EOF
 fi
@@ -2461,11 +2461,12 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 done
 
-iemucfg
 
 #PCSX2
 ipcsx2
 
+#configure
+iemucfg
 }
 
 ipcsx2(){
@@ -2525,6 +2526,24 @@ done
 cat << EOF | chroot ${ROOTFS}
     chown $TARGET_USERNAME:$TARGET_USERNAME $RARCHCFG
 EOF
+
+cat << EOF | chroot ${ROOTFS}
+    mkdir -p /home/${TARGET_USERNAME}/ES-DE/gamelists/ps2/
+EOF
+
+# Configure ES DE to point to PCSX2 instead of retroarch
+cat <<EOF | tee ${ROOTFS}/home/${TARGET_USERNAME}/ES-DE/gamelists/ps2/gamelist.xml
+<?xml version="1.0"?>
+<alternativeEmulator>
+	<label>PCSX2 (Standalone)</label>
+</alternativeEmulator>
+<gameList />
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/${TARGET_USERNAME}/ES-DE
+EOF
+
 # ### Per controller settings
 
 # PS3 controller 1356:616
@@ -2568,6 +2587,9 @@ lineinfile "$CTRLCFG" "input_load_state_btn.*=.*" 'input_load_state_btn = "4"'
 lineinfile "$CTRLCFG" "input_save_state_btn.*=.*" 'input_save_state_btn = "3"'
 lineinfile "$CTRLCFG" "input_state_slot_decrease_btn.*=.*" 'input_state_slot_decrease_btn = "0"'
 lineinfile "$CTRLCFG" "input_state_slot_increase_btn.*=.*" 'input_state_slot_increase_btn = "1"'
+
+# configure PCSX2
+
 
 }
 
