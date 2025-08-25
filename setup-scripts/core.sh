@@ -2592,6 +2592,11 @@ lineinfile "$CTRLCFG" "input_state_slot_increase_btn.*=.*" 'input_state_slot_inc
 
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/inis
 wget -O ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/inis/PCSX2.ini https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/PCSX2.ini
+
+mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/memcards
+mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/sstates
+mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/covers
+
 cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/PCSX2
 EOF
