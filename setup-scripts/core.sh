@@ -1750,6 +1750,15 @@ cat << 'EOF' | tee ${ROOTFS}/home/${TARGET_USERNAME}/.config/picom/picom.conf
 backend = "glx";
 vsync = true;
 use-damage = false
+
+shadow-exclude = [
+  "name = 'cpt_frame_xcb_window'",
+  "class_g ?= 'zoom'"
+];
+
+blur-background-exclude = [
+  "class_g ?= 'zoom'"
+];
 EOF
 fi
 
@@ -2083,7 +2092,7 @@ trap 'return 1' ERR
 # if inside virtual machine
 # video=Virtual-1:1600x900
 
-if [ "$hypervisor" = "hyperv" ] || [ "$hypervisor" = "kvm" ]; then
+if [ "$hypervisor" = "hyperv" ]; then
 cat << 'EOF' | tee ${ROOTFS}/home/${TARGET_USERNAME}/.config/picom/picom.conf
 # picom config
 backend = "xrender";
@@ -2093,10 +2102,7 @@ EOF
 cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/${TARGET_USERNAME}/.config/picom
 EOF
-fi
 
-# Hyperv set resolution
-if [ "$hypervisor" = "hyperv" ] ; then
 sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/ {/video=Virtual-1:1600x900/! s/"$/ video=Virtual-1:1600x900"/}' ${ROOTFS}/etc/default/grub
 
 update-grub2
@@ -2836,6 +2842,7 @@ initdefault(){
     init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
 }
 
+# update all non apt stuff and
 iupdate(){
     trap 'return 1' ERR
     init $TARGET_USERNAME "NA" "authorized_keys" "NA" "NA" "NA" "$KEYBOARD_LAYOUT" "$KEYBOARD_MODEL"
