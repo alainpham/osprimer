@@ -3047,6 +3047,7 @@ rmbroadcom
 
 ubvm(){
 trap 'return 1' ERR
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "us" "macbook79"
 desktop_common
 reboot
 }
