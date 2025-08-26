@@ -1325,8 +1325,9 @@ fi
 echo "additional gui packages"
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
-    apt install -y ntfs-3g ifuse mousepad mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv acpitool lm-sensors fonts-noto libnotify-bin dunst mkvtoolnix-gui python3-mutagen imagemagick mediainfo-gui mediainfo arandr picom brightnessctl cups xsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze-gtk-theme breeze-icon-theme joystick gparted vulkan-tools
+    apt install -y ntfs-3g ifuse mousepad mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv acpitool lm-sensors fonts-noto libnotify-bin dunst mkvtoolnix-gui python3-mutagen imagemagick mediainfo-gui mediainfo arandr picom brightnessctl cups xsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze-gtk-theme breeze-icon-theme joystick gparted vulkan-tools flatpak
     apt install -y ffmpeg libfdk-aac2 libnppig12 libnppicc12 libnppidei12 libnppif12
+    flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 EOF
 fi
 
@@ -1906,6 +1907,8 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 fi
 
+ivmgui
+
 }
 
 iprinter(){
@@ -2086,11 +2089,11 @@ cat << 'EOF' | tee ${ROOTFS}/home/${TARGET_USERNAME}/.config/picom/picom.conf
 backend = "xrender";
 use-damage = false
 EOF
-fi
 
 cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/${TARGET_USERNAME}/.config/picom
 EOF
+fi
 
 # Hyperv set resolution
 if [ "$hypervisor" = "hyperv" ] ; then
@@ -2876,7 +2879,6 @@ idocker
 ikube
 invidia
 igui
-ivmgui
 iffmpeg
 inumlocktty
 itheming
@@ -2902,8 +2904,6 @@ idocker
 ikube
 reboot
 }
-
-
 
 kvmkube(){
 trap 'return 1' ERR
@@ -2934,7 +2934,6 @@ idev
 idocker
 ikube
 igui
-ivmgui
 iffmpeg
 inumlocktty
 itheming
@@ -3044,6 +3043,12 @@ macs_common(){
 trap 'return 1' ERR
 laptop_common
 rmbroadcom
+}
+
+ubvm(){
+trap 'return 1' ERR
+desktop_common
+reboot
 }
 
 macus(){
