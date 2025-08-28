@@ -4,13 +4,9 @@
 inputversions() {
     trap 'return 1' ERR
 
-    export CORE_VERSION=20250725
+    export CORE_VERSION=20250828
     echo "export CORE_VERSION=${CORE_VERSION}"
 
-    # https://github.com/docker/buildx/releases
-    export DOCKER_BUILDX_VERSION=v0.26.1
-    echo "export DOCKER_BUILDX_VERSION=${DOCKER_BUILDX_VERSION}"
-    
     # https://kubernetes.io/releases/  https://cloud.google.com/kubernetes-engine/docs/release-notes
     export MAJOR_KUBE_VERSION=v1.33
     echo "export MAJOR_KUBE_VERSION=${MAJOR_KUBE_VERSION}"
@@ -32,25 +28,12 @@ inputversions() {
     
     ### Corporate software
     # https://zoom.us/download?os=linux 
-    export ZOOM_VERSION=6.5.7.3298
+    export ZOOM_VERSION=6.5.11.4015
     echo "export ZOOM_VERSION=${ZOOM_VERSION}"
-
-    # https://slack.com/release-notes/linux
-    export SLACK_VERSION=4.45.64
-    echo "export SLACK_VERSION=${SLACK_VERSION}"
-
-    # https://github.com/IsmaelMartinez/teams-for-linux/releases/latest
-    export TEAMS_VERSION=2.1.0
-    echo "export TEAMS_VERSION=${TEAMS_VERSION}"
-
-    # https://github.com/sindresorhus/caprine/releases/tag/v2.60.3
-    export CAPRINE_VERSION=2.60.3
-    echo "export CAPRINE_VERSION=${CAPRINE_VERSION}"
 
     # https://hub.docker.com/r/infinityofspace/certbot_dns_duckdns/tags
     export CERTBOT_DUCKDNS_VERSION=v1.6
     echo "export CERTBOT_DUCKDNS_VERSION=${CERTBOT_DUCKDNS_VERSION}"
-    ### Corporate software
 
     ### appimages
     # https://mlv.app/
@@ -91,10 +74,6 @@ inputversions() {
     export LOCALSEND_VERSION=1.17.0
     echo "export LOCALSEND_VERSION=${LOCALSEND_VERSION}"
 
-    # https://gitlab.com/librewolf-community/browser/appimage/-/releases
-    export LIBREWOLF_VERSION=140.0.4-1
-    echo "export LIBREWOLF_VERSION=${LIBREWOLF_VERSION}"
-    
     ## end appimages
 
     # https://github.com/yshui/picom/releases
@@ -203,7 +182,6 @@ lineinfile ${ROOTFS}${BASHRC} ".*alias.*ap=.*" 'alias ap=ansible-playbook'
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*ROOTFS*=.*" 'export ROOTFS=\/'
 lineinfile ${ROOTFS}${BASHRC} ".*export.*TARGET_USERNAME*=.*" "export TARGET_USERNAME=${TARGET_USERNAME}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*DOCKER_BUILDX_VERSION*=.*" "export DOCKER_BUILDX_VERSION=${DOCKER_BUILDX_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*MAJOR_KUBE_VERSION*=.*" "export MAJOR_KUBE_VERSION=${MAJOR_KUBE_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*K3S_VERSION*=.*" "export K3S_VERSION=${K3S_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*K9S_VERSION*=.*" "export K9S_VERSION=${K9S_VERSION}"
@@ -213,12 +191,9 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*ZOOM_VERSION*=.*" "export ZOOM_VERSION=
 lineinfile ${ROOTFS}${BASHRC} ".*export.*MLVAPP_VERSION*=.*" "export MLVAPP_VERSION=${MLVAPP_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*BEEREF_VERSION*=.*" "export BEEREF_VERSION=${BEEREF_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*FREAC_VERSION*=.*" "export FREAC_VERSION=${FREAC_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*TEAMS_VERSION*=.*" "export TEAMS_VERSION=${TEAMS_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*CAPRINE_VERSION*=.*" "export CAPRINE_VERSION=${CAPRINE_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*DRAWIO_VERSION*=.*" "export DRAWIO_VERSION=${DRAWIO_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*CERTBOT_DUCKDNS_VERSION*=.*" "export CERTBOT_DUCKDNS_VERSION=${CERTBOT_DUCKDNS_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*ONLYOFFICE_VERSION*=.*" "export ONLYOFFICE_VERSION=${ONLYOFFICE_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*SLACK_VERSION*=.*" "export SLACK_VERSION=${SLACK_VERSION}"
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*PICOM_VERSION*=.*" "export PICOM_VERSION=${PICOM_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*BRIGHTNESSCTL_VERSION*=.*" "export BRIGHTNESSCTL_VERSION=${BRIGHTNESSCTL_VERSION}"
@@ -229,7 +204,6 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*KDENLIVE_FULL_VERSION*=.*" "export KDEN
 lineinfile ${ROOTFS}${BASHRC} ".*export.*SPEEDCRUNCH_VERSION*=.*" "export SPEEDCRUNCH_VERSION=${SPEEDCRUNCH_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*AVIDEMUX_VERSION*=.*" "export AVIDEMUX_VERSION=${AVIDEMUX_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*LOCALSEND_VERSION*=.*" "export LOCALSEND_VERSION=${LOCALSEND_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*LIBREWOLF_VERSION*=.*" "export LIBREWOLF_VERSION=${LIBREWOLF_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*ESDE_VERSION*=.*" "export ESDE_VERSION=${ESDE_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*ESDE_VERSION_ID*=.*" "export ESDE_VERSION_ID=${ESDE_VERSION_ID}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*RETROARCH_VERSION*=.*" "export RETROARCH_VERSION=${RETROARCH_VERSION}"
@@ -269,12 +243,14 @@ mountraw() {
     # fix partition
     printf "fix\n" | parted ---pretend-input-tty $DEVICE print
     growpart ${DEVICE} 1
+    e2fsck -f /dev/loop999p1
     resize2fs ${DEVICE}p1
 
     # mount image for chroot
     echo "Mount OS partition"
     mkdir -p ${ROOTFS}
     mount ${DEVICE}p1 ${ROOTFS}
+    mount ${DEVICE}p16 ${ROOTFS}/boot
     mount ${DEVICE}p15 ${ROOTFS}/boot/efi
 
     echo "Get ready for chroot"
@@ -851,21 +827,6 @@ echo "maven installed"
 
 }
 
-idockerbuildx(){
-trap 'return 1' ERR
-
-force_reinstall=${1:-0}
-
-if [ -f "${ROOTFS}/usr/lib/docker/cli-plugins/docker-buildx" ] && [ "$force_reinstall" = "0" ]; then
-    echo "docker buildx already installed, skipping"
-    return 0
-fi
-
-mkdir -p ${ROOTFS}/usr/lib/docker/cli-plugins
-curl -SL https://github.com/docker/buildx/releases/download/${DOCKER_BUILDX_VERSION}/buildx-${DOCKER_BUILDX_VERSION}.linux-amd64 -o ${ROOTFS}/usr/lib/docker/cli-plugins/docker-buildx
-chmod 755 ${ROOTFS}/usr/lib/docker/cli-plugins/docker-buildx
-
-}
 
 idocker() {
 trap 'return 1' ERR
@@ -876,7 +837,7 @@ echo "install docker"
 
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
-    apt install -y docker.io python3-docker docker-compose skopeo
+    apt install -y docker.io python3-docker docker-compose skopeo docker-buildx
 EOF
 
 mkdir -p ${ROOTFS}/etc/docker
@@ -899,7 +860,7 @@ fi
 if [ "$OSNAME" = "openmandriva" ]; then
 
 cat << EOF | chroot ${ROOTFS}
-    dnf install -y docker python-docker docker-compose skopeo
+    dnf install -y docker python-docker docker-compose skopeo docker-buildx
     systemctl enable docker
 EOF
 
@@ -915,7 +876,6 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 fi
 
-idockerbuildx $force_reinstall
 
 cat <<'EOF' | tee ${ROOTFS}/usr/local/bin/firstboot-dockernet.sh
 #!/bin/bash
@@ -2228,7 +2188,6 @@ ibeeref $force_reinstall
 ifreac $force_reinstall
 ilocalsend $force_reinstall
 iavidemux $force_reinstall
-ilibrewolf $force_reinstall
 ipostman $force_reinstall
 }
 
@@ -2648,11 +2607,6 @@ cat << EOF | chroot ${ROOTFS}
     apt install -y /opt/debs/zoom_amd64.deb
 EOF
 
-mkdir -p ${ROOTFS}/opt/debs/
-wget -O ${ROOTFS}/opt/debs/slack.deb https://downloads.slack-edge.com/desktop-releases/linux/x64/${SLACK_VERSION}/slack-desktop-${SLACK_VERSION}-amd64.deb
-cat << EOF | chroot ${ROOTFS}
-    apt install -y /opt/debs/slack.deb
-EOF
 
 fi
 
@@ -2663,14 +2617,6 @@ mkdir -p ${ROOTFS}/opt/debs/
 wget -O ${ROOTFS}/opt/debs/zoom.rpm "https://zoom.us/client/${ZOOM_VERSION}/zoom_x86_64.rpm"
 cat << EOF | chroot ${ROOTFS}
     dnf install -y /opt/debs/zoom.rpm
-EOF
-
-
-mkdir -p ${ROOTFS}/opt/debs/
-wget -O ${ROOTFS}/opt/debs/slack.rpm https://downloads.slack-edge.com/desktop-releases/linux/x64/${SLACK_VERSION}/slack-${SLACK_VERSION}-0.1.el8.x86_64.rpm
-cat << EOF | chroot ${ROOTFS}
-    dnf install -y libxscrnsaver1 lib64appindicator3_1
-    rpm -ivh ${ROOTFS}/opt/debs/slack.rpm --nodeps
 EOF
 
 fi
@@ -2826,7 +2772,7 @@ EOF
 unmountraw() {
 echo "Unmounting filesystems"
 mv ${ROOTFS}/etc/resolv.conf.back ${ROOTFS}/etc/resolv.conf
-umount ${ROOTFS}/{dev/pts,boot/efi,dev,run,proc,sys,tmp,}
+umount -R ${ROOTFS}/
 losetup -D
 }
 
@@ -2848,7 +2794,6 @@ iupdate(){
     init $TARGET_USERNAME "NA" "authorized_keys" "NA" "NA" "NA" "$KEYBOARD_LAYOUT" "$KEYBOARD_MODEL"
     bashaliases 1
     imaven 1
-    idockerbuildx 1
     ikube 1
     iappimages 1
     iemulation 1
@@ -2884,6 +2829,7 @@ itouchpad
 idev
 idocker
 ikube
+isecret
 invidia
 igui
 iffmpeg
@@ -2952,13 +2898,20 @@ inetworking
 reboot
 }
 
+dlraw(){
+
+# imageurl=https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw
+
+imageurl=https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
+curl -Lo /home/apham/virt/images/lnsvr-orig.img $imageurl
+qemu-img convert -f qcow2 -O raw /home/apham/virt/images/lnsvr-orig.img /home/apham/virt/images/lnsvr-orig.raw
+}
+
 rawkube(){
 trap 'return 1' ERR
-#curl -Lo /home/apham/virt/images/debian-12-nocloud-amd64.raw https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw
-#curl -Lo /home/apham/virt/images/noble-server-cloudimg-amd64.img https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
 
-init apham p /home/apham/.ssh/authorized_keys /home/apham/virt/images/debian-12-nocloud-amd64.raw /home/apham/virt/images/d12-kube.raw 6G  "fr" "pc105"
-export OSNAME=debian
+init apham p /home/apham/.ssh/authorized_keys /home/apham/virt/images/lnsvr-orig.raw /home/apham/virt/images/lnsvr.raw 6G  "fr" "pc105"
+export OSNAME=ubuntu
 mountraw
 bashaliases
 createuser
@@ -2982,36 +2935,7 @@ unmountraw
 if [ -f /home/apham/virt/images/d12-kube.qcow2 ]; then
     rm /home/apham/virt/images/d12-kube.qcow2
 fi
-qemu-img convert -f raw -O qcow2 /home/apham/virt/images/d12-kube.raw /home/apham/virt/images/d12-kube.qcow2
-}
-
-rawkubeminimal(){
-trap 'return 1' ERR
-#curl -Lo /home/apham/virt/images/debian-12-nocloud-amd64.raw https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw
-init apham p /home/apham/.ssh/authorized_keys /home/apham/virt/images/debian-12-nocloud-amd64.raw /home/apham/virt/images/d12-kmin.raw 4G  "fr" "pc105"
-export OSNAME=debian
-mountraw
-bashaliases
-createuser
-setpasswd
-authkeys
-fastboot
-firstbootexpandfs
-smalllogs
-reposrc
-iessentials
-isshkey
-isudo
-allowsshpwd
-ikeyboard
-ikube
-isecret
-cleanupapt
-unmountraw
-if [ -f /home/apham/virt/images/d12-kmin.qcow2 ]; then
-    rm /home/apham/virt/images/d12-kmin.qcow2
-fi
-qemu-img convert -f raw -O qcow2 /home/apham/virt/images/d12-kmin.raw /home/apham/virt/images/d12-kmin.qcow2
+qemu-img convert -f raw -O qcow2 /home/apham/virt/images/lnsvr.raw /home/apham/virt/images/lnsvr.qcow2
 }
 
 desktop_common(){
