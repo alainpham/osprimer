@@ -101,6 +101,14 @@ inputversions() {
     export RETROARCH_VERSION=1.21.0
     echo "export RETROARCH_VERSION=${RETROARCH_VERSION}"
 
+    # https://github.com/moonlight-stream/moonlight-qt/releases/
+    export MOONLIGHT_VERSION=6.1.0
+    echo "export MOONLIGHT_VERSION=${MOONLIGHT_VERSION}" 
+
+    # https://github.com/LizardByte/Sunshine/releases
+    export SUNSHINE_VERSION=2025.628.4510
+    echo "export SUNSHINE_VERSION=${SUNSHINE_VERSION}" 
+
     export OSNAME=$(awk -F= '/^ID=/ {gsub(/"/, "", $2); print $2}' /etc/os-release)
     echo "export OSNAME=${OSNAME}"
 
@@ -207,6 +215,9 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*LOCALSEND_VERSION*=.*" "export LOCALSEN
 lineinfile ${ROOTFS}${BASHRC} ".*export.*ESDE_VERSION*=.*" "export ESDE_VERSION=${ESDE_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*ESDE_VERSION_ID*=.*" "export ESDE_VERSION_ID=${ESDE_VERSION_ID}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*RETROARCH_VERSION*=.*" "export RETROARCH_VERSION=${RETROARCH_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*MOONLIGHT_VERSION*=.*" "export MOONLIGHT_VERSION=${MOONLIGHT_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*SUNSHINE_VERSION*=.*" "export SUNSHINE_VERSION=${SUNSHINE_VERSION}"
+
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*OSNAME*=.*" "export OSNAME=${OSNAME}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*OSVERSION*=.*" "export OSVERSION=${OSVERSION}"
@@ -1092,11 +1103,11 @@ cat << EOF | chroot ${ROOTFS}
     helm completion bash | tee /etc/bash_completion.d/helm > /dev/null
 EOF
 
+curl -fsSL -o /tmp/k9s.tar.gz https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/k9s_Linux_amd64.tar.gz
+tar -xzvf /tmp/k9s.tar.gz  -C ${ROOTFS}/usr/local/bin/ k9s
+rm /tmp/k9s.tar.gz
 cat << EOF | chroot ${ROOTFS}
-    curl -LO https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/k9s_Linux_amd64.tar.gz
-    tar -xzvf k9s_Linux_amd64.tar.gz  -C /usr/local/bin/ k9s
     chown root:root /usr/local/bin/k9s
-    rm -f k9s_Linux_amd64.tar.gz
 EOF
 
 kubescript="kubecr kubecrlocal kubemon kubeotel"
@@ -1287,9 +1298,11 @@ if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu
 cat << EOF | chroot ${ROOTFS}
     apt install -y ntfs-3g ifuse mousepad mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv acpitool lm-sensors fonts-noto libnotify-bin dunst mkvtoolnix-gui python3-mutagen imagemagick mediainfo-gui mediainfo arandr picom brightnessctl cups xsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze-gtk-theme breeze-icon-theme joystick gparted vulkan-tools flatpak
     apt install -y ffmpeg libfdk-aac2 libnppig12 libnppicc12 libnppidei12 libnppif12
-    flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 EOF
+
 fi
+
+
 
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 cat << EOF | chroot ${ROOTFS}
@@ -2460,6 +2473,36 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 }
 
+ibottles(){
+# flatpaks
+cat << EOF | chroot ${ROOTFS}
+flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+flatpak install -y flathub com.usebottles.bottles
+EOF
+
+cat <<EOF | tee ${ROOTFS}/usr/local/bin/bottles
+flatpak run com.usebottles.bottles
+EOF
+cat << EOF | chroot ${ROOTFS}
+   chmod 755 /usr/local/bin/bottles
+EOF
+
+# post install : launch bottles to download
+# create a bottle called games
+}
+
+idolphin(){
+cat << EOF | chroot ${ROOTFS}
+    flatpak install -y flathub org.DolphinEmu.dolphin-emu
+EOF
+
+cat <<EOF | tee ${ROOTFS}/usr/local/bin/dolphin
+flatpak run org.DolphinEmu.dolphin-emu
+EOF
+cat << EOF | chroot ${ROOTFS}
+   chmod 755 /usr/local/bin/dolphin
+EOF
+}
 
 iemucfg(){
 export RARCHFLD=${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch
