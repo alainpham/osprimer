@@ -81,6 +81,22 @@ lap() {
         $appendcommand
 }
 
+home() {
+
+    appendcommand=""
+    for monitor in $monitors; do
+        if [ "$monitor" != "$dock_left" ] && [ "$monitor" != "$dock_center" ] && [ "$monitor" != "$laptop" ]; then
+            appendcommand+=" --output $monitor --off"
+        fi
+    done
+
+    xrandr \
+        --output $dock_left   --mode 1920x1080      --pos 0x0       --rate 60   --rotate normal --primary \
+        --output $dock_center --mode 1920x1080      --pos 1920x0    --rate 60   --rotate normal \
+        --output $laptop      --mode $laptop_mode   --pos 3840x0    --rate 60   --rotate normal \
+        $appendcommand
+
+}
 
 if [ "$command" == "lap" ]; then
     
@@ -189,21 +205,7 @@ elif [ "$command" == "cl" ] && echo "$monitors" | grep -q "$dock_left" && echo "
 
 elif [ "$command" == "" ] && echo "$monitors" | grep -q "$dock_left" && echo "$monitors" | grep -q "$dock_center"; then
     echo "Docking station detected, setting up DisplayPort monitors."
-
-    appendcommand=""
-    for monitor in $monitors; do
-        if [ "$monitor" != "$dock_left" ] && [ "$monitor" != "$dock_center" ] && [ "$monitor" != "$laptop" ]; then
-            appendcommand+=" --output $monitor --off"
-        fi
-    done
-
-    xrandr \
-        --output $dock_left   --mode 1920x1080      --pos 0x0       --rate 60   --rotate normal --primary \
-        --output $dock_center --mode 1920x1080      --pos 1920x0    --rate 60   --rotate normal \
-        --output $laptop      --mode $laptop_mode   --pos 3840x0    --rate 60   --rotate normal \
-        $appendcommand
-
-
+    home
 else
     echo "No specific command provided or no docking station detected. Defaulting to laptop screen only."
     lap
