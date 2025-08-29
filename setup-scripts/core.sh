@@ -2490,6 +2490,7 @@ EOF
 
 # post install : launch bottles to download
 # create a bottle called games
+# create a bottle called apps
 }
 
 idolphin(){
