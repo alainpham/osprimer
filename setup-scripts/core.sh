@@ -1680,6 +1680,7 @@ cat << 'EOF' | tee -a ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
 dunst > ~/.dunst.log &
 echo 1 | tee ~/.rebootdwm
 export rebootdwm=$(cat ~/.rebootdwm)
+export XCURSOR_SIZE=24
 while true; do
     piddwmblocks=$(pgrep dwmblocks)
     if [ -z "$piddwmblocks" ]; then
