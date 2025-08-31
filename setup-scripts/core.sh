@@ -2342,21 +2342,6 @@ echo "avidemux already installed, skipping"
 fi
 }
 
-ilibrewolf(){
-trap 'return 1' ERR
-force_reinstall=${1:-0}
-
-# librewolf
-if [ ! -f ${ROOTFS}/opt/appimages/librewolf.AppImage ] || [ "$force_reinstall" = "1" ]; then
-wget -O ${ROOTFS}/opt/appimages/librewolf.AppImage https://gitlab.com/api/v4/projects/24386000/packages/generic/librewolf/${LIBREWOLF_VERSION}/LibreWolf.x86_64.AppImage
-cat << EOF | chroot ${ROOTFS}
-    chmod 755 /opt/appimages/librewolf.AppImage
-    ln -sf /opt/appimages/librewolf.AppImage /usr/local/bin/librewolf
-EOF
-else
-echo "librewolf already installed, skipping"
-fi
-}
 
 ipostman(){
 trap "return 1" ERR
@@ -2447,6 +2432,9 @@ done
 #PCSX2
 ipcsx2
 
+#Bottles for PC games
+ibottles
+
 #configure retroarch and pcsx2
 iemucfg
 }
@@ -2479,6 +2467,7 @@ ibottles(){
 cat << EOF | chroot ${ROOTFS}
 flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 flatpak install -y flathub com.usebottles.bottles
+flatpak install -y flathub com.github.tchx84.Flatseal
 EOF
 
 cat <<EOF | tee ${ROOTFS}/usr/local/bin/bottles
@@ -2486,6 +2475,13 @@ flatpak run com.usebottles.bottles
 EOF
 cat << EOF | chroot ${ROOTFS}
    chmod 755 /usr/local/bin/bottles
+EOF
+
+cat <<EOF | tee ${ROOTFS}/usr/local/bin/flatseal
+flatpak run com.github.tchx84.Flatseal
+EOF
+cat << EOF | chroot ${ROOTFS}
+   chmod 755 /usr/local/bin/flatseal
 EOF
 
 # post install : launch bottles to download
@@ -2612,6 +2608,13 @@ mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/covers
 
 cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/PCSX2
+EOF
+
+# configure dolphin emulator
+mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.var/app/org.DolphinEmu.dolphin-emu/config/dolphin-emu/
+wget -O ${ROOTFS}/home/$TARGET_USERNAME/.var/app/org.DolphinEmu.dolphin-emu/config/dolphin-emu/Dolphin.ini https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/Dolphin.ini
+cat << EOF | chroot ${ROOTFS}
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.var
 EOF
 }
 
