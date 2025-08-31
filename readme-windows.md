@@ -25,6 +25,9 @@ Rename-Computer -NewName "winx" -Force -Restart
 ```PS1
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" `
     -Name HideFileExt -Value 0
+
+Stop-Process -ProcessName explorer -Force
+Start-Process explorer
 ```
 
 6. Install winget
