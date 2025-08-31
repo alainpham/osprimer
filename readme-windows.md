@@ -1,35 +1,125 @@
+# Windows standard install
 
-setup task bar remove all shinnanigans
+1. Run windows update
 
-install chrome set as default. 
+2. Check device manager and insall missing drivers 
 
-login to bitwarden in chrome
+3. Activation
 
-run windows update
+```PS1
+irm https://get.activated.win | iex
+```
+4. Rename computer & setup task bar remove all shinnanigans
 
-set folders to show extensions
+```PS1
 
-check device manager and insall missing drivers after 
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" `
+    -Name TaskbarGlomLevel -Value 2
 
-update has completed
+Rename-Computer -NewName "winx" -Force -Restart
 
-rename computer
+```
 
-install https://openhardwaremonitor.org/
-uninstall useless stuff
+5. Set folders to show extensions
 
+```PS1
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" `
+    -Name HideFileExt -Value 0
+```
 
-install winget from store on windows 10
-https://github.com/microsoft/winget-cli/releases
+6. Install winget
 
-browse apps here
-https://winstall.app/
+```PS1
 
-win 10 only 
+Write-Host "Attempting to download and install dependencies"
+
+# check xaml dependency first in winget repo: src/PowerShell/Microsoft.WinGet.Client.Engine/Helpers/AppxModuleHelper.cs
+# Download and install VCLibs package
+
+try 
+{
+  Add-AppxPackage "https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx" -Verbose
+}
+catch
+{
+  Write-Host "Failed to install VCLibs package. Error: $_" -ForegroundColor Red
+  exit 1
+}
+
+# Download XAML package
+try 
+{
+  $ProgressPreference = 'SilentlyContinue'
+  Invoke-WebRequest -Uri "https://www.nuget.org/api/v2/package/Microsoft.UI.Xaml/2.8.6" -OutFile "microsoft.ui.xaml.2.8.6.zip" -ErrorAction Stop
+}
+catch
+{
+  Write-Host "Failed to download XAML package. Error: $_" -ForegroundColor Red
+  exit 1
+}
+
+# Extract XAML package
+try 
+{
+  Expand-Archive .\microsoft.ui.xaml.2.8.6.zip -Force -ErrorAction Stop
+} 
+catch
+{
+  Write-Host "Failed to extract XAML package. Error: $_" -ForegroundColor Red
+  exit 1
+}
+
+# Install XAML package
+try
+{
+  Add-AppPackage .\microsoft.ui.xaml.2.8.6\tools\AppX\x64\Release\Microsoft.UI.Xaml.2.8.appx -Verbose
+}
+catch 
+{
+  Write-Host "Failed to install XAML package. Error: $_" -ForegroundColor Red
+  exit 1
+}
+
+Write-Host "Dependencies installed successfully."
+
+Write-Host "Attempting to download and install Winget"
+
+# Download Winget package
+# https://github.com/microsoft/winget-cli/releases/latest
+try 
+{  
+  $ProgressPreference = 'SilentlyContinue'
+  Invoke-WebRequest -Uri "https://github.com/microsoft/winget-cli/releases/download/v1.11.430/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle" -OutFile ".\winget.msixbundle" -ErrorAction Stop
+  Invoke-WebRequest -Uri "https://github.com/microsoft/winget-cli/releases/download/v1.11.430/e53e159d00e04f729cc2180cffd1c02e_License1.xml" -OutFile ".\winget_license.xml" -ErrorAction Stop
+} 
+catch 
+{
+  Write-Host "Failed to download Winget package. Error: $_" -ForegroundColor Red
+  exit 1
+}
+
+# Install Winget package
+try 
+{
+  Add-AppxProvisionedPackage -Online -PackagePath ".\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle" -LicensePath ".\9ea36fa38dd3449c94cc839961888850_License1.xml" -Verbose
+} 
+catch 
+{
+  Write-Host "Failed to install Winget package. Error: $_" -ForegroundColor Red
+  exit 1
+}
+
+Write-Host "Winget installed successfully."
+```
+
+7. Install apps
+
+```PS1
+# win 10 only
 winget install -e --id Microsoft.WindowsTerminal
 
-win 11
-
+# win 10/11
+winget install --id=Google.Chrome  -e
 winget install --id=Git.Git  -e
 winget install --id=Neovim.Neovim  -e
 winget install --id=OBSProject.OBSStudio  -e
@@ -48,17 +138,26 @@ winget install --id=Canonical.Ubuntu.2404  -e
 winget install --id=ONLYOFFICE.DesktopEditors  -e
 winget install --id=Inkscape.Inkscape  -e
 winget install --id=MoonlightGameStreamingProject.Moonlight  -e
+```
 
-install vscode from website & sync with account 
+8. win 11 old context menu
 
-win 11 old context menu
+```PS1
 reg.exe add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
+```
 
+9. PS3 controller
 
-PS3 controller
 https://github.com/nefarius/DsHidMini/releases/latest
 
+-> insall bowth ini files
 
+https://github.com/nefarius/BthPS3/releases/latest
+
+
+10. Deactivate gamebar
+
+```PS1
 reg add HKCR\ms-gamebar /f /ve /d URL:ms-gamebar 2>&1 >''
 reg add HKCR\ms-gamebar /f /v "URL Protocol" /d "" 2>&1 >''
 reg add HKCR\ms-gamebar /f /v "NoOpenWith" /d "" 2>&1 >''
@@ -67,11 +166,15 @@ reg add HKCR\ms-gamebarservices /f /ve /d URL:ms-gamebarservices 2>&1 >''
 reg add HKCR\ms-gamebarservices /f /v "URL Protocol" /d "" 2>&1 >''
 reg add HKCR\ms-gamebarservices /f /v "NoOpenWith" /d "" 2>&1 >''
 reg add HKCR\ms-gamebarservices\shell\open\command /f /ve /d "\`"$env:SystemRoot\System32\systray.exe\`"" 2>&1 >''
+```
+
+11. Emulation
 
 Retroarch
 https://buildbot.libretro.com/stable/1.21.0/windows/x86_64/
 
 https://buildbot.libretro.com/stable/1.21.0/windows/x86_64/RetroArch.7z
+
 https://buildbot.libretro.com/stable/1.21.0/windows/x86_64/RetroArch_cores.7z
 
 pcsx2 bios:
@@ -80,11 +183,4 @@ https://emulation.gametechwiki.com/index.php/Emulator_files#PlayStation_2
 optional 
 https://www.nirsoft.net/utils/multimonitortool-x64.zip
 multi mon tool
-
-
-installing scripts to rip record
-
-
-wget -O /mnt/c/recordings/wconv-ripcapt.bat https://raw.githubusercontent.com/alainpham/de
-bian-os-image/refs/heads/master/scripts/ffmpeg/wconv-ripcapt.bat
 
