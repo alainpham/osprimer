@@ -2612,7 +2612,6 @@ EOF
 
 # configure dolphin emulator
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.var/app/org.DolphinEmu.dolphin-emu/config/dolphin-emu/
-wget -O ${ROOTFS}/home/$TARGET_USERNAME/.var/app/org.DolphinEmu.dolphin-emu/config/dolphin-emu/Dolphin.ini https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/Dolphin.ini
 
 dolconfigs="
 Dolphin.ini
