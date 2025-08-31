@@ -105,7 +105,7 @@ catch
 # Install Winget package
 try 
 {
-  Add-AppxProvisionedPackage -Online -PackagePath ".\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle" -LicensePath ".\9ea36fa38dd3449c94cc839961888850_License1.xml" -Verbose
+  Add-AppxProvisionedPackage -Online -PackagePath "winget.msixbundle" -LicensePath "winget_license.xml" -Verbose
 } 
 catch 
 {
