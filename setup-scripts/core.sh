@@ -2597,6 +2597,14 @@ lineinfile "$CTRLCFG" "input_save_state_btn.*=.*" 'input_save_state_btn = "3"'
 lineinfile "$CTRLCFG" "input_state_slot_decrease_btn.*=.*" 'input_state_slot_decrease_btn = "0"'
 lineinfile "$CTRLCFG" "input_state_slot_increase_btn.*=.*" 'input_state_slot_increase_btn = "1"'
 
+# configure beetle psx hw
+mkdir -p "$RARCHFLD/config/Beetle PSX HW/"
+wget -O "$RARCHFLD/config/Beetle PSX HW/Beetle PSX HW.opt" "https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/Beetle PSX HW.opt"
+
+cat << EOF | chroot ${ROOTFS}
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME $RARCHFLD/config/Beetle PSX HW/
+EOF
+
 # configure PCSX2
 
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/inis
@@ -2618,6 +2626,7 @@ Dolphin.ini
 GCPadNew.ini
 GFX.ini
 "
+
 for fname in $dolconfigs ; do
 curl -Lo ${ROOTFS}/home/$TARGET_USERNAME/.var/app/org.DolphinEmu.dolphin-emu/config/dolphin-emu/$fname https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/$fname
 done
