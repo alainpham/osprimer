@@ -19,7 +19,6 @@ install https://openhardwaremonitor.org/
 uninstall useless stuff
 
 
-
 install winget from store on windows 10
 https://github.com/microsoft/winget-cli/releases
 
@@ -58,7 +57,7 @@ reg.exe add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\
 
 PS3 controller
 https://github.com/nefarius/DsHidMini/releases/latest
-https://github.com/nefarius/BthPS3/releases/latest
+
 
 reg add HKCR\ms-gamebar /f /ve /d URL:ms-gamebar 2>&1 >''
 reg add HKCR\ms-gamebar /f /v "URL Protocol" /d "" 2>&1 >''
