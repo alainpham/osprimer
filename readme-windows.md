@@ -33,6 +33,7 @@ Start-Process explorer
 6. Install winget
 
 ```PS1
+Set-ExecutionPolicy Unrestricted
 
 Write-Host "Attempting to download and install dependencies"
 
