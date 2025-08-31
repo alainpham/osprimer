@@ -142,6 +142,10 @@ winget install --id=Canonical.Ubuntu.2404  -e
 winget install --id=ONLYOFFICE.DesktopEditors  -e
 winget install --id=Inkscape.Inkscape  -e
 winget install --id=MoonlightGameStreamingProject.Moonlight  -e
+
+wsl --install --no-distribution
+
+winget install --force Microsoft.VisualStudioCode --override '/VERYSILENT /SP- /MERGETASKS="runcode,desktopicon,addcontextmenufiles,addcontextmenufolders,associatewithfiles,addtopath"'
 ```
 
 8. win 11 old context menu
