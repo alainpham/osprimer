@@ -176,7 +176,13 @@ reg add HKCR\ms-gamebarservices /f /v "NoOpenWith" /d "" 2>&1 >''
 reg add HKCR\ms-gamebarservices\shell\open\command /f /ve /d "\`"$env:SystemRoot\System32\systray.exe\`"" 2>&1 >''
 ```
 
-11. Emulation
+Show seconds in clock windows 10
+
+```PS1
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowSecondsInSystemClock" -Type DWord -Value 1
+```
+
+Emulation
 
 Retroarch
 https://buildbot.libretro.com/stable/1.21.0/windows/x86_64/
