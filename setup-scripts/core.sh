@@ -2613,6 +2613,16 @@ EOF
 # configure dolphin emulator
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.var/app/org.DolphinEmu.dolphin-emu/config/dolphin-emu/
 wget -O ${ROOTFS}/home/$TARGET_USERNAME/.var/app/org.DolphinEmu.dolphin-emu/config/dolphin-emu/Dolphin.ini https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/Dolphin.ini
+
+dolconfigs="
+Dolphin.ini
+GCPadNew.ini
+GFX.ini
+"
+for fname in $dolconfigs ; do
+curl -Lo ${ROOTFS}/home/$TARGET_USERNAME/.var/app/org.DolphinEmu.dolphin-emu/config/dolphin-emu/$fname https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/$fname
+done
+
 cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.var
 EOF
