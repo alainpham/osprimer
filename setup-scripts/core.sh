@@ -2536,11 +2536,29 @@ cat << EOF | chroot ${ROOTFS}
     chown $TARGET_USERNAME:$TARGET_USERNAME $RARCHCFG
 EOF
 
-cat << EOF | chroot ${ROOTFS}
-    mkdir -p /home/${TARGET_USERNAME}/ES-DE/gamelists/ps2/
+# Configure ES DE to point alternative emus
+mkdir -p ${ROOTFS}/home/${TARGET_USERNAME}/ES-DE/gamelists/gc/
+cat <<EOF | tee ${ROOTFS}/home/${TARGET_USERNAME}/ES-DE/gamelists/gc/gamelist.xml
+<?xml version="1.0"?>
+<alternativeEmulator>
+	<label>Dolphin (Standalone)</label>
+</alternativeEmulator>
+<gameList>
+</gameList>
 EOF
 
-# Configure ES DE to point to PCSX2 instead of retroarch
+mkdir -p ${ROOTFS}/home/${TARGET_USERNAME}/ES-DE/gamelists/psx/
+cat <<EOF | tee ${ROOTFS}/home/${TARGET_USERNAME}/ES-DE/gamelists/psx/gamelist.xml
+<?xml version="1.0"?>
+<alternativeEmulator>
+	<label>Beetle PSX HW</label>
+</alternativeEmulator>
+<gameList>
+</gameList>
+EOF
+
+
+mkdir -p ${ROOTFS}/home/${TARGET_USERNAME}/ES-DE/gamelists/ps2/
 cat <<EOF | tee ${ROOTFS}/home/${TARGET_USERNAME}/ES-DE/gamelists/ps2/gamelist.xml
 <?xml version="1.0"?>
 <alternativeEmulator>
@@ -2598,11 +2616,11 @@ lineinfile "$CTRLCFG" "input_state_slot_decrease_btn.*=.*" 'input_state_slot_dec
 lineinfile "$CTRLCFG" "input_state_slot_increase_btn.*=.*" 'input_state_slot_increase_btn = "1"'
 
 # configure beetle psx hw
-mkdir -p "$RARCHFLD/config/Beetle PSX HW/"
-wget -O "$RARCHFLD/config/Beetle PSX HW/Beetle PSX HW.opt" "https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/Beetle PSX HW.opt"
+mkdir -p "${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/config/Beetle PSX HW/"
+wget -O "${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/config/Beetle PSX HW/Beetle PSX HW.opt" "https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/Beetle PSX HW.opt"
 
 cat << EOF | chroot ${ROOTFS}
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME $RARCHFLD/config/Beetle PSX HW/
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch
 EOF
 
 # configure PCSX2
