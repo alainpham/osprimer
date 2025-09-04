@@ -2932,12 +2932,11 @@ reboot
 }
 
 cloudvm_common(){
-    trap 'return 1' ERR
-    bashaliases
-    smalllogs
-    iessentials
-    ikube
-    reboot
+trap 'return 1' ERR
+bashaliases
+smalllogs
+iessentials
+ikube
 }
 
 gcpvm(){
@@ -2951,6 +2950,7 @@ ovm(){
 trap 'return 1' ERR
 init apham "NA" "/home/ubuntu/.ssh/authorized_keys" "NA" "NA" "NA" "fr" "pc105"
 createuser
+authkeys
 isshkey
 cloudvm_common
 reboot
