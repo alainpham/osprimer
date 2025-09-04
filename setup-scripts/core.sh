@@ -2931,54 +2931,28 @@ unmountraw
 reboot
 }
 
+cloudvm_common(){
+    trap 'return 1' ERR
+    bashaliases
+    smalllogs
+    iessentials
+    ikube
+    reboot
+}
+
 gcpvm(){
 trap 'return 1' ERR
 init alain_pham_grafana_com "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
-bashaliases
-smalllogs
-iessentials
-idocker
-ikube
+cloudvm_common
 reboot
 }
 
-kvmkube(){
+ovm(){
 trap 'return 1' ERR
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
-bashaliases
-smalllogs
-reposrc
-iaptproxy
-iessentials
-ikeyboard
-inumlocktty
-idev
-idocker
-ikube
-reboot
-}
-
-kvmworkstation(){
-trap 'return 1' ERR
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
-bashaliases
-smalllogs
-reposrc
-iaptproxy
-iessentials
-ikeyboard
-idev
-idocker
-ikube
-igui
-iffmpeg
-inumlocktty
-itheming
-iworkstation
-iautologin
-istartx
-itimezone
-inetworking
+init apham "NA" "/home/ubuntu/.ssh/authorized_keys" "NA" "NA" "NA" "fr" "pc105"
+createuser
+isshkey
+cloudvm_common
 reboot
 }
 
