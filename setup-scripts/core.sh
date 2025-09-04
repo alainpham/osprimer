@@ -2936,6 +2936,7 @@ trap 'return 1' ERR
 bashaliases
 smalllogs
 iessentials
+idocker
 ikube
 }
 
