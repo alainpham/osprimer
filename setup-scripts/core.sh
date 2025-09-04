@@ -2952,6 +2952,7 @@ init apham "NA" "/home/ubuntu/.ssh/authorized_keys" "NA" "NA" "NA" "fr" "pc105"
 createuser
 authkeys
 isshkey
+isudo
 cloudvm_common
 reboot
 }
