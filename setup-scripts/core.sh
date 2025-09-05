@@ -2625,9 +2625,14 @@ lineinfile "$CTRLCFG" "input_save_state_btn.*=.*" 'input_save_state_btn = "3"'
 lineinfile "$CTRLCFG" "input_state_slot_decrease_btn.*=.*" 'input_state_slot_decrease_btn = "0"'
 lineinfile "$CTRLCFG" "input_state_slot_increase_btn.*=.*" 'input_state_slot_increase_btn = "1"'
 
-# configure beetle psx hw
+# configure cores options
 mkdir -p "${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/config/Beetle PSX HW/"
-wget -O "${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/config/Beetle PSX HW/Beetle PSX HW.opt" "https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/Beetle PSX HW.opt"
+wget -O "${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/config/Beetle PSX HW/Beetle PSX HW.opt" "https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/Beetle PSX HW/Beetle PSX HW.opt"
+
+mkdir -p "${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/config/PCSX-ReARMed/"
+wget -O "${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/config/PCSX-ReARMed/PCSX-ReARMed.opt" "https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/PCSX-ReARMed/PCSX-ReARMed.opt"
+
+
 
 cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch
