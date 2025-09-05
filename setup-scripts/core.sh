@@ -2392,7 +2392,7 @@ wget -O ${ROOTFS}/tmp/RetroArch_cores.7z https://buildbot.libretro.com/stable/${
 cd ${ROOTFS}/tmp/
 7z x RetroArch.7z
 7z x RetroArch_cores.7z
-
+cd -
 wget -O ${ROOTFS}/tmp/bios.zip https://github.com/Abdess/retroarch_system/releases/download/v20220308/RetroArch_v1.10.1.zip
 unzip ${ROOTFS}/tmp/bios.zip 'system/*' -d /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/
 
@@ -2401,10 +2401,21 @@ cat << EOF | chroot ${ROOTFS}
     mv /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage /opt/appimages/RetroArch-Linux-x86_64.AppImage
     chmod 755 /opt/appimages/RetroArch-Linux-x86_64.AppImage
     ln -sf /opt/appimages/RetroArch-Linux-x86_64.AppImage /usr/local/bin/retroarch
-    rm -rf /home/$TARGET_USERNAME/.config/retroarch
     
+    if [ -d "/home/$TARGET_USERNAME/.config/retroarch/saves" ]; then
+        mv /home/$TARGET_USERNAME/.config/retroarch/saves /home/$TARGET_USERNAME/.config/ra-saves
+    fi
+    if [ -d "/home/$TARGET_USERNAME/.config/retroarch/states" ]; then
+        mv /home/$TARGET_USERNAME/.config/retroarch/states /home/$TARGET_USERNAME/.config/ra-states
+    fi
+
+    rm -rf /home/$TARGET_USERNAME/.config/retroarch
+
     mv /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch /home/$TARGET_USERNAME/.config/
+    cp -R /home/$TARGET_USERNAME/.config/retroarch/autoconfig /home/$TARGET_USERNAME/.config/ra-autoconfig
+
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/retroarch
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/ra-autoconfig
 EOF
 else
 echo "RetroArch already installed, skipping"
@@ -2487,6 +2498,7 @@ EOF
 # post install : launch bottles to download
 # create a bottle called games
 # create a bottle called apps
+# give access to GPU and user folder through flatseal.
 }
 
 idolphin(){
@@ -2506,8 +2518,10 @@ iemucfg(){
 export RARCHFLD=${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch
 export RARCHCFG=${RARCHFLD}/retroarch.cfg
 
-rm -r $RARCHFLD/{playlists,cheats,config,logs}
+rm -r $RARCHFLD/{playlists,cheats,config,logs,autoconfig}
 rm $RARCHCFG
+
+cp -R $ROOTFS/home/$TARGET_USERNAME/.config/ra-autoconfig $RARCHFLD/autoconfig
 
 # export RARCHCFG=/home/$TARGET_USERNAME/.config/retroarch/retroarch.cfg
 touch $RARCHCFG
@@ -2533,12 +2547,22 @@ lineinfile $RARCHCFG "input_player${i}_analog_dpad_mode.*=.*" "input_player${i}_
 done
 
 cat << EOF | chroot ${ROOTFS}
-    chown $TARGET_USERNAME:$TARGET_USERNAME $RARCHCFG
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME $RARCHFLD
 EOF
 
 # Configure ES DE to point alternative emus
 mkdir -p ${ROOTFS}/home/${TARGET_USERNAME}/ES-DE/gamelists/gc/
 cat <<EOF | tee ${ROOTFS}/home/${TARGET_USERNAME}/ES-DE/gamelists/gc/gamelist.xml
+<?xml version="1.0"?>
+<alternativeEmulator>
+	<label>Dolphin (Standalone)</label>
+</alternativeEmulator>
+<gameList>
+</gameList>
+EOF
+
+mkdir -p ${ROOTFS}/home/${TARGET_USERNAME}/ES-DE/gamelists/wii/
+cat <<EOF | tee ${ROOTFS}/home/${TARGET_USERNAME}/ES-DE/gamelists/wii/gamelist.xml
 <?xml version="1.0"?>
 <alternativeEmulator>
 	<label>Dolphin (Standalone)</label>
@@ -2587,6 +2611,7 @@ lineinfile "$CTRLCFG" "input_state_slot_increase_btn.*=.*" 'input_state_slot_inc
 # PS4 controller bluetooth
 export CTRLCFG="${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/autoconfig/udev/Sony-PlayStation4-DualShock4v2-Controller.cfg"
 touch "$CTRLCFG"
+lineinfile "$CTRLCFG" "input_device.*=.*" 'input_device = "Wireless Controller"'
 lineinfile "$CTRLCFG" "input_enable_hotkey_btn.*=.*" 'input_enable_hotkey_btn = "10"'
 lineinfile "$CTRLCFG" "input_exit_emulator_btn.*=.*" 'input_exit_emulator_btn = "9"'
 lineinfile "$CTRLCFG" "input_load_state_btn.*=.*" 'input_load_state_btn = "2"'
