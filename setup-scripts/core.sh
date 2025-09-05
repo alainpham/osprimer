@@ -2643,10 +2643,12 @@ dolconfigs="
 Dolphin.ini
 GCPadNew.ini
 GFX.ini
+GCPadNew.ini
+WiimoteNew.ini
 "
 
 for fname in $dolconfigs ; do
-curl -Lo ${ROOTFS}/home/$TARGET_USERNAME/.var/app/org.DolphinEmu.dolphin-emu/config/dolphin-emu/$fname https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/$fname
+curl -Lo ${ROOTFS}/home/$TARGET_USERNAME/.var/app/org.DolphinEmu.dolphin-emu/config/dolphin-emu/$fname https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/dolphin-emu/$fname
 done
 
 cat << EOF | chroot ${ROOTFS}
