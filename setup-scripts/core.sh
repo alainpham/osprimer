@@ -2551,7 +2551,7 @@ mkdir -p ${ROOTFS}/home/${TARGET_USERNAME}/ES-DE/gamelists/psx/
 cat <<EOF | tee ${ROOTFS}/home/${TARGET_USERNAME}/ES-DE/gamelists/psx/gamelist.xml
 <?xml version="1.0"?>
 <alternativeEmulator>
-	<label>Beetle PSX HW</label>
+	<label>PCSX ReARMed</label>
 </alternativeEmulator>
 <gameList>
 </gameList>
