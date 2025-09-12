@@ -2685,6 +2685,7 @@ GCPadNew.ini
 GFX.ini
 GCPadNew.ini
 WiimoteNew.ini
+Hotkeys.ini
 "
 
 for fname in $dolconfigs ; do
