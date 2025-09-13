@@ -2725,7 +2725,7 @@ EOF
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/Cemu
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/Cemu/controllerProfiles
 cemuconfigs="
-settings
+settings.xml
 controllerProfiles/controller0.xml
 "
 
