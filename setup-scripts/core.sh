@@ -2443,6 +2443,12 @@ done
 #PCSX2
 ipcsx2
 
+#dolphin GC wii
+idolphin
+
+#cemu wiiu
+icemu
+
 #Bottles for PC games
 ibottles
 
@@ -2455,7 +2461,7 @@ trap 'return 1' ERR
 force_reinstall=${1:-0}
 #TODO put in env vars
 export PCSX2_VERSION=2.4.0
-# Drawio
+
 if [ ! -f ${ROOTFS}/opt/appimages/pcsx2.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/pcsx2.AppImage https://github.com/PCSX2/pcsx2/releases/download/v${PCSX2_VERSION}/pcsx2-v${PCSX2_VERSION}-linux-appimage-x64-Qt.AppImage
 cat << EOF | chroot ${ROOTFS}
@@ -2471,6 +2477,25 @@ wget -O ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/bios/ps2-0230a-20080220.bi
 cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/PCSX2
 EOF
+}
+
+icemu(){
+trap 'return 1' ERR
+force_reinstall=${1:-0}
+#TODO put in env vars https://github.com/cemu-project/Cemu/releases 
+export CEMU_VERSION=2.6
+
+if [ ! -f ${ROOTFS}/opt/appimages/emu.AppImage ] || [ "$force_reinstall" = "1" ]; then
+wget -O ${ROOTFS}/opt/appimages/cemu.AppImage https://github.com/cemu-project/Cemu/releases/download/v$CEMU_VERSION/Cemu-$CEMU_VERSION-x86_64.AppImage
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /opt/appimages/cemu.AppImage
+    ln -sf /opt/appimages/cemu.AppImage /usr/local/bin/cemu
+EOF
+else
+echo "cemu already installed, skipping"
+fi
+
+
 }
 
 ibottles(){
@@ -2695,6 +2720,20 @@ done
 cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.var
 EOF
+
+#configure cemu wiiu emulator
+mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/Cemu
+mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/Cemu/controllerProfiles
+cemuconfigs="
+settings
+controllerProfiles/controller0.xml
+"
+
+for fname in $cemuconfigs ; do
+curl -Lo ${ROOTFS}/home/$TARGET_USERNAME/.config/Cemu/$fname https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/dolphin-emu/$fname
+done
+
+
 }
 
 iautologin(){
