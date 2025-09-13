@@ -2733,7 +2733,9 @@ for fname in $cemuconfigs ; do
 curl -Lo ${ROOTFS}/home/$TARGET_USERNAME/.config/Cemu/$fname https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/dolphin-emu/$fname
 done
 
-
+cat << EOF | chroot ${ROOTFS}
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/$TARGET_USERNAME/.config/Cemu
+EOF
 }
 
 iautologin(){
