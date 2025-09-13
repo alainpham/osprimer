@@ -6,12 +6,12 @@ command=$1
 if [ "$command" == "help" ]; then
     echo "Usage: $0 <command>"
     echo "Commands:"
-    echo "  lap     - Show only laptop screen"
-    echo "  hdmi    - Show HDMI only"
-    echo "  copy    - mirror all screens"
-    echo "  hleft   - Show HDMI left of laptop screen"
-    echo "  hright  - Show HDMI right of laptop screen"
-    echo "  center  - Center screen only"
+    echo "  l       - Show only laptop screen"
+    echo "  h       - Show HDMI only"
+    echo "  cp      - mirror all screens"
+    echo "  hl      - Show HDMI left of laptop screen"
+    echo "  hr      - Show HDMI right of laptop screen"
+    echo "  c       - Center screen only"
     echo "  cl      - Center and left screen only no laptop screen"
     echo "  <empty> - Default docking station or laptop only"
     exit 1
@@ -98,11 +98,11 @@ home() {
 
 }
 
-if [ "$command" == "lap" ]; then
+if [ "$command" == "l" ]; then
     
     lap
 
-elif [ "$command" == "hdmi" ] && echo "$monitors" | grep -q "$hdmi" ; then
+elif [ "$command" == "h" ] && echo "$monitors" | grep -q "$hdmi" ; then
     
     echo "HDMI screen only"
 
@@ -116,7 +116,7 @@ elif [ "$command" == "hdmi" ] && echo "$monitors" | grep -q "$hdmi" ; then
     xrandr --output $hdmi --auto --primary \
         $appendcommand
 
-elif [ "$command" == "copy" ]; then
+elif [ "$command" == "cp" ]; then
 
     copy_mode=$(bestmode)
     
@@ -145,7 +145,7 @@ elif [ "$command" == "copy" ]; then
         $appendcommand
 
 
-elif [ "$command" == "hleft" ] && echo "$monitors" | grep -q "$hdmi" ; then
+elif [ "$command" == "hl" ] && echo "$monitors" | grep -q "$hdmi" ; then
 
     echo "HDMI left of Laptop screen"
 
@@ -162,7 +162,7 @@ elif [ "$command" == "hleft" ] && echo "$monitors" | grep -q "$hdmi" ; then
         $appendcommand
 
 
-elif [ "$command" == "hright" ] && echo "$monitors" | grep -q "$hdmi" ; then
+elif [ "$command" == "hr" ] && echo "$monitors" | grep -q "$hdmi" ; then
 
     echo "HDMI right of Laptop screen"
 
@@ -178,7 +178,7 @@ elif [ "$command" == "hright" ] && echo "$monitors" | grep -q "$hdmi" ; then
         --output $hdmi --mode 1920x1080 --pos 1920x0 --rate 60 --rotate normal \
         $appendcommand
 
-elif [ "$command" == "center" ] && echo "$monitors" | grep -q "$dock_center" ; then
+elif [ "$command" == "c" ] && echo "$monitors" | grep -q "$dock_center" ; then
     echo "Center dock screen"
     appendcommand=""
     for monitor in $monitors; do
