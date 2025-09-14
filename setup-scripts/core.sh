@@ -4,7 +4,7 @@
 inputversions() {
     trap 'return 1' ERR
 
-    export CORE_VERSION=20250828
+    export CORE_VERSION=20250913
     echo "export CORE_VERSION=${CORE_VERSION}"
 
     # https://kubernetes.io/releases/  https://cloud.google.com/kubernetes-engine/docs/release-notes
@@ -108,6 +108,15 @@ inputversions() {
     # https://github.com/LizardByte/Sunshine/releases
     export SUNSHINE_VERSION=2025.628.4510
     echo "export SUNSHINE_VERSION=${SUNSHINE_VERSION}" 
+
+    #  https://github.com/PCSX2/pcsx2/releases/latest
+    export PCSX2_VERSION=2.4.0
+    echo "export PCSX2_VERSION=${PCSX2_VERSION}" 
+
+    # https://github.com/cemu-project/Cemu/releases 
+    export CEMU_VERSION=2.6
+    echo "export CEMU_VERSION=${CEMU_VERSION}" 
+
 
     export OSNAME=$(awk -F= '/^ID=/ {gsub(/"/, "", $2); print $2}' /etc/os-release)
     echo "export OSNAME=${OSNAME}"
@@ -217,6 +226,8 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*ESDE_VERSION_ID*=.*" "export ESDE_VERSI
 lineinfile ${ROOTFS}${BASHRC} ".*export.*RETROARCH_VERSION*=.*" "export RETROARCH_VERSION=${RETROARCH_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*MOONLIGHT_VERSION*=.*" "export MOONLIGHT_VERSION=${MOONLIGHT_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*SUNSHINE_VERSION*=.*" "export SUNSHINE_VERSION=${SUNSHINE_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*PCSX2_VERSION*=.*" "export PCSX2_VERSION=${PCSX2_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*CEMU_VERSION*=.*" "export CEMU_VERSION=${CEMU_VERSION}"
 
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*OSNAME*=.*" "export OSNAME=${OSNAME}"
@@ -2371,6 +2382,29 @@ force_reinstall=${1:-0}
 
 lineinfile ${ROOTFS}/etc/bluetooth/input.conf ".*ClassicBondedOnly.*" "ClassicBondedOnly=false"
 
+#esde
+iesde
+
+#retroarch
+iretroarch
+
+#PCSX2
+ipcsx2
+
+#dolphin GC wii
+idolphin
+
+#cemu wiiu
+icemu
+
+#Bottles for PC games
+ibottles
+
+#configure retroarch and pcsx2
+iemucfg
+}
+
+iesde(){
 # Install RetroArch AppImage if not present or force_reinstall is 1
 if [ ! -f ${ROOTFS}/opt/appimages/emustation.AppImage ] || [ "$force_reinstall" = "1" ]; then
 echo "emulation tools"
@@ -2384,7 +2418,9 @@ echo "emulationstation already installed, skipping"
 fi
 
 
+}
 
+iretroarch(){
 # https://buildbot.libretro.com/stable/
 if [ ! -f ${ROOTFS}/opt/appimages/RetroArch-Linux-x86_64.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/tmp/RetroArch.7z https://buildbot.libretro.com/stable/${RETROARCH_VERSION}/linux/x86_64/RetroArch.7z
@@ -2421,46 +2457,12 @@ else
 echo "RetroArch already installed, skipping"
 fi
 
-cat << EOF | chroot ${ROOTFS}
-    mkdir -p /home/${TARGET_USERNAME}/ROMs
-    mkdir -p /home/${TARGET_USERNAME}/ES-DE/downloaded_media
-    mkdir -p /home/${TARGET_USERNAME}/.config/retroarch/states
-    mkdir -p /home/${TARGET_USERNAME}/.config/retroarch/saves
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/${TARGET_USERNAME}/ROMs
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/${TARGET_USERNAME}/ES-DE
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/${TARGET_USERNAME}/.config/retroarch
-EOF
-
-emuscripts="emumount.sh emustop.sh"
-for script in $emuscripts ; do
-curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/$script
-cat << EOF | chroot ${ROOTFS}
-    chmod 755 /usr/local/bin/$script
-EOF
-done
-
-
-#PCSX2
-ipcsx2
-
-#dolphin GC wii
-idolphin
-
-#cemu wiiu
-icemu
-
-#Bottles for PC games
-ibottles
-
-#configure retroarch and pcsx2
-iemucfg
 }
 
 ipcsx2(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
 #TODO put in env vars
-export PCSX2_VERSION=2.4.0
 
 if [ ! -f ${ROOTFS}/opt/appimages/pcsx2.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/pcsx2.AppImage https://github.com/PCSX2/pcsx2/releases/download/v${PCSX2_VERSION}/pcsx2-v${PCSX2_VERSION}-linux-appimage-x64-Qt.AppImage
@@ -2483,7 +2485,6 @@ icemu(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
 #TODO put in env vars https://github.com/cemu-project/Cemu/releases 
-export CEMU_VERSION=2.6
 
 if [ ! -f ${ROOTFS}/opt/appimages/emu.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/cemu.AppImage https://github.com/cemu-project/Cemu/releases/download/v$CEMU_VERSION/Cemu-$CEMU_VERSION-x86_64.AppImage
@@ -2540,6 +2541,18 @@ EOF
 }
 
 iemucfg(){
+
+cat << EOF | chroot ${ROOTFS}
+    mkdir -p /home/${TARGET_USERNAME}/ROMs
+    mkdir -p /home/${TARGET_USERNAME}/ES-DE/downloaded_media
+    mkdir -p /home/${TARGET_USERNAME}/.config/retroarch/states
+    mkdir -p /home/${TARGET_USERNAME}/.config/retroarch/saves
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/${TARGET_USERNAME}/ROMs
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/${TARGET_USERNAME}/ES-DE
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/${TARGET_USERNAME}/.config/retroarch
+EOF
+
+
 export RARCHFLD=${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch
 export RARCHCFG=${RARCHFLD}/retroarch.cfg
 
