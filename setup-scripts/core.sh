@@ -3243,7 +3243,7 @@ sudo mv desktopvideo-gui_12.9a3_amd64.deb /opt/debs/desktopvideo-gui_12.9a3_amd6
 sudo apt install -y /opt/debs/desktopvideo_12.9a3_amd64.deb /opt/debs/desktopvideo-gui_12.9a3_amd64.deb
 wget -O /tmp/blackmagic-io-12.9a3-001-fix_for_kernel_6.8.patch https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/decklink/blackmagic-io-12.9a3-001-fix_for_kernel_6.8.patch
 cd /usr/src/
-patch -p1 </path_to_your_patch_directory/blackmagic-io-12.9a3-001-fix_for_kernel_6.8.patch
+patch -p1 /tmp/blackmagic-io-12.9a3-001-fix_for_kernel_6.8.patch
 sudo dkms autoinstall -k $(uname -r)
 
 }
