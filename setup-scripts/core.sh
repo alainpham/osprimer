@@ -2400,12 +2400,29 @@ icemu $force_reinstall
 #Bottles for PC games
 ibottles $force_reinstall
 
-#configure retroarch and pcsx2
+#configure emulators
 iemucfg
+
+#shortcuts with gamepads
+igshorts
 }
 
 igshorts(){
-    
+
+dlfiles="
+gshorts
+"
+
+killall gshorts
+for fname in $dlfiles ; do
+curl -Lo ${ROOTFS}/usr/local/bin/$fname https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/gshorts/$fname
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /usr/local/bin/$fname
+EOF
+done
+
+lineinfile ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm/autostart.sh .*gshorts.* "killall gshorts ; gshorts \&"
+
 }
 
 iesde(){
