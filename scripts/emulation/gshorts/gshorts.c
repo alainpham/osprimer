@@ -69,14 +69,8 @@ int main(void) {
                     printf("Start button %s\n", btnStartPressed ? "pressed" : "released");
                 }
 
-                // Check for Mode + Start combination => Super + C
-                if (btnModePressed && btnStartPressed) {
-                    printf("Mode + Start detected!\n");
-                    system("xdotool keydown Super_L key c keyup Super_L");
-                }
-
                 // Check for Mode + Select combination => run estation
-                if (btnModePressed && btnSelectPressed) {
+                if (ev.type == EV_KEY && btnModePressed && btnSelectPressed) {
                     printf("Mode + Select detected!\n");
                     // Check if process "estation" exists and kill it
                     system("kill -9 $(pidof estation)");
@@ -86,6 +80,12 @@ int main(void) {
                     system("kill -9 $(pidof cemu)");
                     system("kill -9 $(pidof chrome)");
                     system("nohup estation >/dev/null 2>&1 &");
+                }
+
+                // Check for Mode + Start combination => Super + C
+                if (ev.type == EV_KEY && btnModePressed && btnStartPressed) {
+                    printf("Mode + Start detected!\n");
+                    system("setxkbmap fr && xdotool key Super_L+c");
                 }
 
             } else if (n == -1) {

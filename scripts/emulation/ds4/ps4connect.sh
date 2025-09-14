@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Replace this with your controller's Bluetooth MAC address
-DS4_MAC=""
+DS4_MAC="F3:F8:39:F8:7C:FE"
 
 echo "[+] Resetting connection to DualShock 4 ($DS4_MAC)..."
 echo "[*] Put your DualShock 4 in pairing mode (hold PS + Share until it blinks rapidly)..."
@@ -24,9 +24,11 @@ read -p "Press Enter once it's blinking rapidly..."
 
     echo "scan off"
     echo "pair $DS4_MAC"
+    sleep 2
     echo "trust $DS4_MAC"
+    sleep 2
     echo "connect $DS4_MAC"
-    sleep 3
+    sleep 5
 } | bluetoothctl
 
 echo "[✓] Re-pairing complete."
