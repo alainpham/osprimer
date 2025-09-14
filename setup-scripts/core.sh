@@ -2560,6 +2560,19 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 }
 
+ijfin(){
+
+flatpak install -y flathub com.github.iwalton3.jellyfin-media-player
+
+cat <<EOF | tee ${ROOTFS}/usr/local/bin/jellyfin-media-player
+flatpak run com.github.iwalton3.jellyfin-media-player
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+   chmod 755 /usr/local/bin/jellyfin-media-player
+EOF
+}
+
 iemucfg(){
 
 cat << EOF | chroot ${ROOTFS}
