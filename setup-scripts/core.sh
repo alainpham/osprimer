@@ -2749,6 +2749,8 @@ EOF
 
 # configure dolphin emulator
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.var/app/org.DolphinEmu.dolphin-emu/config/dolphin-emu/
+mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/GC
+mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/Wii
 
 dolconfigs="
 Dolphin.ini
@@ -2770,6 +2772,8 @@ EOF
 #configure cemu wiiu emulator
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/Cemu
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/Cemu/controllerProfiles
+mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.local/share/Cemu/mlc01
+
 cemuconfigs="
 settings.xml
 controllerProfiles/controller0.xml
@@ -2781,6 +2785,7 @@ done
 
 cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/$TARGET_USERNAME/.config/Cemu
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/$TARGET_USERNAME/.local/share/Cemu
 EOF
 }
 
