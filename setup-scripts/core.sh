@@ -2438,7 +2438,6 @@ else
 echo "emulationstation already installed, skipping"
 fi
 
-
 }
 
 iretroarch(){
