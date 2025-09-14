@@ -2383,25 +2383,29 @@ force_reinstall=${1:-0}
 lineinfile ${ROOTFS}/etc/bluetooth/input.conf ".*ClassicBondedOnly.*" "ClassicBondedOnly=false"
 
 #esde
-iesde
+iesde $force_reinstall
 
 #retroarch
-iretroarch
+iretroarch $force_reinstall
 
 #PCSX2
-ipcsx2
+ipcsx2 $force_reinstall
 
 #dolphin GC wii
-idolphin
+idolphin $force_reinstall
 
 #cemu wiiu
-icemu
+icemu $force_reinstall
 
 #Bottles for PC games
-ibottles
+ibottles $force_reinstall
 
 #configure retroarch and pcsx2
 iemucfg
+}
+
+igshorts(){
+    
 }
 
 iesde(){

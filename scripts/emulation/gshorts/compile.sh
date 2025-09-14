@@ -1,1 +1,0 @@
-gcc gshorts.c -o gshorts
