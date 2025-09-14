@@ -30,6 +30,9 @@ int main(void) {
     char eventPath[256];
     struct input_event ev;
     int btnModePressed = 0;
+    int btnSelectPressed = 0;
+    int btnStartPressed = 0;
+
     int retry_delay = 2; // seconds
     while (1) {
         // === Outer loop: wait for joystick ===
@@ -56,18 +59,24 @@ int main(void) {
                     printf("Mode button %s\n", btnModePressed ? "pressed" : "released");
                 }
 
+                if (ev.type == EV_KEY && ev.code == BTN_SELECT) {
+                    btnSelectPressed = (ev.value == 1);
+                    printf("Select button %s\n", btnSelectPressed ? "pressed" : "released");
+                }
+
+                if (ev.type == EV_KEY && ev.code == BTN_START) {
+                    btnStartPressed = (ev.value == 1);
+                    printf("Start button %s\n", btnStartPressed ? "pressed" : "released");
+                }
+
                 // Check for Mode + Start combination => Super + C
-                if (btnModePressed &&
-                    ev.type == EV_KEY && ev.code == BTN_START &&
-                    ev.value == 1) {
+                if (btnModePressed && btnStartPressed) {
                     printf("Mode + Start detected!\n");
                     system("xdotool keydown Super_L key c keyup Super_L");
                 }
 
                 // Check for Mode + Select combination => run estation
-                if (btnModePressed &&
-                    ev.type == EV_KEY && ev.code == BTN_SELECT &&
-                    ev.value == 1) {
+                if (btnModePressed && btnSelectPressed) {
                     printf("Mode + Select detected!\n");
                     // Check if process "estation" exists and kill it
                     system("kill -9 $(pidof estation)");

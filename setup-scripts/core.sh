@@ -4,7 +4,7 @@
 inputversions() {
     trap 'return 1' ERR
 
-    export CORE_VERSION=20250913
+    export CORE_VERSION=20250914
     echo "export CORE_VERSION=${CORE_VERSION}"
 
     # https://kubernetes.io/releases/  https://cloud.google.com/kubernetes-engine/docs/release-notes
@@ -2214,6 +2214,39 @@ ifreac $force_reinstall
 ilocalsend $force_reinstall
 iavidemux $force_reinstall
 ipostman $force_reinstall
+imoonlight $force_reinstall
+isunshine $force_reinstall
+}
+
+isunshine(){
+trap 'return 1' ERR
+force_reinstall=${1:-0}
+
+if [ ! -f ${ROOTFS}/opt/appimages/sunshine.AppImage ] || [ "$force_reinstall" = "1" ]; then
+wget -O ${ROOTFS}/opt/appimages/sunshine.AppImage https://github.com/LizardByte/Sunshine/releases/download/v$SUNSHINE_VERSION/sunshine.AppImage
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /opt/appimages/sunshine.AppImage
+    ln -sf /opt/appimages/sunshine.AppImage /usr/local/bin/sunshine
+EOF
+else
+echo "sunshine already installed, skipping"
+fi
+}
+
+imoonlight(){
+trap 'return 1' ERR
+force_reinstall=${1:-0}
+
+if [ ! -f ${ROOTFS}/opt/appimages/moonlight.AppImage ] || [ "$force_reinstall" = "1" ]; then
+wget -O ${ROOTFS}/opt/appimages/moonlight.AppImage https://github.com/moonlight-stream/moonlight-qt/releases/download/v$MOONLIGHT_VERSION/Moonlight-$MOONLIGHT_VERSION-x86_64.AppImage
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /opt/appimages/moonlight.AppImage
+    ln -sf /opt/appimages/moonlight.AppImage /usr/local/bin/moonlight
+EOF
+else
+echo "moonlight already installed, skipping"
+fi
+}
 }
 
 ikdenlive(){
