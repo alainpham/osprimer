@@ -7,12 +7,13 @@ if [ "$command" == "help" ]; then
     echo "Usage: $0 <command>"
     echo "Commands:"
     echo "  l       - Show only laptop screen"
-    echo "  h       - Show HDMI only"
+    echo "  hd      - Show HDMI only"
     echo "  cp      - mirror all screens"
     echo "  hl      - Show HDMI left of laptop screen"
     echo "  hr      - Show HDMI right of laptop screen"
-    echo "  c       - Center screen only"
+    echo "  ce      - Center screen only"
     echo "  cl      - Center and left screen only no laptop screen"
+    echo "  clm     - Center and left screen only no laptop screen + moonlight"
     echo "  <empty> - Default docking station or laptop only"
     exit 1
 fi
@@ -32,6 +33,7 @@ if [ "$PRODUCT_NAME" == "21MCCTO1WW" ] ; then
     laptop="eDP"
     laptop_mode="1920x1200"
     hdmi="HDMI-A-0"
+    moonlight="HDMI-A-0"
 elif [ "$PRODUCT_NAME" == "Dell G15 5520" ]; then
     echo "Dell G15 5520 detected, setting monitor configuration..."
     if echo "$monitors" | grep -q "DP-1-3"; then
@@ -43,6 +45,7 @@ elif [ "$PRODUCT_NAME" == "Dell G15 5520" ]; then
     laptop="eDP-1"
     laptop_mode="1920x1080"
     hdmi="HDMI-1-0"
+    moonlight="HDMI-1-0"
 else
     echo "Unknown product name: $PRODUCT_NAME, applying default on the first monitor found"
     first_monitor=$(echo "$monitors" | head -n1)
@@ -102,7 +105,7 @@ if [ "$command" == "l" ]; then
     
     lap
 
-elif [ "$command" == "h" ] && echo "$monitors" | grep -q "$hdmi" ; then
+elif [ "$command" == "hd" ] && echo "$monitors" | grep -q "$hdmi" ; then
     
     echo "HDMI screen only"
 
@@ -178,7 +181,8 @@ elif [ "$command" == "hr" ] && echo "$monitors" | grep -q "$hdmi" ; then
         --output $hdmi --mode 1920x1080 --pos 1920x0 --rate 60 --rotate normal \
         $appendcommand
 
-elif [ "$command" == "c" ] && echo "$monitors" | grep -q "$dock_center" ; then
+elif [ "$command" == "ce" ] && echo "$monitors" | grep -q "$dock_center" ; then
+    
     echo "Center dock screen"
     appendcommand=""
     for monitor in $monitors; do
@@ -191,10 +195,11 @@ elif [ "$command" == "c" ] && echo "$monitors" | grep -q "$dock_center" ; then
         $appendcommand
 
 elif [ "$command" == "cl" ] && echo "$monitors" | grep -q "$dock_left" && echo "$monitors" | grep -q "$dock_center"; then
+    
     echo "Center and left dock screen"
     appendcommand=""
     for monitor in $monitors; do
-        if [ "$monitor" != "$dock_center" ]; then
+        if [ "$monitor" != "$dock_left" ] && [ "$monitor" != "$dock_center" ]; then
             appendcommand+=" --output $monitor --off"
         fi
     done
@@ -202,6 +207,22 @@ elif [ "$command" == "cl" ] && echo "$monitors" | grep -q "$dock_left" && echo "
         --output $dock_left   --mode 1920x1080      --pos 0x0       --rate 60   --rotate normal --primary \
         --output $dock_center --mode 1920x1080      --pos 1920x0    --rate 60   --rotate normal \
         $appendcommand
+
+elif [ "$command" == "clm" ] && echo "$monitors" | grep -q "$dock_left" && echo "$monitors" | grep -q "$dock_center" && echo "$monitors" | grep -q "$moonlight"; then
+    
+    echo "Center and left dock screen moonlight all left"
+    appendcommand=""
+    for monitor in $monitors; do
+        if [ "$monitor" != "$dock_left" ] && [ "$monitor" != "$dock_center" ] && [ "$monitor" != "$moonlight" ]; then
+            appendcommand+=" --output $monitor --off"
+        fi
+    done
+    xrandr \
+        --output $moonlight   --mode 1280x800       --pos 0x0       --rate 60   --rotate normal --primary \
+        --output $dock_left   --mode 1920x1080      --pos 1280x0    --rate 60   --rotate normal \
+        --output $dock_center --mode 1920x1080      --pos 3200x0    --rate 60   --rotate normal \
+        $appendcommand
+
 
 elif [ "$command" == "" ] && echo "$monitors" | grep -q "$dock_left" && echo "$monitors" | grep -q "$dock_center"; then
     echo "Docking station detected, setting up DisplayPort monitors."
