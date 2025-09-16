@@ -3302,6 +3302,15 @@ sudo ubuntu-drivers install
 reboot
 }
 
+# lenovo w541
+leol(){
+trap 'return 1' ERR
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
+laptop_common
+rmnouveau
+reboot
+}
+
 # lenovo T14 amd ubuntu workstation for work
 lpro(){
 trap 'return 1' ERR
