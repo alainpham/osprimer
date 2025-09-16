@@ -2247,7 +2247,6 @@ else
 echo "moonlight already installed, skipping"
 fi
 }
-}
 
 ikdenlive(){
 trap 'return 1' ERR
