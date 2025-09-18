@@ -199,3 +199,24 @@ optional
 https://www.nirsoft.net/utils/multimonitortool-x64.zip
 multi mon tool
 
+```PS1
+
+$RETROARCH_VERSION="1.21.0"
+
+cd c:\temp
+
+curl.exe -LO "https://buildbot.libretro.com/stable/${RETROARCH_VERSION}/windows/x86_64/RetroArch.7z"
+
+curl.exe -LO "https://buildbot.libretro.com/stable/${RETROARCH_VERSION}/windows/x86_64/RetroArch_cores.7z"
+
+& "C:\Program Files\7-Zip\7z.exe" x RetroArch.7z
+& "C:\Program Files\7-Zip\7z.exe" x RetroArch_cores.7z
+
+curl.exe -L https://github.com/Abdess/retroarch_system/releases/download/v20220308/RetroArch_v1.10.1.zip -o bios.zip
+
+& "C:\Program Files\7-Zip\7z.exe" x "bios.zip" "system\*" -o".\RetroArch-Win64\"
+ 
+mkdir -p c:\apps
+mv RetroArch-Win64 c:\apps
+
+```
