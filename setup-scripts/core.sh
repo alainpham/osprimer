@@ -2642,7 +2642,7 @@ lineinfile $RARCHCFG "video_swap_interval.*=.*" 'video_swap_interval = "0"'
 lineinfile $RARCHCFG "video_vsync.*=.*" 'video_vsync = "false"'
 
 # deactivate menu button
-lineinfile $RARCHCFG "input_menu_toggle_btn.*=.*" 'input_menu_toggle_btn = "200"'
+lineinfile $RARCHCFG "input_menu_toggle_btn.*=.*" 'input_menu_toggle_btn = "nul"'
 
 #dpad mode analogue
 for i in $(seq 1 16); do
@@ -2710,6 +2710,7 @@ lineinfile "$CTRLCFG" "input_load_state_btn.*=.*" 'input_load_state_btn = "2"'
 lineinfile "$CTRLCFG" "input_save_state_btn.*=.*" 'input_save_state_btn = "3"'
 lineinfile "$CTRLCFG" "input_state_slot_decrease_btn.*=.*" 'input_state_slot_decrease_btn = "0"'
 lineinfile "$CTRLCFG" "input_state_slot_increase_btn.*=.*" 'input_state_slot_increase_btn = "1"'
+lineinfile "$CTRLCFG" "input_menu_toggle_btn.*=.*" 'input_menu_toggle_btn = "5"'
 
 # PS4 controller bluetooth
 export CTRLCFG="${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/autoconfig/udev/Sony-PlayStation4-DualShock4v2-Controller.cfg"
@@ -2721,6 +2722,7 @@ lineinfile "$CTRLCFG" "input_load_state_btn.*=.*" 'input_load_state_btn = "2"'
 lineinfile "$CTRLCFG" "input_save_state_btn.*=.*" 'input_save_state_btn = "3"'
 lineinfile "$CTRLCFG" "input_state_slot_decrease_btn.*=.*" 'input_state_slot_decrease_btn = "0"'
 lineinfile "$CTRLCFG" "input_state_slot_increase_btn.*=.*" 'input_state_slot_increase_btn = "1"'
+lineinfile "$CTRLCFG" "input_menu_toggle_btn.*=.*" 'input_menu_toggle_btn = "5"'
 
 # Xbox 360 Controller
 export CTRLCFG="${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/autoconfig/udev/Microsoft X-Box 360 pad.cfg"
@@ -2732,6 +2734,8 @@ lineinfile "$CTRLCFG" "input_load_state_btn.*=.*" 'input_load_state_btn = "3"'
 lineinfile "$CTRLCFG" "input_save_state_btn.*=.*" 'input_save_state_btn = "2"'
 lineinfile "$CTRLCFG" "input_state_slot_decrease_btn.*=.*" 'input_state_slot_decrease_btn = "0"'
 lineinfile "$CTRLCFG" "input_state_slot_increase_btn.*=.*" 'input_state_slot_increase_btn = "1"'
+lineinfile "$CTRLCFG" "input_menu_toggle_btn.*=.*" 'input_menu_toggle_btn = "5"'
+
 
 # "ShanWan PS3/PC Wired GamePad 8380:21760
 export CTRLCFG="${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/autoconfig/udev/Spartan Gear Oplon.cfg"
@@ -2742,6 +2746,7 @@ lineinfile "$CTRLCFG" "input_load_state_btn.*=.*" 'input_load_state_btn = "4"'
 lineinfile "$CTRLCFG" "input_save_state_btn.*=.*" 'input_save_state_btn = "3"'
 lineinfile "$CTRLCFG" "input_state_slot_decrease_btn.*=.*" 'input_state_slot_decrease_btn = "0"'
 lineinfile "$CTRLCFG" "input_state_slot_increase_btn.*=.*" 'input_state_slot_increase_btn = "1"'
+lineinfile "$CTRLCFG" "input_menu_toggle_btn.*=.*" 'input_menu_toggle_btn = "7"'
 
 # BETOP AX1 BFM 8380:21760
 export CTRLCFG="${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/autoconfig/udev/BETOP_AX1_BFM.cfg"

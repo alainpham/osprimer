@@ -184,14 +184,7 @@ Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer
 ```
 
 Emulation
-
-Retroarch
-https://buildbot.libretro.com/stable/1.21.0/windows/x86_64/
-
-https://buildbot.libretro.com/stable/1.21.0/windows/x86_64/RetroArch.7z
-
-https://buildbot.libretro.com/stable/1.21.0/windows/x86_64/RetroArch_cores.7z
-
+v
 pcsx2 bios:
 https://emulation.gametechwiki.com/index.php/Emulator_files#PlayStation_2
 
@@ -216,7 +209,7 @@ curl.exe -L https://github.com/Abdess/retroarch_system/releases/download/v202203
 
 & "C:\Program Files\7-Zip\7z.exe" x "bios.zip" "system\*" -o".\RetroArch-Win64\"
  
-mkdir -p c:\apps
+mkdir -p c:\apps\RetroArch-Win64
 mv RetroArch-Win64 c:\apps
 
 ```
