@@ -147,6 +147,8 @@ winget install --id=Postman.Postman  -e
 wsl --install --no-distribution
 
 winget install --force Microsoft.VisualStudioCode --override '/VERYSILENT /SP- /MERGETASKS="runcode,desktopicon,addcontextmenufiles,addcontextmenufolders,associatewithfiles,addtopath"'
+
+winget install -e --id Microsoft.VisualStudio.2022.BuildTools --override "--passive --wait --add Microsoft.VisualStudio.Workload.VCTools --installPath c:\vstudio2022"
 ```
 
 8. win 11 old context menu
@@ -209,7 +211,9 @@ curl.exe -L https://github.com/Abdess/retroarch_system/releases/download/v202203
 
 & "C:\Program Files\7-Zip\7z.exe" x "bios.zip" "system\*" -o".\RetroArch-Win64\"
  
-mkdir -p c:\apps\RetroArch-Win64
+mkdir -p c:\apps
 mv RetroArch-Win64 c:\apps
+
+curl -Lo C:\apps\RetroArch-Win64\retroarch.cfg https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/retroarch/retroarch.win.cfg
 
 ```
