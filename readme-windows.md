@@ -214,6 +214,14 @@ curl.exe -L https://github.com/Abdess/retroarch_system/releases/download/v202203
 mkdir -p c:\apps
 mv RetroArch-Win64 c:\apps
 
-curl -Lo C:\apps\RetroArch-Win64\retroarch.cfg https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/retroarch/retroarch.win.cfg
+curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/retroarch/retroarch.win.cfg -o C:\apps\RetroArch-Win64\retroarch.cfg
+
+curl.exe -L "https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/retroarch/autoconfig/xinput/Xbox%20360%20Wired%20Controller.cfg" -o "C:\apps\RetroArch-Win64\autoconfig\xinput\Xbox 360 Wired Controller.cfg"
+
+$WshShell = New-Object -ComObject WScript.Shell
+$Shortcut = $WshShell.CreateShortcut("C:\ProgramData\Microsoft\Windows\Start Menu\Programs\retroarch.lnk")
+$Shortcut.TargetPath = "C:\apps\RetroArch-Win64\retroarch.exe"
+$Shortcut.WorkingDirectory = "C:\apps\RetroArch-Win64\"
+$Shortcut.Save()
 
 ```
