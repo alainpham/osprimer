@@ -149,6 +149,24 @@ wsl --install --no-distribution
 winget install --force Microsoft.VisualStudioCode --override '/VERYSILENT /SP- /MERGETASKS="runcode,desktopicon,addcontextmenufiles,addcontextmenufolders,associatewithfiles,addtopath"'
 
 winget install -e --id Microsoft.VisualStudio.2022.BuildTools --override "--passive --wait --add Microsoft.VisualStudio.Workload.VCTools --installPath c:\vstudio2022"
+
+mkdir -p c:\temp
+
+curl.exe -L https://dlcdn.apache.org/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.zip -o c:\temp\maven.zip
+
+cd c:\temp
+& "C:\Program Files\7-Zip\7z.exe" x maven.zip
+mv .\apache-maven*\ C:\apps\maven
+
+$newPath = "C:\apps\maven\bin"
+$currentPath = [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine)
+
+# Avoid duplicates
+if ($currentPath -notlike "*$newPath*") {
+    $updatedPath = $currentPath + ";" + $newPath
+    [Environment]::SetEnvironmentVariable("Path", $updatedPath, [EnvironmentVariableTarget]::Machine)
+}
+
 ```
 
 8. win 11 old context menu
@@ -185,8 +203,33 @@ Show seconds in clock windows 10
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowSecondsInSystemClock" -Type DWord -Value 1
 ```
 
+autologin
+
+```ps1
+Get-ExecutionPolicy
+ 
+Set-ExecutionPolicy RemoteSigned -Force
+$Username = "apham"
+$Pass = "password"
+$RegistryPath = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
+Set-ItemProperty $RegistryPath 'AutoAdminLogon' -Value "1" -Type String 
+Set-ItemProperty $RegistryPath 'DefaultUsername' -Value "$Username" -type String 
+Set-ItemProperty $RegistryPath 'DefaultPassword' -Value "$Pass" -type String
+ 
+Write-Warning "Auto-Login for $username configured. Please restart computer."
+ 
+$restart = Read-Host 'Do you want to restart your computer now for testing auto-logon? (Y/N)'
+ 
+If ($restart -eq 'Y') {
+ 
+    Restart-Computer -Force
+ 
+}
+```
+
+
 Emulation
-v
+
 pcsx2 bios:
 https://emulation.gametechwiki.com/index.php/Emulator_files#PlayStation_2
 
@@ -222,6 +265,18 @@ $WshShell = New-Object -ComObject WScript.Shell
 $Shortcut = $WshShell.CreateShortcut("C:\ProgramData\Microsoft\Windows\Start Menu\Programs\retroarch.lnk")
 $Shortcut.TargetPath = "C:\apps\RetroArch-Win64\retroarch.exe"
 $Shortcut.WorkingDirectory = "C:\apps\RetroArch-Win64\"
+$Shortcut.Save()
+
+
+cd c:\temp
+curl.exe -L https://gitlab.com/es-de/emulationstation-de/-/package_files/210673039/download -o estation.zip
+& "C:\Program Files\7-Zip\7z.exe" x estation.zip
+mv ES-DE c:\apps
+
+$WshShell = New-Object -ComObject WScript.Shell
+$Shortcut = $WshShell.CreateShortcut("C:\ProgramData\Microsoft\Windows\Start Menu\Programs\estation.lnk")
+$Shortcut.TargetPath = "C:\apps\ES-DE\ES-DE.exe"
+$Shortcut.WorkingDirectory = "C:\apps\ES-DE\"
 $Shortcut.Save()
 
 ```

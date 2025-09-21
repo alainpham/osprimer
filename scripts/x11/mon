@@ -71,7 +71,6 @@ echo "Moonlight screen: $moonlight"
 
 # default behavior
 default() {
-    
     home
 }
 
