@@ -327,8 +327,23 @@ $Shortcut.Save()
 
 mkdir -p "C:\Users\apham\AppData\Roaming\Dolphin Emulator\Config"
 curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/dolphin-emu/win/Dolphin.ini -o "C:/Users/apham/AppData/Roaming/Dolphin Emulator/Config/Dolphin.ini"
-curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/dolphin-emu/GCPadNew.ini -o "C:/Users/apham/AppData/Roaming/Dolphin Emulator/Config/"
-curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/dolphin-emu/WiimoteNew.ini -o "C:/Users/apham/AppData/Roaming/Dolphin Emulator/Config/"
-curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/dolphin-emu/GFX.ini -o "C:/Users/apham/AppData/Roaming/Dolphin Emulator/Config/"
-curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/dolphin-emu/Hotkeys.ini -o "C:/Users/apham/AppData/Roaming/Dolphin Emulator/Config/
+curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/dolphin-emu/GCPadNew.ini -o "C:/Users/apham/AppData/Roaming/Dolphin Emulator/Config/GCPadNew.ini"
+curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/dolphin-emu/WiimoteNew.ini -o "C:/Users/apham/AppData/Roaming/Dolphin Emulator/Config/WiimoteNew.ini"
+curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/dolphin-emu/GFX.ini -o "C:/Users/apham/AppData/Roaming/Dolphin Emulator/Config/GFX.ini"
+curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/dolphin-emu/Hotkeys.ini -o "C:/Users/apham/AppData/Roaming/Dolphin Emulator/Config/Hotkeys.ini"
+
+
+#cemu
+cd c:\temp
+curl.exe -L https://github.com/cemu-project/Cemu/releases/download/v2.6/cemu-2.6-windows-x64.zip -o cmu.zip
+& "C:\Program Files\7-Zip\7z.exe" x cmu.zip
+mv Cemu* c:/apps/cemu
+
+$WshShell = New-Object -ComObject WScript.Shell
+$Shortcut = $WshShell.CreateShortcut("C:\ProgramData\Microsoft\Windows\Start Menu\Programs\cemu.lnk")
+$Shortcut.TargetPath = "C:\apps\cemu\Cemu.exe"
+$Shortcut.WorkingDirectory = "C:\apps\cemu"
+$Shortcut.Save()
+
+
 ```
