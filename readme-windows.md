@@ -277,7 +277,7 @@ $Shortcut.TargetPath = "C:\apps\RetroArch-Win64\retroarch.exe"
 $Shortcut.WorkingDirectory = "C:\apps\RetroArch-Win64\"
 $Shortcut.Save()
 
-
+#emu station
 cd c:\temp
 curl.exe -L https://gitlab.com/es-de/emulationstation-de/-/package_files/210673039/download -o estation.zip
 & "C:\Program Files\7-Zip\7z.exe" x estation.zip
@@ -286,7 +286,7 @@ mv ES-DE c:\apps
 $WshShell = New-Object -ComObject WScript.Shell
 $Shortcut = $WshShell.CreateShortcut("C:\ProgramData\Microsoft\Windows\Start Menu\Programs\estation.lnk")
 $Shortcut.TargetPath = "C:\apps\ES-DE\ES-DE.exe"
-$Shortcut.WorkingDirectory = "C:\apps\ES-DE\"
+$Shortcut.WorkingDirectory = "C:\"
 $Shortcut.Save()
 
 
@@ -308,8 +308,27 @@ mkdir -p C:/Users/apham/Documents/PCSX2/inis
 
 curl.exe -L https://github.com/archtaurus/RetroPieBIOS/raw/master/BIOS/pcsx2/bios/ps2-0230a-20080220.bin -o C:/Users/apham/Documents/PCSX2/bios/ps2-0230a-20080220.bin
 
-wget -O ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/bios/ps2-0230a-20080220.bin https://github.com/archtaurus/RetroPieBIOS/raw/master/BIOS/pcsx2/bios/ps2-0230a-20080220.bin 
+
+curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/pcsx2/PCSX2-win.ini -o C:/Users/apham/Documents/PCSX2/inis/PCSX2.ini
+
+# DOLPHIN
+cd c:\temp
+curl.exe -L https://dl.dolphin-emu.org/releases/2509/dolphin-2509-x64.7z -o dolphin.7z
+
+& "C:\Program Files\7-Zip\7z.exe" x dolphin.7z
+mv Dolphin-x64 c:\apps
+
+$WshShell = New-Object -ComObject WScript.Shell
+$Shortcut = $WshShell.CreateShortcut("C:\ProgramData\Microsoft\Windows\Start Menu\Programs\dolphin.lnk")
+$Shortcut.TargetPath = "C:\apps\Dolphin-x64\Dolphin.exe"
+$Shortcut.WorkingDirectory = "C:\apps\Dolphin-x64\"
+$Shortcut.Save()
 
 
-
+mkdir -p "C:\Users\apham\AppData\Roaming\Dolphin Emulator\Config"
+curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/dolphin-emu/win/Dolphin.ini -o "C:/Users/apham/AppData/Roaming/Dolphin Emulator/Config/Dolphin.ini"
+curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/dolphin-emu/GCPadNew.ini -o "C:/Users/apham/AppData/Roaming/Dolphin Emulator/Config/"
+curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/dolphin-emu/WiimoteNew.ini -o "C:/Users/apham/AppData/Roaming/Dolphin Emulator/Config/"
+curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/dolphin-emu/GFX.ini -o "C:/Users/apham/AppData/Roaming/Dolphin Emulator/Config/"
+curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/dolphin-emu/Hotkeys.ini -o "C:/Users/apham/AppData/Roaming/Dolphin Emulator/Config/
 ```
