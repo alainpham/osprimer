@@ -71,7 +71,8 @@ echo "Moonlight screen: $moonlight"
 
 # default behavior
 default() {
-    home
+    export command=$(cat ~/.sclayout)
+    applylayout
 }
 
 lap() {
@@ -226,6 +227,8 @@ home() {
 
 }
 
+
+applylayout(){
 if [ "$command" == "l" ]; then
     
     lap
@@ -258,10 +261,13 @@ elif [ "$command" == "clm" ] && echo "$monitors" | grep -q "$dock_left" && echo 
     
     centerleftml
 
-elif [ "$command" == "" ] && echo "$monitors" | grep -q "$dock_left" && echo "$monitors" | grep -q "$dock_center"; then
+elif [ "$command" == "" ] && echo "$monitors" | grep -q "$dock_left" && echo "$monitors" | grep -q "$dock_center"  && echo "$monitors" | grep -q "$moonlight"; then
     echo "Docking station detected, setting up DisplayPort monitors."
     default
 else
     echo "No specific command provided or no docking station detected. Defaulting to laptop screen only."
     lap
 fi
+}
+
+applylayout

@@ -2774,7 +2774,7 @@ EOF
 # configure PCSX2
 
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/inis
-wget -O ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/inis/PCSX2.ini https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/PCSX2.ini
+wget -O ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/inis/PCSX2.ini https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation//pcsx2/PCSX2.ini
 
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/memcards
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/sstates

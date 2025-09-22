@@ -148,15 +148,14 @@ wsl --install --no-distribution
 
 winget install --force Microsoft.VisualStudioCode --override '/VERYSILENT /SP- /MERGETASKS="runcode,desktopicon,addcontextmenufiles,addcontextmenufolders,associatewithfiles,addtopath"'
 
-winget install -e --id Microsoft.VisualStudio.2022.BuildTools --override "--passive --wait --add Microsoft.VisualStudio.Workload.VCTools --installPath c:\vstudio2022"
-
 mkdir -p c:\temp
+mkdir -p c:\apps
 
 curl.exe -L https://dlcdn.apache.org/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.zip -o c:\temp\maven.zip
 
 cd c:\temp
 & "C:\Program Files\7-Zip\7z.exe" x maven.zip
-mv .\apache-maven*\ C:\apps\maven
+mv .\apache-maven* C:\apps\maven
 
 $newPath = "C:\apps\maven\bin"
 $currentPath = [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine)
@@ -166,6 +165,16 @@ if ($currentPath -notlike "*$newPath*") {
     $updatedPath = $currentPath + ";" + $newPath
     [Environment]::SetEnvironmentVariable("Path", $updatedPath, [EnvironmentVariableTarget]::Machine)
 }
+
+
+
+# CL.exe comipilation with vs
+winget install -e --id Microsoft.VisualStudio.2022.BuildTools --override "--passive --wait --add Microsoft.VisualStudio.Workload.VCTools --installPath c:\vstudio2022"
+
+# with MSYS
+winget install -e --id MSYS2.MSYS2
+
+pacman -S mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-pkg-config git mingw-w64-ucrt-x86_64-sdl3 vim
 
 ```
 
@@ -225,6 +234,7 @@ If ($restart -eq 'Y') {
     Restart-Computer -Force
  
 }
+
 ```
 
 
@@ -255,7 +265,7 @@ curl.exe -L https://github.com/Abdess/retroarch_system/releases/download/v202203
 & "C:\Program Files\7-Zip\7z.exe" x "bios.zip" "system\*" -o".\RetroArch-Win64\"
  
 mkdir -p c:\apps
-mv RetroArch-Win64 c:\apps
+mv RetroArch-Win64 c:\apps\
 
 curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/retroarch/retroarch.win.cfg -o C:\apps\RetroArch-Win64\retroarch.cfg
 
@@ -278,5 +288,20 @@ $Shortcut = $WshShell.CreateShortcut("C:\ProgramData\Microsoft\Windows\Start Men
 $Shortcut.TargetPath = "C:\apps\ES-DE\ES-DE.exe"
 $Shortcut.WorkingDirectory = "C:\apps\ES-DE\"
 $Shortcut.Save()
+
+
+# PCSX2
+cd c:\temp
+curl.exe -L https://github.com/PCSX2/pcsx2/releases/download/v2.4.0/pcsx2-v2.4.0-windows-x64-Qt.7z -o pcsx2.7z
+
+& "C:\Program Files\7-Zip\7z.exe" x pcsx2.7z -opcsx2
+mv pcsx2 c:\apps
+
+$WshShell = New-Object -ComObject WScript.Shell
+$Shortcut = $WshShell.CreateShortcut("C:\ProgramData\Microsoft\Windows\Start Menu\Programs\pcsx2.lnk")
+$Shortcut.TargetPath = "C:\apps\pcsx2\pcsx2-qt.exe"
+$Shortcut.WorkingDirectory = "C:\apps\pcsx2\"
+$Shortcut.Save()
+
 
 ```

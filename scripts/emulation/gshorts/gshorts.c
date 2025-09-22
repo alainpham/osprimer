@@ -75,8 +75,8 @@ int main(void) {
                     // Check if process "estation" exists and kill it
                     system("kill -9 $(pidof estation)");
                     system("kill -9 $(pidof retroarch)");
-                    system("kill -9 $(pidof pcsx2)");
-                    system("kill -9 $(pidof dolphin)");
+                    system("kill -9 $(pidof pcsx2) $(pidof AppRun.wrapped)");
+                    system("kill -9 $(pidof dolphin-emu)");
                     system("kill -9 $(pidof cemu)");
                     system("kill -9 $(pidof chrome)");
                     system("nohup estation >/dev/null 2>&1 &");
