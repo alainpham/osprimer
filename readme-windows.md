@@ -143,7 +143,8 @@ winget install --id=ONLYOFFICE.DesktopEditors  -e
 winget install --id=Inkscape.Inkscape  -e
 winget install --id=MoonlightGameStreamingProject.Moonlight  -e
 winget install --id=Postman.Postman  -e
-
+winget install --id NSSM.NSSM -e 
+winget install --id AutoHotkey.AutoHotkey -e
 wsl --install --no-distribution
 
 winget install --force Microsoft.VisualStudioCode --override '/VERYSILENT /SP- /MERGETASKS="runcode,desktopicon,addcontextmenufiles,addcontextmenufolders,associatewithfiles,addtopath"'
@@ -175,6 +176,7 @@ winget install -e --id Microsoft.VisualStudio.2022.BuildTools --override "--pass
 winget install -e --id MSYS2.MSYS2
 
 pacman -S mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-pkg-config git mingw-w64-ucrt-x86_64-sdl3 vim
+
 
 ```
 
@@ -348,4 +350,6 @@ $Shortcut.Save()
 mkdir -p "C:\Users\apham\AppData\Roaming\Cemu\controllerProfiles"
 curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/cemu/settings-win.xml -o "C:/Users/apham/AppData/Roaming/Cemu/settings.xml"
 curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/cemu/controllerProfiles/controller0.xml -o "C:/Users/apham/AppData/Roaming/Cemu/controllerProfiles/controller0.xml"
+
+# PUT GSHORTS into startup
 ```
