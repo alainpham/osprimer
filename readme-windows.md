@@ -303,5 +303,13 @@ $Shortcut.TargetPath = "C:\apps\pcsx2\pcsx2-qt.exe"
 $Shortcut.WorkingDirectory = "C:\apps\pcsx2\"
 $Shortcut.Save()
 
+mkdir -p C:/Users/apham/Documents/PCSX2/bios
+mkdir -p C:/Users/apham/Documents/PCSX2/inis
+
+curl.exe -L https://github.com/archtaurus/RetroPieBIOS/raw/master/BIOS/pcsx2/bios/ps2-0230a-20080220.bin -o C:/Users/apham/Documents/PCSX2/bios/ps2-0230a-20080220.bin
+
+wget -O ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/bios/ps2-0230a-20080220.bin https://github.com/archtaurus/RetroPieBIOS/raw/master/BIOS/pcsx2/bios/ps2-0230a-20080220.bin 
+
+
 
 ```
