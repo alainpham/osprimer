@@ -352,4 +352,7 @@ curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/s
 curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/cemu/controllerProfiles/controller0.xml -o "C:/Users/apham/AppData/Roaming/Cemu/controllerProfiles/controller0.xml"
 
 # PUT GSHORTS into startup
+$Action = New-ScheduledTaskAction -Execute "C:\apps\gshorts\gshorts.ahk"
+$Trigger = New-ScheduledTaskTrigger -AtLogOn
+Register-ScheduledTask -TaskName "gshorts" -Action $Action -Trigger $Trigger -Force
 ```
