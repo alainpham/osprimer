@@ -345,5 +345,7 @@ $Shortcut.TargetPath = "C:\apps\cemu\Cemu.exe"
 $Shortcut.WorkingDirectory = "C:\apps\cemu"
 $Shortcut.Save()
 
-
+mkdir -p "C:\Users\apham\AppData\Roaming\Cemu\controllerProfiles"
+curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/cemu/settings-win.xml -o "C:/Users/apham/AppData/Roaming/Cemu/settings.xml"
+curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/cemu/controllerProfiles/controller0.xml -o "C:/Users/apham/AppData/Roaming/Cemu/controllerProfiles/controller0.xml"
 ```
