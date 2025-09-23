@@ -1,108 +1,134 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <dirent.h>
-#include <unistd.h>
-#include <errno.h>
-#include <linux/input.h>
-#include <fcntl.h>
-#include <sys/types.h>
+#include <SDL2/SDL.h>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
-static int find_js0_event(char *out, size_t out_size) {
-    const char *path = "/sys/class/input/js0/device";
-    DIR *dir = opendir(path);
-    if (!dir) return -1;
-
-    struct dirent *entry;
-    while ((entry = readdir(dir)) != NULL) {
-        if (strncmp(entry->d_name, "event", 5) == 0) {
-            snprintf(out, out_size, "/dev/input/%s", entry->d_name);
-            closedir(dir);
-            return 0;
-        }
-    }
-
-    closedir(dir);
-    return -1; // no eventXX found
+void launch_estation() {
+#ifdef _WIN32
+    system("taskkill /IM ES-DE.exe /F");
+    system("taskkill /IM pcsx2-qt.exe /F");
+    system("taskkill /IM Dolphin.exe /F");
+    system("taskkill /IM Cemu.exe /F");
+    system("taskkill /IM retroarch.exe /F");
+    system("start C:/apps/ES-DE/ES-DE.exe");
+#else
+    // --- Linux / Unix ---
+    system("kill -9 $(pidof estation)");
+    system("kill -9 $(pidof retroarch)");
+    system("kill -9 $(pidof pcsx2) $(pidof AppRun.wrapped)");
+    system("kill -9 $(pidof dolphin-emu)");
+    system("kill -9 $(pidof cemu)");
+    system("kill -9 $(pidof chrome)");
+    system("nohup estation >/dev/null 2>&1 &");
+#endif
 }
 
-int main(void) {
-    char eventPath[256];
-    struct input_event ev;
+void trigger_exit() {
+#ifdef _WIN32
+    HWND hwnd = GetForegroundWindow();   // Get the currently active window
+    if (hwnd) {
+        PostMessage(hwnd, WM_CLOSE, 0, 0);  // Ask it to close (like Alt+F4)
+    }
+#else
+    system("setxkbmap fr && xdotool key Super_L+c");
+#endif
+}
+
+int main(){
+    
+    int running=1;
     int btnModePressed = 0;
     int btnSelectPressed = 0;
     int btnStartPressed = 0;
-
-    int retry_delay = 2; // seconds
-    while (1) {
-        // === Outer loop: wait for joystick ===
-        if (find_js0_event(eventPath, sizeof(eventPath)) != 0) {
-            printf("No js0 event device, retrying in %d seconds...\n", retry_delay);
-            sleep(retry_delay);
-            continue;
-        }
-
-        printf("Found joystick at %s\n", eventPath);
-
-        int fd = open(eventPath, O_RDONLY);
-        if (fd < 0) {
-            perror("open");
-            continue;
-        }
-
-        // === Inner loop: process events ===
-        while (1) {
-            ssize_t n = read(fd, &ev, sizeof(ev));
-            if (n == (ssize_t)sizeof(ev)) {
-                if (ev.type == EV_KEY && ev.code == BTN_MODE) {
-                    btnModePressed = (ev.value == 1);
-                    printf("Mode button %s\n", btnModePressed ? "pressed" : "released");
-                }
-
-                if (ev.type == EV_KEY && ev.code == BTN_SELECT) {
-                    btnSelectPressed = (ev.value == 1);
-                    printf("Select button %s\n", btnSelectPressed ? "pressed" : "released");
-                }
-
-                if (ev.type == EV_KEY && ev.code == BTN_START) {
-                    btnStartPressed = (ev.value == 1);
-                    printf("Start button %s\n", btnStartPressed ? "pressed" : "released");
-                }
-
-                // Check for Mode + Select combination => run estation
-                if (ev.type == EV_KEY && btnModePressed && btnSelectPressed) {
-                    printf("Mode + Select detected!\n");
-                    // Check if process "estation" exists and kill it
-                    system("kill -9 $(pidof estation)");
-                    system("kill -9 $(pidof retroarch)");
-                    system("kill -9 $(pidof pcsx2) $(pidof AppRun.wrapped)");
-                    system("kill -9 $(pidof dolphin-emu)");
-                    system("kill -9 $(pidof cemu)");
-                    system("kill -9 $(pidof chrome)");
-                    system("nohup estation >/dev/null 2>&1 &");
-                }
-
-                // Check for Mode + Start combination => Super + C
-                if (ev.type == EV_KEY && btnModePressed && btnStartPressed) {
-                    printf("Mode + Start detected!\n");
-                    system("setxkbmap fr && xdotool key Super_L+c");
-                }
-
-            } else if (n == -1) {
-                if (errno == ENODEV || errno == EIO) {
-                    printf("Controller disconnected!\n");
-                } else {
-                    perror("read");
-                }
-                break; // exit inner loop, close fd
-            }
-        }
-
-        close(fd);
-
-        // back to outer loop, wait before retry
-        sleep(retry_delay);
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) < 0) {
+        SDL_Log("couldn't initialize SDL: %s", SDL_GetError());
+        return 1;
+    } else {
+        SDL_Log("gshorts starting ..");
     }
 
+    // In SDL2, "gamepad" API is called "GameController"
+    // SDL will automatically send "controller device added" events
+    SDL_GameController *controllers[4] = {0}; // support up to 4 controllers
+
+    while (running) {
+        SDL_Event event;
+        if (SDL_WaitEvent(&event)) {
+            switch (event.type) {
+                case SDL_QUIT:
+                    running = 0;
+                    SDL_Log("gshorts exiting ..");
+                    break;
+
+                case SDL_CONTROLLERDEVICEADDED: {
+                    int which = event.cdevice.which;
+                    if (SDL_IsGameController(which)) {
+                        SDL_GameController *controller = SDL_GameControllerOpen(which);
+                        if (controller) {
+                            int index = SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controller));
+                            controllers[index % 4] = controller;
+                            SDL_Log("gamepad #%d ('%s') added", index, SDL_GameControllerName(controller));
+                        } else {
+                            SDL_Log("gamepad #%d add, but not opened: %s", which, SDL_GetError());
+                        }
+                    }
+                } break;
+
+                case SDL_CONTROLLERDEVICEREMOVED: {
+                    SDL_JoystickID which = event.cdevice.which;
+                    for (int i = 0; i < 4; i++) {
+                        if (controllers[i] && SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controllers[i])) == which) {
+                            SDL_GameControllerClose(controllers[i]);
+                            controllers[i] = NULL;
+                            SDL_Log("gamepad #%d removed", which);
+                            break;
+                        }
+                    }
+                } break;
+
+                case SDL_CONTROLLERBUTTONDOWN:
+                case SDL_CONTROLLERBUTTONUP: {
+                    SDL_JoystickID which = event.cbutton.which;
+                    int down = (event.type == SDL_CONTROLLERBUTTONDOWN);
+
+                    if (event.cbutton.button == SDL_CONTROLLER_BUTTON_GUIDE) {
+                        btnModePressed = down;
+                        SDL_Log("gamepad #%d button GUIDE -> %s", which, down ? "PRESSED" : "RELEASED");
+                    }
+
+                    if (event.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
+                        btnStartPressed = down;
+                        SDL_Log("gamepad #%d button START -> %s", which, down ? "PRESSED" : "RELEASED");
+                    }
+
+                    if (event.cbutton.button == SDL_CONTROLLER_BUTTON_BACK) {
+                        btnSelectPressed = down;
+                        SDL_Log("gamepad #%d button BACK -> %s", which, down ? "PRESSED" : "RELEASED");
+                    }
+
+                    if (btnModePressed && btnStartPressed) {
+                        SDL_Log("trigger closing window");
+                        trigger_exit();
+                    }
+                    if (btnModePressed && btnSelectPressed) {
+                        SDL_Log("trigger launching ESDE");
+                        launch_estation();
+                    }
+                } break;
+            }
+        }
+    }
+
+    // Cleanup
+    for (int i = 0; i < 4; i++) {
+        if (controllers[i]) {
+            SDL_GameControllerClose(controllers[i]);
+        }
+    }
+
+    SDL_Quit();
     return 0;
 }
+
+
+

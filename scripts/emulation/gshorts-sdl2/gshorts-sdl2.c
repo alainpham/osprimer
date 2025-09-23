@@ -1,36 +1,134 @@
-#include <SDL.h>
+#include <SDL2/SDL.h>
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
-int main(int argc, char *argv[])
-{
-    SDL_Window *window;
-    SDL_Renderer *renderer;
-    SDL_Surface *surface;
-    SDL_Event event;
+void launch_estation() {
+#ifdef _WIN32
+    system("taskkill /IM ES-DE.exe /F");
+    system("taskkill /IM pcsx2-qt.exe /F");
+    system("taskkill /IM Dolphin.exe /F");
+    system("taskkill /IM Cemu.exe /F");
+    system("taskkill /IM retroarch.exe /F");
+    system("start C:/apps/ES-DE/ES-DE.exe");
+#else
+    // --- Linux / Unix ---
+    system("kill -9 $(pidof estation)");
+    system("kill -9 $(pidof retroarch)");
+    system("kill -9 $(pidof pcsx2) $(pidof AppRun.wrapped)");
+    system("kill -9 $(pidof dolphin-emu)");
+    system("kill -9 $(pidof cemu)");
+    system("kill -9 $(pidof chrome)");
+    system("nohup estation >/dev/null 2>&1 &");
+#endif
+}
 
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s", SDL_GetError());
-        return 3;
+void trigger_exit() {
+#ifdef _WIN32
+    HWND hwnd = GetForegroundWindow();   // Get the currently active window
+    if (hwnd) {
+        PostMessage(hwnd, WM_CLOSE, 0, 0);  // Ask it to close (like Alt+F4)
+    }
+#else
+    system("setxkbmap fr && xdotool key Super_L+c");
+#endif
+}
+
+int main(){
+    
+    int running=1;
+    int btnModePressed = 0;
+    int btnSelectPressed = 0;
+    int btnStartPressed = 0;
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER) < 0) {
+        SDL_Log("couldn't initialize SDL: %s", SDL_GetError());
+        return 1;
+    } else {
+        SDL_Log("gshorts starting ..");
     }
 
-    if (SDL_CreateWindowAndRenderer(320, 240, SDL_WINDOW_RESIZABLE, &window, &renderer)) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window and renderer: %s", SDL_GetError());
-        return 3;
-    }
+    // In SDL2, "gamepad" API is called "GameController"
+    // SDL will automatically send "controller device added" events
+    SDL_GameController *controllers[4] = {0}; // support up to 4 controllers
 
-    while (1) {
-        SDL_PollEvent(&event);
-        if (event.type == SDL_QUIT) {
-            break;
+    while (running) {
+        SDL_Event event;
+        if (SDL_WaitEvent(&event)) {
+            switch (event.type) {
+                case SDL_QUIT:
+                    running = 0;
+                    SDL_Log("gshorts exiting ..");
+                    break;
+
+                case SDL_CONTROLLERDEVICEADDED: {
+                    int which = event.cdevice.which;
+                    if (SDL_IsGameController(which)) {
+                        SDL_GameController *controller = SDL_GameControllerOpen(which);
+                        if (controller) {
+                            int index = SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controller));
+                            controllers[index % 4] = controller;
+                            SDL_Log("gamepad #%d ('%s') added", index, SDL_GameControllerName(controller));
+                        } else {
+                            SDL_Log("gamepad #%d add, but not opened: %s", which, SDL_GetError());
+                        }
+                    }
+                } break;
+
+                case SDL_CONTROLLERDEVICEREMOVED: {
+                    SDL_JoystickID which = event.cdevice.which;
+                    for (int i = 0; i < 4; i++) {
+                        if (controllers[i] && SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controllers[i])) == which) {
+                            SDL_GameControllerClose(controllers[i]);
+                            controllers[i] = NULL;
+                            SDL_Log("gamepad #%d removed", which);
+                            break;
+                        }
+                    }
+                } break;
+
+                case SDL_CONTROLLERBUTTONDOWN:
+                case SDL_CONTROLLERBUTTONUP: {
+                    SDL_JoystickID which = event.cbutton.which;
+                    int down = (event.type == SDL_CONTROLLERBUTTONDOWN);
+
+                    if (event.cbutton.button == SDL_CONTROLLER_BUTTON_GUIDE) {
+                        btnModePressed = down;
+                        SDL_Log("gamepad #%d button GUIDE -> %s", which, down ? "PRESSED" : "RELEASED");
+                    }
+
+                    if (event.cbutton.button == SDL_CONTROLLER_BUTTON_START) {
+                        btnStartPressed = down;
+                        SDL_Log("gamepad #%d button START -> %s", which, down ? "PRESSED" : "RELEASED");
+                    }
+
+                    if (event.cbutton.button == SDL_CONTROLLER_BUTTON_BACK) {
+                        btnSelectPressed = down;
+                        SDL_Log("gamepad #%d button BACK -> %s", which, down ? "PRESSED" : "RELEASED");
+                    }
+
+                    if (btnModePressed && btnStartPressed) {
+                        SDL_Log("trigger closing window");
+                        trigger_exit();
+                    }
+                    if (btnModePressed && btnSelectPressed) {
+                        SDL_Log("trigger launching ESDE");
+                        launch_estation();
+                    }
+                } break;
+            }
         }
-        SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0x00);
-        SDL_RenderClear(renderer);
-        SDL_RenderPresent(renderer);
     }
 
-    SDL_DestroyRenderer(renderer);
-    SDL_DestroyWindow(window);
+    // Cleanup
+    for (int i = 0; i < 4; i++) {
+        if (controllers[i]) {
+            SDL_GameControllerClose(controllers[i]);
+        }
+    }
 
     SDL_Quit();
-
     return 0;
 }
+
+
+
