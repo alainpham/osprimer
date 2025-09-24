@@ -1,1 +1,1 @@
-rm gshorts-win.exe ; gcc gshorts-win.c -o gshorts-win.exe $(pkg-config --cflags --libs sdl3) -mconsole && ./gshorts-win.exe
+rm gshorts.exe ; gcc gshorts.c -o gshorts.exe $(pkg-config --cflags --libs sdl2) -mconsole && ./gshorts.exe
