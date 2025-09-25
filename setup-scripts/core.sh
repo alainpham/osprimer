@@ -2218,6 +2218,38 @@ imoonlight $force_reinstall
 isunshine $force_reinstall
 }
 
+iwebapps(){
+webapps=(
+    "gpt|https://chatgpt.com"
+    "gm|https://mail.google.com/mail/u/1/#inbox"
+    "cal|https://calendar.google.com/calendar/u/1/r"
+    "teams|https://teams.microsoft.com/v2/"
+    "whatsapp|https://web.whatsapp.com"
+    "messenger|https://www.messenger.com"
+    "telegram|https://web.telegram.org"
+    "notes|https://docs.google.com/document/d/1wTwA1NhzgYUGG1eyDyUZj8ExhbhdscQrdYWBOBkLnCs"
+    "gco|https://docs.google.com/presentation/d/1yo6Q0p0OBK9vIh3abwigtBDlFGMy9NqU7EzRKYjraro"
+    "gdemo|https://assertsdemo.grafana.net/a/grafana-asserts-app/assertions?start=now-24h&end=now&we[0][n]=productcatalogservice&we[0][tp]=Service&we[0][sc][site]=us-east-2&we[0][sc][ns]=ditl-demo-prod&we[0][sc][env]=assertsdemo-cluster&we[1][n]=flagd&we[1][tp]=Service&we[1][sc][site]=us-east-2&we[1][sc][ns]=ditl-demo-prod&we[1][sc][env]=assertsdemo-cluster&we[2][n]=productcatalog-postgres&we[2][tp]=Service&we[2][sc][site]=us-east-2&we[2][sc][ns]=ditl-demo-prod&we[2][sc][env]=assertsdemo-cluster&we[3][n]=frontend&we[3][tp]=Service&we[3][sc][site]=us-east-2&we[3][sc][ns]=ditl-demo-prod&we[3][sc][env]=assertsdemo-cluster&we[4][n]=recommendationservice&we[4][tp]=Service&we[4][sc][site]=us-east-2&we[4][sc][ns]=ditl-demo-prod&we[4][sc][env]=assertsdemo-cluster&view=BY_ENTITY"
+    "spotify|https://open.spotify.com/"
+    "youtube|https://www.youtube.com/"
+    "grok|https://grok.com/"
+)
+
+for entry in "${webapps[@]}"; do
+    name="${entry%%|*}"
+    url="${entry#*|}"
+cat << EOF | tee ${ROOTFS}/usr/local/bin/${name}
+#!/bin/bash
+google-chrome --app="${url}"
+EOF
+cat << EOF | chroot ${ROOTFS}
+chmod 755 /usr/local/bin/${name}
+EOF
+done
+
+
+}
+
 isunshine(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
