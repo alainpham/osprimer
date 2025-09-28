@@ -51,6 +51,20 @@ int main(){
     // SDL will automatically send "controller device added" events
     SDL_GameController *controllers[4] = {0}; // support up to 4 controllers
 
+    //special mapping
+    const char *mapping =
+    "0300d859bc2000000055000010010000,GameSir G3w,a:b0,b:b1,back:b10,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b13,lefttrigger:a5,leftx:a0,lefty:a1,rightshoulder:b7,rightstick:b14,righttrigger:a4,rightx:a2,righty:a3,start:b11,x:b3,y:b4,platform:Linux";
+
+    int added = SDL_GameControllerAddMapping(mapping);
+    if (added == 1) {
+        SDL_Log("Mapping added for GameSir G3w!");
+    } else if (added == 0) {
+        SDL_Log("Mapping already existed, updated.");
+    } else {
+        SDL_Log("Failed to add mapping: %s", SDL_GetError());
+    }
+    // end special mappings
+
     while (running) {
         SDL_Event event;
         if (SDL_WaitEvent(&event)) {
@@ -68,6 +82,14 @@ int main(){
                             int index = SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(controller));
                             controllers[index % 4] = controller;
                             SDL_Log("gamepad #%d ('%s') added", index, SDL_GameControllerName(controller));
+
+                            const char *mapping = SDL_GameControllerMapping(controller);
+                            if (mapping) {
+                                SDL_Log("Mapping for controller #%d: %s", index, mapping);
+                            } else {
+                                SDL_Log("No mapping found for controller #%d", index);
+                            }
+
                         } else {
                             SDL_Log("gamepad #%d add, but not opened: %s", which, SDL_GetError());
                         }
@@ -90,7 +112,7 @@ int main(){
                 case SDL_CONTROLLERBUTTONUP: {
                     SDL_JoystickID which = event.cbutton.which;
                     int down = (event.type == SDL_CONTROLLERBUTTONDOWN);
-
+    
                     if (event.cbutton.button == SDL_CONTROLLER_BUTTON_GUIDE) {
                         btnModePressed = down;
                         SDL_Log("gamepad #%d button GUIDE -> %s", which, down ? "PRESSED" : "RELEASED");
