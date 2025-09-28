@@ -349,12 +349,12 @@ curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/s
 mkdir -p "C:\apps\gshorts"
 curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/gshorts/gshorts.c -o "C:/apps/gshorts/gshorts.c"
 
-#in msys
-cd
-rm gshorts.exe ; gcc gshorts.c -o gshorts.exe $(pkg-config --cflags --libs sdl2) -mconsole
-
-curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/gshorts/gshorts.exe -o "C:/apps/gshorts/gshorts.exe"
 curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/gshorts/gshorts.ahk -o "C:/apps/gshorts/gshorts.ahk"
+
+#in msys
+cd "C:\apps\gshorts"
+rm gshorts.exe ; gcc gshorts.c -o gshorts.exe $(pkg-config --cflags --libs sdl2) -mconsole
+cp "C:\msys64\ucrt64\bin\SDL2.dll" "C:\apps\gshorts\SDL2.dll"
 
 $Action = New-ScheduledTaskAction -Execute "C:\apps\gshorts\gshorts.ahk"
 $Trigger = New-ScheduledTaskTrigger -AtLogOn
