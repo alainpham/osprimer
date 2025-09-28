@@ -350,6 +350,7 @@ mkdir -p "C:\apps\gshorts"
 curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/gshorts/gshorts.c -o "C:/apps/gshorts/gshorts.c"
 
 #in msys
+cd
 rm gshorts.exe ; gcc gshorts.c -o gshorts.exe $(pkg-config --cflags --libs sdl2) -mconsole
 
 curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/gshorts/gshorts.exe -o "C:/apps/gshorts/gshorts.exe"
