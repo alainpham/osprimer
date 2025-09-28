@@ -143,7 +143,6 @@ winget install --id=ONLYOFFICE.DesktopEditors  -e
 winget install --id=Inkscape.Inkscape  -e
 winget install --id=MoonlightGameStreamingProject.Moonlight  -e
 winget install --id=Postman.Postman  -e
-winget install --id NSSM.NSSM -e 
 winget install --id AutoHotkey.AutoHotkey -e
 wsl --install --no-distribution
 
@@ -167,15 +166,10 @@ if ($currentPath -notlike "*$newPath*") {
     [Environment]::SetEnvironmentVariable("Path", $updatedPath, [EnvironmentVariableTarget]::Machine)
 }
 
-
-
-# CL.exe comipilation with vs
-winget install -e --id Microsoft.VisualStudio.2022.BuildTools --override "--passive --wait --add Microsoft.VisualStudio.Workload.VCTools --installPath c:\vstudio2022"
-
 # with MSYS
 winget install -e --id MSYS2.MSYS2
 
-pacman -S mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-pkg-config git mingw-w64-ucrt-x86_64-sdl3 vim
+pacman -S mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-pkg-config mingw-w64-ucrt-x86_64-SDL2 git vim
 
 
 ```
@@ -193,7 +187,6 @@ https://github.com/nefarius/DsHidMini/releases/latest
 -> insall bowth ini files
 
 https://github.com/nefarius/BthPS3/releases/latest
-
 
 10. Deactivate gamebar
 
@@ -352,6 +345,16 @@ curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/s
 curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/cemu/controllerProfiles/controller0.xml -o "C:/Users/apham/AppData/Roaming/Cemu/controllerProfiles/controller0.xml"
 
 # PUT GSHORTS into startup
+
+mkdir -p "C:\apps\gshorts"
+curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/gshorts/gshorts.c -o "C:/apps/gshorts/gshorts.c"
+
+#in msys
+rm gshorts.exe ; gcc gshorts.c -o gshorts.exe $(pkg-config --cflags --libs sdl2) -mconsole
+
+curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/gshorts/gshorts.exe -o "C:/apps/gshorts/gshorts.exe"
+curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/gshorts/gshorts.ahk -o "C:/apps/gshorts/gshorts.ahk"
+
 $Action = New-ScheduledTaskAction -Execute "C:\apps\gshorts\gshorts.ahk"
 $Trigger = New-ScheduledTaskTrigger -AtLogOn
 Register-ScheduledTask -TaskName "gshorts" -Action $Action -Trigger $Trigger -Force

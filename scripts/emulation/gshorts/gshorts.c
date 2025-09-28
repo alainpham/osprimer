@@ -34,7 +34,8 @@ void trigger_exit() {
 #endif
 }
 
-int main(){
+int main(int argc, char* argv[])
+{
     
     int running=1;
     int btnModePressed = 0;
