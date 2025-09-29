@@ -648,7 +648,7 @@ cat << EOF | chroot ${ROOTFS}
     apt -y update 
     apt install -y ncurses-term
     apt -y upgrade
-    apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon htop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq jc sshfs iotop wakeonlan
+    apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon htop btop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq jc sshfs iotop wakeonlan
     apt install -y systemd-timesyncd
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup iperf3
 EOF
@@ -659,7 +659,7 @@ cat << EOF | chroot ${ROOTFS}
     apt -y update 
     apt install -y ncurses-term
     apt -y upgrade
-    apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon htop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq jc sshfs iotop wakeonlan
+    apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon htop btop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq jc sshfs iotop wakeonlan
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup iperf3
 EOF
 fi
@@ -2233,6 +2233,8 @@ webapps=(
     "spotify|https://open.spotify.com/"
     "youtube|https://www.youtube.com/"
     "grok|https://grok.com/"
+    "sd|https://stablediffusionweb.com/app/image-generator"
+    "brm|https://stablediffusionweb.com/background-remover"
 )
 
 for entry in "${webapps[@]}"; do
