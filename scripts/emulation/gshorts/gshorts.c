@@ -30,7 +30,7 @@ void trigger_exit() {
         PostMessage(hwnd, WM_CLOSE, 0, 0);  // Ask it to close (like Alt+F4)
     }
 #else
-    system("setxkbmap fr && xdotool key Super_L+c");
+    system("setxkbmap $KEYBOARD_LAYOUT && xdotool key Super_L+c");
 #endif
 }
 
