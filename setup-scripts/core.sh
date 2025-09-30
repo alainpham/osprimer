@@ -12,11 +12,11 @@ inputversions() {
     echo "export MAJOR_KUBE_VERSION=${MAJOR_KUBE_VERSION}"
     
     # https://github.com/k3s-io/k3s/releases
-    export K3S_VERSION="v1.33.4+k3s1"
+    export K3S_VERSION="v1.34.1+k3s1"
     echo "export K3S_VERSION=${MAJOR_KUBE_VERSION}"
 
     # https://github.com/derailed/k9s/releases
-    export K9S_VERSION=v0.50.9
+    export K9S_VERSION=v0.50.13
     echo "export K9S_VERSION=${K9S_VERSION}"
     
     # https://maven.apache.org/download.cgi
@@ -49,7 +49,7 @@ inputversions() {
     echo "export FREAC_VERSION=${FREAC_VERSION}"
 
     # https://github.com/jgraph/drawio-desktop/releases
-    export DRAWIO_VERSION=28.0.6
+    export DRAWIO_VERSION=28.1.2
     echo "export DRAWIO_VERSION=${DRAWIO_VERSION}"
 
     # https://www.onlyoffice.com/download-desktop.aspx
@@ -2235,6 +2235,9 @@ webapps=(
     "grok|https://grok.com/"
     "sd|https://stablediffusionweb.com/app/image-generator"
     "brm|https://stablediffusionweb.com/background-remover"
+    "word|https://word.cloud.microsoft"
+    "excel|https://excel.cloud.microsoft"
+    "powerpoint|https://powerpoint.cloud.microsoft"
 )
 
 for entry in "${webapps[@]}"; do
