@@ -3179,7 +3179,7 @@ qemu-img convert -f qcow2 -O raw /home/apham/virt/images/lnsvr-orig.img /home/ap
 rawkube(){
 trap 'return 1' ERR
 
-init apham p /home/apham/.ssh/authorized_keys /home/apham/virt/images/lnsvr-orig.raw /home/apham/virt/images/lnsvr.raw 6G  "fr" "pc105"
+init apham p /home/apham/.ssh/authorized_keys /home/apham/virt/images/lnsvr-orig.raw /home/apham/virt/images/lnsvr.raw 8G  "fr" "pc105"
 export OSNAME=ubuntu
 mountraw
 bashaliases
