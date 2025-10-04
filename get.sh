@@ -1,5 +1,5 @@
 #!/bin/bash
-rm -rf debian-os-image
+rm -rf osprimer
 rm core.sh
-git clone https://github.com/alainpham/debian-os-image.git
-ln -s debian-os-image/setup-scripts/core.sh ./core.sh
+git clone https://github.com/alainpham/osprimer.git
+ln -s osprimer/setup-scripts/core.sh ./core.sh
