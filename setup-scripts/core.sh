@@ -1121,7 +1121,7 @@ cat << EOF | chroot ${ROOTFS}
     chown root:root /usr/local/bin/k9s
 EOF
 
-kubescript="kubecr kubecrlocal kubemon kubeotel"
+kubescript="kubecr kubecrlocal kubemon kubeotel kubeexpose"
 for script in $kubescript ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/k8s/$script
 cat << EOF | chroot ${ROOTFS}
