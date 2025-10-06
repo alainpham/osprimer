@@ -186,6 +186,10 @@ if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu
     export BASHRC="/etc/bash.bashrc"
 fi
 
+if [ "$OSNAME" = "alpine" ]; then
+    export BASHRC="/etc/bash/bashrc"
+fi
+
 if [ "$OSNAME" = "openmandriva" ]; then
     export BASHRC="/etc/bashrc"
 cat << EOF | chroot ${ROOTFS}
@@ -3248,6 +3252,13 @@ rmbroadcom
 ubvm(){
 trap 'return 1' ERR
 init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
+desktop_common
+reboot
+}
+
+alpinevm(){
+trap 'return 1' ERR
+init apham "p" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
 desktop_common
 reboot
 }
