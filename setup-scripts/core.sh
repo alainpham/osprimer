@@ -684,7 +684,7 @@ cat << EOF | chroot ${ROOTFS}
 apk add ncurses
 apk update
 apk upgrade
-apk add sudo git tmux vim curl wget rsync ncdu btop bash-completion gpg whois zip unzip virt-what wireguard-tools iptables jq jc sshfs iotop wakeonlan
+apk add sudo git tmux vim curl wget rsync ncdu btop bash-completion gpg whois zip unzip virt-what wireguard-tools iptables jq jc sshfs iotop
 apk add chrony
 apk add cloud-utils-growpart openssh-server iperf3
 EOF
@@ -847,6 +847,20 @@ lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*JAVA_HOME*=.*" "export JAVA_HOME
 echo "java home setup finished"
 fi
 
+force_reinstall=${1:-0}
+
+if [ "$OSNAME" = "alpine" ]; then
+cat << EOF | chroot ${ROOTFS}
+    apk add ansible openjdk17 nodejs go
+EOF
+
+export JAVA_HOME_TARGET=/usr/lib/jvm/default-jvm
+lineinfile ${ROOTFS}/etc/bash/bashrc ".*export.*JAVA_HOME*=.*" "export JAVA_HOME=${JAVA_HOME_TARGET}"
+
+echo "java home setup finished"
+fi
+
+
 
 if [ "$OSNAME" = "openmandriva" ]; then
 
@@ -913,6 +927,21 @@ echo "docker logs configured"
 
 cat << EOF | chroot ${ROOTFS}
     adduser $TARGET_USERNAME docker
+EOF
+fi
+
+if [ "$OSNAME" = "alpine" ]; then
+apk add docker docker-cli-compose docker-cli-buildx
+adduser $TARGET_USERNAME docker
+rc-update add docker boot
+mkdir -p /etc/docker
+cat <<EOF | tee ${ROOTFS}/etc/docker/daemon.json
+{
+  "log-opts": {
+    "max-size": "10m",
+    "max-file": "2" 
+  }
+}
 EOF
 fi
 
@@ -1122,7 +1151,7 @@ trap 'return 1' ERR
 force_reinstall=${1:-0}
 
 if [ -f "${ROOTFS}/usr/local/bin/kubecr" ] && [ "$force_reinstall" = "0" ]; then
-    echo "docker buildx already installed, skipping"
+    echo "kubecr already installed, skipping"
     return 0
 fi
 
