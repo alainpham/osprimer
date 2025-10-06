@@ -367,14 +367,18 @@ if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu
 mkdir -p ${ROOTFS}/etc/default/grub.d/
 echo 'GRUB_TIMEOUT=1' | tee ${ROOTFS}/etc/default/grub.d/15_timeout.cfg
 lineinfile ${ROOTFS}/etc/default/grub ".*GRUB_TIMEOUT=.*" 'GRUB_TIMEOUT=1'
+
+update-grub2
+
 fi
 
 if [ "$OSNAME" = "openmandriva" ]; then
 echo openmandriva
 lineinfile ${ROOTFS}/etc/default/grub ".*GRUB_TIMEOUT=.*" 'GRUB_TIMEOUT=1'
-fi
 
 update-grub2
+fi
+
 
 
 echo "fastboot activated"
