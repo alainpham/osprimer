@@ -14,4 +14,19 @@ if command -v openrc-run &> /dev/null || command -v openrc &> /dev/null; then
   sudo service k3s start
 fi
 
+echo "Waiting for k3s to be up and running..."
+for i in {1..60}; do
+  if kubectl get node &> /dev/null; then
+    echo "k3s is up and running."
+    break
+  fi
+  sleep 2
+done
+
+if ! kubectl get node &> /dev/null; then
+  echo "Error: k3s did not start successfully within expected time."
+  exit 1
+fi
+
+
 mkdir -p $HOME/.kube ; cp /etc/rancher/k3s/k3s.yaml $HOME/.kube/config
