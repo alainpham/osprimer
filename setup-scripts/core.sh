@@ -933,7 +933,7 @@ fi
 if [ "$OSNAME" = "alpine" ]; then
 apk add docker docker-cli-compose docker-cli-buildx
 adduser $TARGET_USERNAME docker
-rc-update add docker boot
+rc-update add docker default
 mkdir -p /etc/docker
 cat <<EOF | tee ${ROOTFS}/etc/docker/daemon.json
 {
