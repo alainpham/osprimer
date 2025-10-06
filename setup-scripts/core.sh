@@ -296,11 +296,20 @@ createuser() {
 trap 'return 1' ERR
 
 echo "setup users"
+
+if [ "$OSNAME" = "alpine" ]; then
+cat << EOF | chroot ${ROOTFS}
+    /usr/sbin/useradd -s /bin/bash $TARGET_USERNAME
+    mkdir -p /home/${TARGET_USERNAME}/.ssh
+    chown -R ${TARGET_USERNAME}:${TARGET_USERNAME} /home/${TARGET_USERNAME}/.ssh
+EOF
+else
 cat << EOF | chroot ${ROOTFS}
     /usr/sbin/useradd -m -s /bin/bash $TARGET_USERNAME
     mkdir -p /home/${TARGET_USERNAME}/.ssh
     chown -R ${TARGET_USERNAME}:${TARGET_USERNAME} /home/${TARGET_USERNAME}/.ssh
 EOF
+fi
 }
 
 isshkey(){
@@ -3263,6 +3272,7 @@ reboot
 alpinevm(){
 trap 'return 1' ERR
 init apham "p" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
+createuser
 desktop_common
 reboot
 }
