@@ -684,7 +684,7 @@ cat << EOF | chroot ${ROOTFS}
 apk add ncurses
 apk update
 apk upgrade
-apk add sudo git tmux vim curl wget rsync ncdu btop bash-completion gpg whois zip unzip virt-what wireguard-tools iptables jq jc sshfs iotop
+apk add sudo git tmux vim curl wget rsync ncdu btop bash-completion gpg whois zip unzip virt-what wireguard-tools iptables jq jc sshfs iotop envsubst
 apk add chrony
 apk add cloud-utils-growpart openssh-server iperf3
 EOF
