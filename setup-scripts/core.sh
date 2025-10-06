@@ -610,6 +610,14 @@ if [ "$OSNAME" = "ubuntu" ]; then
 echo "TODO : apt sources setup finished"
 fi
 
+if [ "$OSNAME" = "alpine" ]; then
+cat <<EOF | tee ${ROOTFS}/etc/apk/repositories
+http://dl-cdn.alpinelinux.org/alpine/edge/main
+http://dl-cdn.alpinelinux.org/alpine/edge/community
+EOF
+fi
+
+
 if [ "$OSNAME" = "devuan" ]; then
 echo "setup apt"
 
@@ -670,6 +678,18 @@ cat << EOF | chroot ${ROOTFS}
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup iperf3
 EOF
 fi
+
+if [ "$OSNAME" = "alpine" ]; then
+cat << EOF | chroot ${ROOTFS}
+apk add ncurses
+apk update
+apk upgrade
+apk add sudo git tmux vim curl wget rsync ncdu btop bash-completion gpg whois zip unzip virt-what wireguard-tools iptables jq jc sshfs iotop wakeonlan
+apk add chrony
+apk add cloud-utils-growpart openssh-server iperf3
+EOF
+fi
+
 
 if [ "$OSNAME" = "devuan" ]; then
 cat << EOF | chroot ${ROOTFS}
@@ -3271,8 +3291,13 @@ reboot
 
 alpinevm(){
 trap 'return 1' ERR
+apk update
+apk add curl git dmidecode bash bash-completion 
+sed -i 's|/bin/sh|/bin/bash|' /etc/passwd
+
 init apham "p" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
 createuser
+setpasswd
 desktop_common
 reboot
 }
