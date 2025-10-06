@@ -299,7 +299,7 @@ echo "setup users"
 
 if [ "$OSNAME" = "alpine" ]; then
 cat << EOF | chroot ${ROOTFS}
-    /usr/sbin/useradd -s /bin/bash $TARGET_USERNAME
+    /usr/sbin/adduser -s /bin/bash $TARGET_USERNAME
     mkdir -p /home/${TARGET_USERNAME}/.ssh
     chown -R ${TARGET_USERNAME}:${TARGET_USERNAME} /home/${TARGET_USERNAME}/.ssh
 EOF
