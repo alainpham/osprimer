@@ -3236,7 +3236,7 @@ reboot
 alpinevm(){
 trap 'return 1' ERR
 apk update
-apk add curl git dmidecode bash bash-completion sudo
+apk add curl git dmidecode bash bash-completion
 sed -i 's|/bin/sh|/bin/bash|' /etc/passwd
 init apham "p" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
 createuser

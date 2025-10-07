@@ -3,8 +3,8 @@
 ```sh
 
 apk add curl git dmidecode bash bash-completion 
+sed -i 's|/bin/sh|/bin/bash|' /etc/passwd
 curl -L tinyurl.com/osprimer | sh
-wget -O - tinyurl.com/osprimer | sh
 
 cat <<EOF | tee /etc/apk/repositories
 http://dl-cdn.alpinelinux.org/alpine/edge/main
@@ -15,7 +15,6 @@ apk update
 apk upgrade
 
 
-sed -i 's|/bin/sh|/bin/bash|' /etc/passwd
 
 
 ```
