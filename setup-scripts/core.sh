@@ -3235,8 +3235,12 @@ reboot
 
 alpinevm(){
 trap 'return 1' ERR
+cat <<EOF | tee /etc/apk/repositories
+http://dl-cdn.alpinelinux.org/alpine/edge/main
+http://dl-cdn.alpinelinux.org/alpine/edge/community
+EOF
 apk update
-apk add curl git dmidecode bash bash-completion
+apk add curl git dmidecode bash bash-completion sudo
 sed -i 's|/bin/sh|/bin/bash|' /etc/passwd
 init apham "p" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
 createuser
