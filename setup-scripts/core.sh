@@ -3002,7 +3002,7 @@ fi
 
 
 gitroot=https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/vms
-files="vmcr vmcrs vmcrm vmcrl vmdl vmls vmsh"
+files="vmcr vmcrs vmcrm vmcrl vmdl vmls vmsh vmip"
 for file in $files ; do
     curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
     chmod 755 ${ROOTFS}/usr/local/bin/$file
@@ -3233,6 +3233,20 @@ cloudvm_common
 reboot
 }
 
+alpinevm(){
+trap 'return 1' ERR
+apk update
+apk add curl git dmidecode bash bash-completion sudo
+sed -i 's|/bin/sh|/bin/bash|' /etc/passwd
+init apham "p" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
+createuser
+setpasswd
+isshkey
+isudo
+cloudvm_common
+reboot
+}
+
 dlraw(){
 
 # imageurl=https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw
@@ -3314,19 +3328,6 @@ rmbroadcom
 ubvm(){
 trap 'return 1' ERR
 init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
-desktop_common
-reboot
-}
-
-alpinevm(){
-trap 'return 1' ERR
-apk update
-apk add curl git dmidecode bash bash-completion 
-sed -i 's|/bin/sh|/bin/bash|' /etc/passwd
-
-init apham "p" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
-createuser
-setpasswd
 desktop_common
 reboot
 }

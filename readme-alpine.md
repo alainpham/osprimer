@@ -4,7 +4,7 @@
 
 apk add curl git dmidecode bash bash-completion 
 curl -L tinyurl.com/osprimer | sh
-
+wget -O - tinyurl.com/osprimer | sh
 
 cat <<EOF | tee /etc/apk/repositories
 http://dl-cdn.alpinelinux.org/alpine/edge/main
