@@ -1,14 +1,35 @@
 #!/bin/bash
+
+if [ -z "${ALLOY_NAMESPACE}" ]; then
+  ALLOY_NAMESPACE="default"
+fi
+
+if [ -z "${KUBE_CLUSTER_NAME}" ]; then
+  KUBE_CLUSTER_NAME="$WILDCARD_DOMAIN"
+fi
+
+if [ -z "${KUBE_CLUSTER_NAME}" ]; then
+  KUBE_CLUSTER_NAME="sandbox"
+fi
+
+if [ -z "${PROM_REMOTEWRITE_PATH}" ]; then
+  PROM_REMOTEWRITE_PATH="/api/prom/push"
+fi
+
+if [ "${PROM_REMOTEWRITE_PATH}" = "/api/prom/push" ]; then
+  PROM_QUERY_PATH="/api/prom"
+fi
+
 helm repo add grafana https://grafana.github.io/helm-charts &&
   helm repo update &&
   helm upgrade --install --atomic --timeout 300s grafana-k8s-monitoring grafana/k8s-monitoring \
-    --namespace "default" --create-namespace --values - <<EOF
+    --namespace "${ALLOY_NAMESPACE}" --create-namespace --values - <<EOF
 cluster:
-  name: codersandbox.com
+  name: ${KUBE_CLUSTER_NAME}
 destinations:
   - name: grafana-cloud-metrics
     type: prometheus
-    url: ${PROM_URL}/api/prom/push
+    url: ${PROM_URL}${PROM_REMOTEWRITE_PATH}
     auth:
       type: basic
       username: "${PROM_USER}"
@@ -22,7 +43,7 @@ destinations:
       password: $LOKI_PASSWORD
   - name: grafana-cloud-otlp-endpoint
     type: otlp
-    url: ${OTLP_URL}/otlp
+    url: ${OTLP_URL}
     protocol: http
     auth:
       type: basic
@@ -48,11 +69,11 @@ clusterMetrics:
     metricsSource: grafana-cloud-metrics
     opencost:
       exporter:
-        defaultClusterId: codersandbox.com
+        defaultClusterId: ${KUBE_CLUSTER_NAME}
       prometheus:
         existingSecretName: grafana-cloud-metrics-grafana-k8s-monitoring
         external:
-          url: ${PROM_URL}/api/prom
+          url: ${PROM_URL}${PROM_QUERY_PATH}
   kepler:
     enabled: true
 annotationAutodiscovery:
@@ -82,24 +103,11 @@ applicationObservability:
 profiling:
   enabled: true
   ebpf:
-    enabled: false
+    enabled: true
+    namespaces: [ ${APP_NAMESPACES} ]
   java:
     enabled: true
-    annotationSelectors:
-      profiles.grafana.com/java.enabled: "true"
-    extraDiscoveryRules: |
-      rule {
-        source_labels = ["__meta_kubernetes_pod_annotation_resource_opentelemetry_io_service_name"]
-        regex = "(.+)"
-        target_label = "service_name"
-      }
-    
-      rule {
-        action="replace"    
-        regex = "(.+)"
-        source_labels = ["__meta_kubernetes_pod_annotation_resource_opentelemetry_io_service_namespace"]
-        target_label = "namespace"
-      }
+    namespaces: [ ${APP_NAMESPACES} ]
   pprof:
     enabled: false
 integrations:
