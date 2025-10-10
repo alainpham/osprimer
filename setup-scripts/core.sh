@@ -4,7 +4,7 @@
 inputversions() {
     trap 'return 1' ERR
 
-    export CORE_VERSION=20250914
+    export CORE_VERSION=20251009
     echo "export CORE_VERSION=${CORE_VERSION}"
 
     # https://kubernetes.io/releases/  https://cloud.google.com/kubernetes-engine/docs/release-notes
@@ -16,7 +16,7 @@ inputversions() {
     echo "export K3S_VERSION=${MAJOR_KUBE_VERSION}"
 
     # https://github.com/derailed/k9s/releases
-    export K9S_VERSION=v0.50.13
+    export K9S_VERSION=v0.50.15
     echo "export K9S_VERSION=${K9S_VERSION}"
     
     # https://maven.apache.org/download.cgi
@@ -49,17 +49,17 @@ inputversions() {
     echo "export FREAC_VERSION=${FREAC_VERSION}"
 
     # https://github.com/jgraph/drawio-desktop/releases
-    export DRAWIO_VERSION=28.1.2
+    export DRAWIO_VERSION=28.2.5
     echo "export DRAWIO_VERSION=${DRAWIO_VERSION}"
 
     # https://www.onlyoffice.com/download-desktop.aspx
-    export ONLYOFFICE_VERSION=v9.0.3
+    export ONLYOFFICE_VERSION=v9.0.4
     echo "export ONLYOFFICE_VERSION=${ONLYOFFICE_VERSION}"
 
     # https://kdenlive.org/download/ https://download.kde.org/stable/kdenlive/25.04/linux/kdenlive-25.04.3-x86_64.AppImage
-    export KDENLIVE_MAIN_VERSION=25.04
+    export KDENLIVE_MAIN_VERSION=25.08
     echo "export KDENLIVE_MAIN_VERSION=${KDENLIVE_MAIN_VERSION}"
-    export KDENLIVE_FULL_VERSION=25.04.3
+    export KDENLIVE_FULL_VERSION=25.04.11260
     echo "export KDENLIVE_FULL_VERSION=${KDENLIVE_FULL_VERSION}"
 
     # https://heldercorreia.bitbucket.io/speedcrunch/download.html
@@ -106,14 +106,14 @@ inputversions() {
     echo "export MOONLIGHT_VERSION=${MOONLIGHT_VERSION}" 
 
     # https://github.com/LizardByte/Sunshine/releases
-    export SUNSHINE_VERSION=2025.628.4510
+    export SUNSHINE_VERSION=2025.924.154138
     echo "export SUNSHINE_VERSION=${SUNSHINE_VERSION}" 
 
     #  https://github.com/PCSX2/pcsx2/releases/latest
     export PCSX2_VERSION=2.4.0
     echo "export PCSX2_VERSION=${PCSX2_VERSION}" 
 
-    # https://github.com/cemu-project/Cemu/releases 
+    # https://github.com/cemu-project/Cemu/releases/latest
     export CEMU_VERSION=2.6
     echo "export CEMU_VERSION=${CEMU_VERSION}" 
 
