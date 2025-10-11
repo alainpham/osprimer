@@ -2718,12 +2718,16 @@ ibottles(){
 cat << EOF | chroot ${ROOTFS}
 flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 flatpak install -y flathub com.usebottles.bottles
+EOF
+
+cat << EOF | chroot ${ROOTFS}
 flatpak install -y flathub com.github.tchx84.Flatseal
 EOF
 
 cat <<EOF | tee ${ROOTFS}/usr/local/bin/bottles
 flatpak run com.usebottles.bottles
 EOF
+
 cat << EOF | chroot ${ROOTFS}
    chmod 755 /usr/local/bin/bottles
 EOF
@@ -2986,6 +2990,15 @@ cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/$TARGET_USERNAME/.config/Cemu
     chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/$TARGET_USERNAME/.local/share/Cemu
 EOF
+}
+
+isyncthing(){
+    cd /tmp
+    git clone https://github.com/alainpham/lab.git
+    cd lab
+    touch secret
+    source initlab
+    lab run syncthing
 }
 
 iautologin(){
@@ -3565,4 +3578,9 @@ lpro_postinstall(){
 
     sudo chmod 755 /usr/local/bin/ffmpeg
     sudo chmod 755 /usr/local/bin/ffprobe
+}
+
+
+emulation_postinstall(){
+    isyncthing
 }
