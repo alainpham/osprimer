@@ -56,7 +56,7 @@ inputversions() {
     export ONLYOFFICE_VERSION=v9.0.4
     echo "export ONLYOFFICE_VERSION=${ONLYOFFICE_VERSION}"
 
-    # https://kdenlive.org/download/ https://download.kde.org/stable/kdenlive/25.04/linux/kdenlive-25.04.3-x86_64.AppImage
+    # https://kdenlive.org/download/ 
     export KDENLIVE_MAIN_VERSION=25.08
     echo "export KDENLIVE_MAIN_VERSION=${KDENLIVE_MAIN_VERSION}"
     export KDENLIVE_FULL_VERSION=25.08.2
@@ -2415,7 +2415,8 @@ force_reinstall=${1:-0}
 
 #kdenlive
 if [ ! -f ${ROOTFS}/opt/appimages/kdenlive.AppImage ] || [ "$force_reinstall" = "1" ]; then
-wget -O ${ROOTFS}/opt/appimages/kdenlive.AppImage https://download.kde.org/stable/kdenlive/${KDENLIVE_MAIN_VERSION}/linux/kdenlive-${KDENLIVE_FULL_VERSION}-x86_64.AppImage
+curl -LO ${ROOTFS}/opt/appimages/kdenlive.AppImage \
+https://download.kde.org/stable/kdenlive/${KDENLIVE_MAIN_VERSION}/linux/kdenlive-${KDENLIVE_FULL_VERSION}-x86_64.AppImage
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/kdenlive.AppImage
     ln -sf /opt/appimages/kdenlive.AppImage /usr/local/bin/kdenlive
