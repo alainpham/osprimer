@@ -182,7 +182,7 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 done
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ] ; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ] || [ "$OSNAME" = "opensuse-tumbleweed" ] ; then
     export BASHRC="/etc/bash.bashrc"
 fi
 
@@ -371,13 +371,17 @@ echo "Deactivated broadcom drivers"
 fastboot() {
 trap 'return 1' ERR
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ] ; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ] || [ "$OSNAME" = "opensuse-tumbleweed" ] ; then
 # accelerate grub startup
 mkdir -p ${ROOTFS}/etc/default/grub.d/
 echo 'GRUB_TIMEOUT=1' | tee ${ROOTFS}/etc/default/grub.d/15_timeout.cfg
 lineinfile ${ROOTFS}/etc/default/grub ".*GRUB_TIMEOUT=.*" 'GRUB_TIMEOUT=1'
 
+if [ "$OSNAME" = "opensuse-tumbleweed" ]; then
+grub2-mkconfig -o /boot/efi/EFI/opensuse/grub.cfg
+else
 update-grub2
+fi
 
 fi
 
@@ -679,6 +683,16 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 fi
 
+if [ "$OSNAME" = "opensuse-tumbleweed" ]; then
+cat << EOF | chroot ${ROOTFS}
+zypper refresh
+zypper update
+zypper install -y ncurses
+zypper install -y sudo git tmux vim curl wget rsync ncdu bind-utils bmon htop btop bash-completion gpg whois haveged zip unzip virt-what wireguard-tools iptables jq jc sshfs iotop
+
+EOF
+fi
+
 if [ "$OSNAME" = "alpine" ]; then
 cat << EOF | chroot ${ROOTFS}
 apk add ncurses
@@ -804,6 +818,13 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 fi
 
+if [ "$OSNAME" = "opensuse-tumbleweed" ]; then
+cat << EOF | chroot ${ROOTFS}
+    zypper install -y libinput-tools wmctrl
+    usermod -aG input $TARGET_USERNAME
+EOF
+fi
+
 if [ "$OSNAME" = "openmandriva" ]; then
 cat << EOF | chroot ${ROOTFS}
     usermod -aG input $TARGET_USERNAME
@@ -847,7 +868,16 @@ lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*JAVA_HOME*=.*" "export JAVA_HOME
 echo "java home setup finished"
 fi
 
-force_reinstall=${1:-0}
+if [ "$OSNAME" = "opensuse-tumbleweed" ]; then
+cat << EOF | chroot ${ROOTFS}
+    zypper install -y ansible java-17-openjdk-devel npm go
+EOF
+
+export JAVA_HOME_TARGET=/usr/lib64/jvm/java-17-openjdk
+lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*JAVA_HOME*=.*" "export JAVA_HOME=${JAVA_HOME_TARGET}"
+
+echo "java home setup finished"
+fi
 
 if [ "$OSNAME" = "alpine" ]; then
 cat << EOF | chroot ${ROOTFS}
@@ -927,6 +957,15 @@ echo "docker logs configured"
 
 cat << EOF | chroot ${ROOTFS}
     adduser $TARGET_USERNAME docker
+EOF
+fi
+
+if [ "$OSNAME" = "opensuse-tumbleweed" ]; then
+cat << EOF | chroot ${ROOTFS}
+    zypper install -y docker python3-docker docker-compose skopeo docker-buildx
+    systemctl enable docker
+    systemctl start docker
+    usermod -aG docker $TARGET_USERNAME
 EOF
 fi
 
@@ -1038,7 +1077,7 @@ EOF
 chmod 755 ${ROOTFS}/usr/local/bin/firstboot-dockernet.sh
 chmod 755 ${ROOTFS}/usr/local/bin/firstboot-dockerbuildx.sh
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ] || [ "$OSNAME" = "opensuse-tumbleweed" ] ; then
 cat <<EOF | tee ${ROOTFS}/etc/systemd/system/firstboot-dockernet.service
 [Unit]
 Description=firstboot-dockernet
@@ -1342,6 +1381,14 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 fi
 
+if [ "$OSNAME" = "opensuse-tumbleweed" ]; then
+cat << EOF | chroot ${ROOTFS}
+    zypper install -y make gcc libX11-devel libXft-devel libXrandr-devel imlib2-devel freetype2-devel libXinerama-devel xorg-x11 xorg-x11-server numlockx usbutils SDL2-devel ncurses-devel
+    zypper install -y pulseaudio pulseaudio-module-bluetooth pulseaudio-utils pavucontrol alsa-utils
+EOF
+fi
+ 
+
 if [ "$OSNAME" = "openmandriva" ]; then
 #  backup   dnf install -y make clang gcc gcc-c++ libx11-devel libxft-devel libxrandr-devel lib64imlib2-devel freetype-devel libxinerama-devel x11-server-xorg numlock x11-util-macros
 
@@ -1379,13 +1426,25 @@ EOF
 
 fi
 
-
-
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt install -y libsane firefox-esr
 EOF
 fi
+
+if [ "$OSNAME" = "opensuse-tumbleweed" ]; then
+cat << EOF | chroot ${ROOTFS}
+zypper install -y \
+  ntfs-3g ifuse mousepad mpv haruna vlc cmatrix nmon neofetch feh qimgv \
+  noto-sans-fonts noto-serif-fonts libnotify-tools dunst mkvtoolnix-gui \
+  python3-mutagen ImageMagick mediainfo-gui mediainfo arandr picom brightnessctl cups \
+  xsane sane-backends filezilla speedcrunch fontawesome-fonts lxappearance \
+  breeze-gtk gparted vulkan-tools flatpak
+
+zypper install -y ffmpeg libfdk-aac2 libnppig12 libnppicc12 libnppidei12 libnppif12
+EOF
+fi
+ 
 
 if [ "$OSNAME" = "openmandriva" ]; then
 
@@ -1428,7 +1487,7 @@ fi
 # dunst notification
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/dunst
 
-if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ] || [ "$OSNAME" = "opensuse-tumbleweed" ]; then
 cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.config/dunst/dunstrc
 [global]
 monitor = 0
@@ -3412,6 +3471,15 @@ init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
 desktop_common
 reboot
 }
+
+# old macbook pro
+ombp(){
+trap 'return 1' ERR
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "us" "pc105"
+desktop_common
+reboot
+}
+
 
 # dell G15
 lg15(){
