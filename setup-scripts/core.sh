@@ -59,9 +59,8 @@ inputversions() {
     # https://kdenlive.org/download/ https://download.kde.org/stable/kdenlive/25.04/linux/kdenlive-25.04.3-x86_64.AppImage
     export KDENLIVE_MAIN_VERSION=25.08
     echo "export KDENLIVE_MAIN_VERSION=${KDENLIVE_MAIN_VERSION}"
-    export KDENLIVE_FULL_VERSION=25.08.11260
+    export KDENLIVE_FULL_VERSION=25.08.2
     echo "export KDENLIVE_FULL_VERSION=${KDENLIVE_FULL_VERSION}"
-
     # https://heldercorreia.bitbucket.io/speedcrunch/download.html
     export SPEEDCRUNCH_VERSION=0.12
     echo "export SPEEDCRUNCH_VERSION=${SPEEDCRUNCH_VERSION}"
