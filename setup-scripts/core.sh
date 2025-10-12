@@ -243,6 +243,11 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*TIMEZONE*=.*" "export TIMEZONE=${TIMEZO
 lineinfile ${ROOTFS}${BASHRC} ".*export.*KEYBOARD_LAYOUT*=.*" "export KEYBOARD_LAYOUT=${KEYBOARD_LAYOUT}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*KEYBOARD_MODEL*=.*" "export KEYBOARD_MODEL=${KEYBOARD_MODEL}"
 
+lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_ADDR*=.*" "export SYNCTHING_HUB_ADDR=tcp://192.168.8.100:22000"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_APIURL*=.*" "export SYNCTHING_HUB_APIURL=http://192.168.8.100:8384"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_ID*=.*" "export SYNCTHING_HUB_ID=XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_APIKEY*=.*" "export SYNCTHING_HUB_APIKEY=X"
+
 lineinfile ${ROOTFS}${BASHRC} ".*export.*APT_PROXY*=.*" "export APT_PROXY='${APT_PROXY}'"
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*CORE_VERSION*=.*" "export CORE_VERSION='${CORE_VERSION}'"
@@ -2993,7 +2998,7 @@ EOF
 }
 
 isyncthing(){
-    cd /tmp
+    cd ~
     git clone https://github.com/alainpham/lab.git
     cd lab
     touch secret
