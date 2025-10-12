@@ -2998,12 +2998,74 @@ EOF
 }
 
 isyncthing(){
-    cd ~
-    git clone https://github.com/alainpham/lab.git
-    cd lab
-    touch secret
-    source initlab
-    lab run syncthing
+    
+cd ~
+git clone https://github.com/alainpham/lab.git
+cd lab
+touch secret
+source initlab
+lab run syncthing
+curl http://192.168.8.100:28000/secret.sh | sh
+
+    
+API_KEY=$(docker exec syncthing cat /var/syncthing/config/config.xml | grep -oP '(?<=<apikey>).*?(?=</apikey>)')
+
+# ##### SET DEVICE NAME
+
+# Get local device ID (try config file first, fall back to system status)
+MY_ID=$(curl -s -H "X-API-Key: $API_KEY" http://localhost:8384/rest/system/status | grep -oP '"myID"\s*:\s*"\K[^"]+')
+
+curl -X PATCH \
+  -H "X-API-Key: $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "{\"name\": \"$HOSTNAME\"}" \
+  http://localhost:8384/rest/config/devices/$MY_ID
+
+echo "Requested rename of device $MY_ID -> $DEVICE_NAME"
+# ##### END SET DEVICE NAME
+
+# ##### ADD DEVICE ON CENTRAL SERVER
+DEVICE_JSON=$(cat <<EOF
+{
+    "deviceID": "$MY_ID",
+    "name": "$HOSTNAME",
+    "autoAcceptFolders": true
+}
+EOF
+)
+
+curl -s -X POST \
+    -H "X-API-Key: $CENTRAL_API_KEY" \
+    -H "Content-Type: application/json" \
+    -d "$DEVICE_JSON" \
+    http://192.168.8.100:8384/rest/config/devices
+# ##### ADD DEVICE ON CENTRAL SERVER
+
+
+# Define key+folder list (format: id|path). Add as many lines as needed.
+entries=(
+    "retroarch-saves|/var/syncthing/saves"
+    "retroarch-states|/var/syncthing/states"
+    "downloaded-media|/var/syncthing/downloaded_media"
+    "pcsx2-memcards|/var/syncthing/PCSX2/memcards"
+    "pcsx2-sstates|/var/syncthing/PCSX2/sstates"
+    "pcsx2-covers|/var/syncthing/PCSX2/covers"
+    "gc-saves|/var/syncthing/GC"
+    "wii-saves|/var/syncthing/Wii"
+    "cemu-saves|/var/syncthing/cemu"
+)
+
+# Loop through list, build JSON and POST each folder to the Syncthing API
+for entry in "${entries[@]}"; do
+    FOLDER_ID="${entry%%|*}"
+    PATH_ON_HOST="${entry#*|}"
+
+docker exec syncthing syncthing cli config folders add --id $FOLDER_ID --path $PATH_ON_HOST
+docker exec syncthing syncthing cli config folders $FOLDER_ID devices add --device-id $REMOTE_ID
+done
+
+
+
 }
 
 iautologin(){
