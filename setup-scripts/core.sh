@@ -2467,9 +2467,12 @@ force_reinstall=${1:-0}
 # Drawio
 if [ ! -f ${ROOTFS}/opt/appimages/drawio.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/drawio.AppImage https://github.com/jgraph/drawio-desktop/releases/download/v${DRAWIO_VERSION}/drawio-x86_64-${DRAWIO_VERSION}.AppImage
+cat << EOF | tee ${ROOTFS}/usr/local/bin/drawio
+/opt/appimages/drawio.AppImage --no-sandbox
+EOF
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /opt/appimages/drawio.AppImage
-    ln -sf /opt/appimages/drawio.AppImage /usr/local/bin/drawio
+    chmod 755 /usr/local/bin/drawio
 EOF
 else
 echo "drawio already installed, skipping"
@@ -3284,6 +3287,12 @@ init() {
 initdefault(){
     trap 'return 1' ERR
     init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
+}
+
+iupbashaliases(){
+    trap 'return 1' ERR
+    init $TARGET_USERNAME "NA" "authorized_keys" "NA" "NA" "NA" "$KEYBOARD_LAYOUT" "$KEYBOARD_MODEL"
+    bashaliases 1
 }
 
 # update all non apt stuff and
