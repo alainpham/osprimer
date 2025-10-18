@@ -1630,7 +1630,7 @@ chmod 755 ${ROOTFS}/usr/local/bin/$file
 done
 
 gitroot=https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/x11/
-files="mon bestmode"
+files="mon bestmode show-notifs"
 for file in $files ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
 chmod 755 ${ROOTFS}/usr/local/bin/$file
@@ -1998,7 +1998,7 @@ cat << EOF | chroot ${ROOTFS}
     sudo -u $TARGET_USERNAME xdg-mime default thunar.desktop inode/directory
 EOF
 
-videomimetype=$(find /usr/share/mime/video -name '*.xml' | sed -E 's#.*/(video/.*)\.xml#\1#')
+videomimetype=$(grep -E '^video/' /usr/share/mime/types | cut -d: -f1)
 for mime in $videomimetype; do
 cat << EOF | chroot ${ROOTFS}
     sudo -u $TARGET_USERNAME xdg-mime default org.kde.haruna.desktop "$mime"
@@ -2607,7 +2607,24 @@ iemucfg
 
 #shortcuts with gamepads
 igshorts
+
+#script to connect ps4 controller
+ips4controller
 }
+
+ips4controller(){
+
+dlfiles="
+ps4connect.sh
+"
+for fname in $dlfiles ; do
+curl -Lo ${ROOTFS}/usr/local/bin/$fname https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/ds4/$fname
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /usr/local/bin/$fname
+EOF
+done
+}
+
 
 igshorts(){
 
