@@ -72,6 +72,7 @@ echo "Moonlight screen: $moonlight"
 # default behavior
 default() {
     export command=$(cat ~/.sclayout)
+    echo default layout is $command
     applylayout
 }
 
