@@ -1630,7 +1630,7 @@ chmod 755 ${ROOTFS}/usr/local/bin/$file
 done
 
 gitroot=https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/x11/
-files="mon bestmode show-notifs"
+files="mon bestmode snotifs"
 for file in $files ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
 chmod 755 ${ROOTFS}/usr/local/bin/$file
