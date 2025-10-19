@@ -1998,12 +1998,63 @@ cat << EOF | chroot ${ROOTFS}
     sudo -u $TARGET_USERNAME xdg-mime default thunar.desktop inode/directory
 EOF
 
-videomimetype=$(grep -E '^video/' /usr/share/mime/types | cut -d: -f1)
-for mime in $videomimetype; do
+# videos
+mimetypes=$(grep -E '^video/' /usr/share/mime/types | cut -d: -f1)
+for mime in $mimetypes; do
 cat << EOF | chroot ${ROOTFS}
     sudo -u $TARGET_USERNAME xdg-mime default org.kde.haruna.desktop "$mime"
 EOF
 done
+
+# audio
+mimetypes=$(grep -E '^audio/' /usr/share/mime/types | cut -d: -f1)
+for mime in $mimetypes; do
+cat << EOF | chroot ${ROOTFS}
+    sudo -u $TARGET_USERNAME xdg-mime default org.kde.haruna.desktop "$mime"
+EOF
+done
+
+# images
+mimetypes=$(grep -E '^image/' /usr/share/mime/types | cut -d: -f1)
+for mime in $mimetypes; do
+cat << EOF | chroot ${ROOTFS}
+    sudo -u $TARGET_USERNAME xdg-mime default qimgv.desktop "$mime"
+EOF
+done
+
+# create vscode shortcut
+cat << EOF | chroot ${ROOTFS}
+    sudo -u $TARGET_USERNAME mkdir -p /home/$TARGET_USERNAME/codefld
+EOF
+
+
+cat << EOF | tee ${ROOTFS}/usr/share/applications/ctext.desktop
+[Desktop Entry]
+Type=Application
+Name=ctext
+Exec=code --disable-workspace-trust /home/$TARGET_USERNAME/codefld %f
+Icon=vscode
+Terminal=false
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    sudo -u $TARGET_USERNAME xdg-mime default ctext.desktop application/x-shellscript
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    sudo -u $TARGET_USERNAME xdg-mime default ctext.desktop application/xml
+EOF
+
+
+# txt
+mimetypes=$(grep -E '^text/' /usr/share/mime/types | cut -d: -f1)
+for mime in $mimetypes; do
+cat << EOF | chroot ${ROOTFS}
+    sudo -u $TARGET_USERNAME xdg-mime default ctext.desktop "$mime"
+EOF
+done
+
+
 
 cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config
