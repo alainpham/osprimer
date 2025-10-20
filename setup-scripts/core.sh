@@ -3076,10 +3076,10 @@ rm /tmp/secret.sh
 
 export BASHRC="/etc/bash.bashrc"
 
-lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_ADDR*=.*" "export SYNCTHING_HUB_ADDR=$SYNCTHING_HUB_ADDR"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_APIURL*=.*" "export SYNCTHING_HUB_APIURL=$SYNCTHING_HUB_APIURL"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_ID*=.*" "export SYNCTHING_HUB_ID=$SYNCTHING_HUB_ID"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_APIKEY*=.*" "export SYNCTHING_HUB_APIKEY=$SYNCTHING_HUB_APIKEY"
+sudo lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_ADDR*=.*" "export SYNCTHING_HUB_ADDR=$SYNCTHING_HUB_ADDR"
+sudo lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_APIURL*=.*" "export SYNCTHING_HUB_APIURL=$SYNCTHING_HUB_APIURL"
+sudo lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_ID*=.*" "export SYNCTHING_HUB_ID=$SYNCTHING_HUB_ID"
+sudo lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_APIKEY*=.*" "export SYNCTHING_HUB_APIKEY=$SYNCTHING_HUB_APIKEY"
 
     
 API_KEY=$(docker exec syncthing cat /var/syncthing/config/config.xml | grep -oP '(?<=<apikey>).*?(?=</apikey>)')
@@ -3095,7 +3095,7 @@ curl -X PATCH \
   -d "{\"name\": \"$HOSTNAME\"}" \
   http://localhost:8384/rest/config/devices/$MY_ID
 
-echo "Requested rename of device $MY_ID -> $DEVICE_NAME"
+echo "Requested rename of device $MY_ID -> $HOSTNAME"
 # ##### END SET DEVICE NAME
 
 # ##### ADD DEVICE ON CENTRAL SERVER
@@ -3118,7 +3118,7 @@ curl -s -X POST \
 # ##### ADD CENTRAL TO LOCAL
 DEVICE_JSON=$(cat <<EOF
 {
-    "deviceID": "$SYNCTHING_HUB_APIKEY",
+    "deviceID": "$SYNCTHING_HUB_ID",
     "addresses": ["$SYNCTHING_HUB_ADDR"]
 }
 EOF
