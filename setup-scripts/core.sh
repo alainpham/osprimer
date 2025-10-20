@@ -2077,11 +2077,12 @@ ivmgui
 }
 
 iprinter(){
+    trap 'return 1' ERR
     lpadmin -p hp-smart-tank-cp -E -v ipp://192.168.8.200/ipp/print -m everywhere
 }
 
 iffmpeg(){
-
+    trap 'return 1' ERR
     wget -O /usr/local/bin/ffmpeg http://192.168.8.100:28000/ffmpeg/ubuntu/ffmpeg
     wget -O /usr/local/bin/ffprobe http://192.168.8.100:28000/ffmpeg/ubuntu/ffprobe
     wget -O /usr/local/bin/ffplay http://192.168.8.100:28000/ffmpeg/ubuntu/ffplay
@@ -2392,6 +2393,8 @@ isunshine $force_reinstall
 }
 
 iwebapps(){
+trap 'return 1' ERR
+
 webapps=(
     "gpt|https://chatgpt.com"
     "gm|https://mail.google.com/mail/u/1/#inbox"
@@ -2657,7 +2660,7 @@ iemucfg
 }
 
 ips4controller(){
-
+trap 'return 1' ERR
 dlfiles="
 ps4connect.sh
 "
@@ -2671,6 +2674,7 @@ done
 
 
 igshorts(){
+trap 'return 1' ERR
 
 killall gshorts
 sleep 3
@@ -2690,6 +2694,7 @@ lineinfile ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm/autostart.sh .*gshor
 }
 
 iesde(){
+trap 'return 1' ERR
 # Install RetroArch AppImage if not present or force_reinstall is 1
 if [ ! -f ${ROOTFS}/opt/appimages/emustation.AppImage ] || [ "$force_reinstall" = "1" ]; then
 echo "emulation tools"
@@ -2705,6 +2710,7 @@ fi
 }
 
 iretroarch(){
+trap 'return 1' ERR
 # https://buildbot.libretro.com/stable/
 if [ ! -f ${ROOTFS}/opt/appimages/RetroArch-Linux-x86_64.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/tmp/RetroArch.7z https://buildbot.libretro.com/stable/${RETROARCH_VERSION}/linux/x86_64/RetroArch.7z
@@ -2784,6 +2790,7 @@ fi
 }
 
 ibottles(){
+trap 'return 1' ERR
 # flatpaks
 cat << EOF | chroot ${ROOTFS}
 flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
@@ -2816,6 +2823,7 @@ EOF
 }
 
 idolphin(){
+trap 'return 1' ERR
 cat << EOF | chroot ${ROOTFS}
     flatpak install -y flathub org.DolphinEmu.dolphin-emu
 EOF
@@ -2829,7 +2837,7 @@ EOF
 }
 
 ijfin(){
-
+trap 'return 1' ERR
 flatpak install -y flathub com.github.iwalton3.jellyfin-media-player
 
 cat <<EOF | tee ${ROOTFS}/usr/local/bin/jellyfin-media-player
@@ -2842,7 +2850,7 @@ EOF
 }
 
 iemucfg(){
-
+trap 'return 1' ERR
 cat << EOF | chroot ${ROOTFS}
     mkdir -p /home/${TARGET_USERNAME}/ROMs
     mkdir -p /home/${TARGET_USERNAME}/ES-DE/downloaded_media
@@ -3063,7 +3071,7 @@ EOF
 }
 
 isyncthing(){
-    
+trap 'return 1' ERR 
 cd ~
 git clone https://github.com/alainpham/lab.git
 cd lab
@@ -3144,7 +3152,6 @@ entries=(
     "cemu-saves|/var/syncthing/cemu"
 )
 
-# Loop through list, build JSON and POST each folder to the Syncthing API
 
 # Loop through list, build JSON and POST each folder to the Syncthing API
 for entry in "${entries[@]}"; do
@@ -3154,8 +3161,6 @@ curl -X DELETE -H "X-API-Key: ${API_KEY}" http://localhost:8384/rest/config/fold
 docker exec syncthing syncthing cli config folders add --id $FOLDER_ID --path $PATH_ON_HOST
 docker exec syncthing syncthing cli config folders $FOLDER_ID devices add --device-id $SYNCTHING_HUB_ID
 done
-
-
 
 
 }
@@ -3360,6 +3365,7 @@ EOF
 }
 
 unmountraw() {
+trap 'return 1' ERR
 echo "Unmounting filesystems"
 mv ${ROOTFS}/etc/resolv.conf.back ${ROOTFS}/etc/resolv.conf
 umount -R ${ROOTFS}/
@@ -3375,7 +3381,7 @@ init() {
 
 initdefault(){
     trap 'return 1' ERR
-    init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
+    init $TARGET_USERNAME "NA" "authorized_keys" "NA" "NA" "NA" "$KEYBOARD_LAYOUT" "$KEYBOARD_MODEL"
 }
 
 iupbashaliases(){
@@ -3489,7 +3495,7 @@ reboot
 }
 
 dlraw(){
-
+trap 'return 1' ERR
 # imageurl=https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw
 
 imageurl=https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
@@ -3597,6 +3603,8 @@ reboot
 }
 
 aaon_postinstall(){
+trap 'return 1' ERR
+
 # install apt cacher ng.
 # create ssh keys -> github
 # mount disks to good mediafolder.
@@ -3707,7 +3715,8 @@ reboot
 }
 
 lpro_postinstall(){
-    trap 'return 1' ERR
+trap 'return 1' ERR
+
     snap install firefox
     snap install slack
 
@@ -3736,13 +3745,6 @@ lpro_postinstall(){
     echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list
 
     sudo apt-get update && sudo apt-get install google-cloud-cli
-
-    #ffmpeg
-    sudo wget -O /usr/local/bin/ffmpeg http://192.168.8.100:28000/blackmagic/ffmpeg_ubuntu
-    sudo wget -O /usr/local/bin/ffprobe http://192.168.8.100:28000/blackmagic/ffprobe_ubuntu
-
-    sudo chmod 755 /usr/local/bin/ffmpeg
-    sudo chmod 755 /usr/local/bin/ffprobe
 }
 
 
