@@ -3150,7 +3150,13 @@ for entry in "${entries[@]}"; do
     PATH_ON_HOST="${entry#*|}"
 
 docker exec syncthing syncthing cli config folders add --id $FOLDER_ID --path $PATH_ON_HOST
-docker exec syncthing syncthing cli config folders $FOLDER_ID devices add --device-id $REMOTE_ID
+done
+
+for entry in "${entries[@]}"; do
+    FOLDER_ID="${entry%%|*}"
+    PATH_ON_HOST="${entry#*|}"
+
+docker exec syncthing syncthing cli config folders $FOLDER_ID devices add --device-id $SYNCTHING_HUB_ID
 done
 
 
