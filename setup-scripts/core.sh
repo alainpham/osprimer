@@ -2646,14 +2646,14 @@ icemu $force_reinstall
 #Bottles for PC games
 ibottles $force_reinstall
 
-#configure emulators
-iemucfg
-
 #shortcuts with gamepads
 igshorts
 
 #script to connect ps4 controller
 ips4controller
+
+#configure emulators
+iemucfg
 }
 
 ips4controller(){
@@ -2672,11 +2672,13 @@ done
 
 igshorts(){
 
+killall gshorts
+sleep 3
+
 dlfiles="
 gshorts
 "
 
-killall gshorts
 for fname in $dlfiles ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$fname https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/gshorts/$fname
 cat << EOF | chroot ${ROOTFS}
@@ -2685,7 +2687,6 @@ EOF
 done
 
 lineinfile ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm/autostart.sh .*gshorts.* "killall gshorts ; gshorts \&"
-
 }
 
 iesde(){
@@ -3069,7 +3070,16 @@ cd lab
 touch secret
 source initlab
 lab run syncthing
-curl http://192.168.8.100:28000/secret.sh | sh
+curl http://192.168.8.100:28000/secret.sh > /tmp/secret.sh
+source /tmp/secret.sh
+rm /tmp/secret.sh
+
+export BASHRC="/etc/bash.bashrc"
+
+lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_ADDR*=.*" "export SYNCTHING_HUB_ADDR=$SYNCTHING_HUB_ADDR"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_APIURL*=.*" "export SYNCTHING_HUB_APIURL=$SYNCTHING_HUB_APIURL"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_ID*=.*" "export SYNCTHING_HUB_ID=$SYNCTHING_HUB_ID"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_APIKEY*=.*" "export SYNCTHING_HUB_APIKEY=$SYNCTHING_HUB_APIKEY"
 
     
 API_KEY=$(docker exec syncthing cat /var/syncthing/config/config.xml | grep -oP '(?<=<apikey>).*?(?=</apikey>)')
