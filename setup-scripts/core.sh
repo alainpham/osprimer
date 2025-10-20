@@ -3109,12 +3109,27 @@ EOF
 )
 
 curl -s -X POST \
-    -H "X-API-Key: $CENTRAL_API_KEY" \
+    -H "X-API-Key: $SYNCTHING_HUB_APIKEY" \
     -H "Content-Type: application/json" \
     -d "$DEVICE_JSON" \
-    http://192.168.8.100:8384/rest/config/devices
+    $SYNCTHING_HUB_APIURL/rest/config/devices
 # ##### ADD DEVICE ON CENTRAL SERVER
 
+# ##### ADD CENTRAL TO LOCAL
+DEVICE_JSON=$(cat <<EOF
+{
+    "deviceID": "$SYNCTHING_HUB_APIKEY",
+    "addresses": ["$SYNCTHING_HUB_ADDR"]
+}
+EOF
+)
+
+curl -s -X POST \
+    -H "X-API-Key: $API_KEY" \
+    -H "Content-Type: application/json" \
+    -d "$DEVICE_JSON" \
+    http://localhost:8384/rest/config/devices
+# ##### ADD CENTRAL TO LOCAL
 
 # Define key+folder list (format: id|path). Add as many lines as needed.
 entries=(
