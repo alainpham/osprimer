@@ -3145,19 +3145,16 @@ entries=(
 )
 
 # Loop through list, build JSON and POST each folder to the Syncthing API
+
+# Loop through list, build JSON and POST each folder to the Syncthing API
 for entry in "${entries[@]}"; do
     FOLDER_ID="${entry%%|*}"
     PATH_ON_HOST="${entry#*|}"
-
+curl -X DELETE -H "X-API-Key: ${API_KEY}" http://localhost:8384/rest/config/folders/${FOLDER_ID}
 docker exec syncthing syncthing cli config folders add --id $FOLDER_ID --path $PATH_ON_HOST
-done
-
-for entry in "${entries[@]}"; do
-    FOLDER_ID="${entry%%|*}"
-    PATH_ON_HOST="${entry#*|}"
-
 docker exec syncthing syncthing cli config folders $FOLDER_ID devices add --device-id $SYNCTHING_HUB_ID
 done
+
 
 
 
