@@ -1864,15 +1864,6 @@ cat << 'EOF' | tee ${ROOTFS}/home/${TARGET_USERNAME}/.config/picom/picom.conf
 backend = "glx";
 vsync = true;
 use-damage = false
-
-shadow-exclude = [
-  "name = 'cpt_frame_xcb_window'",
-  "class_g ?= 'zoom'"
-];
-
-blur-background-exclude = [
-  "class_g ?= 'zoom'"
-];
 EOF
 fi
 
@@ -2375,6 +2366,8 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 
 iappimages $force_reinstall
+
+iwebapps
 
 }
 
