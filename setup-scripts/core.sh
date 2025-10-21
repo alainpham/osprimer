@@ -808,11 +808,13 @@ Section "InputClass"
 EndSection
 EOF
 
+previousfld=$(pwd)
 cd /tmp/
 rm -rf libinput-gestures
 git clone https://github.com/bulletmark/libinput-gestures.git
 cd libinput-gestures
 ./libinput-gestures-setup install
+cd $previousfld
 
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
@@ -2731,6 +2733,18 @@ cat << EOF | chroot ${ROOTFS}
     mv /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch /home/$TARGET_USERNAME/.config/
     cp -R /home/$TARGET_USERNAME/.config/retroarch/autoconfig /home/$TARGET_USERNAME/.config/ra-autoconfig
 
+    if [ -d "/home/$TARGET_USERNAME/.config/ra-saves" ]; then
+        rm -rf /home/$TARGET_USERNAME/.config/retroarch/saves
+        mv /home/$TARGET_USERNAME/.config/ra-saves /home/$TARGET_USERNAME/.config/retroarch/saves
+    fi
+    if [ -d "/home/$TARGET_USERNAME/.config/ra-states" ]; then
+        rm -rf /home/$TARGET_USERNAME/.config/retroarch/states
+        mv /home/$TARGET_USERNAME/.config/ra-states /home/$TARGET_USERNAME/.config/retroarch/states 
+    fi
+    
+    
+
+
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/retroarch
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/ra-autoconfig
 EOF
@@ -2847,6 +2861,8 @@ cat << EOF | chroot ${ROOTFS}
     mkdir -p /home/${TARGET_USERNAME}/ES-DE/downloaded_media
     mkdir -p /home/${TARGET_USERNAME}/.config/retroarch/states
     mkdir -p /home/${TARGET_USERNAME}/.config/retroarch/saves
+    mkdir -p /home/${TARGET_USERNAME}/.config/retroarch/{playlists,cheats,config,logs}
+
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/${TARGET_USERNAME}/ROMs
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/${TARGET_USERNAME}/ES-DE
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/${TARGET_USERNAME}/.config/retroarch
