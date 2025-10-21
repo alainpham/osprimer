@@ -1663,7 +1663,7 @@ done
 # install chrome browser
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 
-if [ -f "${ROOTFS}/opt/debs/google-chrome-stable_current_amd64.deb" ] && [ "$force_reinstall" = "0" ]; then
+if [ -f "${ROOTFS}/usr/bin/google-chrome" ] && [ "$force_reinstall" = "0" ]; then
     echo "Google Chrome already downloaded, skipping."
 else
     mkdir -p ${ROOTFS}/opt/debs/
@@ -1689,12 +1689,6 @@ EOF
 fi
 
 #begin dwm
-if [ -f ${ROOTFS}/usr/local/bin/dwm ]  && [ "$force_reinstall" = "0" ] ; then
-
-echo "dwm already installed, skipping"
-
-else
-
 echo "The does not exist, installing dwm"
 cat << EOF | chroot ${ROOTFS}
     rm -rf /home/$TARGET_USERNAME/wm
@@ -1715,8 +1709,6 @@ cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/wm
 EOF
 
-fi 
-
 # wallpaper
 mkdir -p ${ROOTFS}/usr/share/backgrounds/
 
@@ -1728,7 +1720,6 @@ backend_files=(
     "https://raw.githubusercontent.com/simple-sunrise/Light-and-Dark-Wallpapers-for-Gnome/main/Wallpapers/LakesideDeer/LakesideDeer-1.png"
     "https://raw.githubusercontent.com/simple-sunrise/Light-and-Dark-Wallpapers-for-Gnome/main/Wallpapers/LakesideDeer/LakesideDeer-2.png"
 )
-
 
 # Loop through the list and download each file
 for i in "${!backend_files[@]}"; do
