@@ -3004,9 +3004,6 @@ lineinfile "$CTRLCFG" "input_state_slot_decrease_btn.*=.*" 'input_state_slot_dec
 lineinfile "$CTRLCFG" "input_state_slot_increase_btn.*=.*" 'input_state_slot_increase_btn = "1"'
 
 # configure cores options
-mkdir -p "${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/config/Beetle PSX HW/"
-wget -O "${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/config/Beetle PSX HW/Beetle PSX HW.opt" "https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/Beetle PSX HW/Beetle PSX HW.opt"
-
 mkdir -p "${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/config/PCSX-ReARMed/"
 wget -O "${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/config/PCSX-ReARMed/PCSX-ReARMed.opt" "https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/PCSX-ReARMed/PCSX-ReARMed.opt"
 
