@@ -4,7 +4,7 @@
 inputversions() {
     trap 'return 1' ERR
 
-    export CORE_VERSION=20251009
+    export CORE_VERSION=20251022
     echo "export CORE_VERSION=${CORE_VERSION}"
 
     # https://kubernetes.io/releases/  https://cloud.google.com/kubernetes-engine/docs/release-notes
@@ -16,7 +16,7 @@ inputversions() {
     echo "export K3S_VERSION=${MAJOR_KUBE_VERSION}"
 
     # https://github.com/derailed/k9s/releases
-    export K9S_VERSION=v0.50.15
+    export K9S_VERSION=v0.50.16
     echo "export K9S_VERSION=${K9S_VERSION}"
     
     # https://maven.apache.org/download.cgi
@@ -3384,6 +3384,7 @@ iupdate(){
     trap 'return 1' ERR
     init $TARGET_USERNAME "NA" "authorized_keys" "NA" "NA" "NA" "$KEYBOARD_LAYOUT" "$KEYBOARD_MODEL"
     bashaliases 1
+    igui
     imaven 1
     ikube 1
     iappimages 1
