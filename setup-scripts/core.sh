@@ -138,7 +138,6 @@ inputtasks() {
     trap 'return 1' ERR
 
     #default root
-    
     export ROOTFS=/
     echo "export ROOTFS=${ROOTFS}"
 
@@ -3073,6 +3072,7 @@ rm /tmp/secret.sh
 
 export BASHRC="/etc/bash.bashrc"
 
+# secret should set the following env vars
 sudo lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_ADDR*=.*" "export SYNCTHING_HUB_ADDR=$SYNCTHING_HUB_ADDR"
 sudo lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_ADDRVPN*=.*" "export SYNCTHING_HUB_ADDRVPN=$SYNCTHING_HUB_ADDRVPN"
 sudo lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_APIURL*=.*" "export SYNCTHING_HUB_APIURL=$SYNCTHING_HUB_APIURL"
