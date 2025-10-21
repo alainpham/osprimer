@@ -3085,10 +3085,10 @@ rm /tmp/secret.sh
 export BASHRC="/etc/bash.bashrc"
 
 sudo lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_ADDR*=.*" "export SYNCTHING_HUB_ADDR=$SYNCTHING_HUB_ADDR"
+sudo lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_ADDRVPN*=.*" "export SYNCTHING_HUB_ADDRVPN=$SYNCTHING_HUB_ADDRVPN"
 sudo lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_APIURL*=.*" "export SYNCTHING_HUB_APIURL=$SYNCTHING_HUB_APIURL"
 sudo lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_ID*=.*" "export SYNCTHING_HUB_ID=$SYNCTHING_HUB_ID"
 sudo lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_APIKEY*=.*" "export SYNCTHING_HUB_APIKEY=$SYNCTHING_HUB_APIKEY"
-
     
 API_KEY=$(docker exec syncthing cat /var/syncthing/config/config.xml | grep -oP '(?<=<apikey>).*?(?=</apikey>)')
 
@@ -3127,7 +3127,7 @@ curl -s -X POST \
 DEVICE_JSON=$(cat <<EOF
 {
     "deviceID": "$SYNCTHING_HUB_ID",
-    "addresses": ["$SYNCTHING_HUB_ADDR"]
+    "addresses": ["$SYNCTHING_HUB_ADDR","$SYNCTHING_HUB_ADDRVPN"]
 }
 EOF
 )
