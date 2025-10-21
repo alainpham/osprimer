@@ -196,6 +196,7 @@ EOF
 fi
 
 lineinfile ${ROOTFS}${BASHRC} ".*alias.*ll.*=.*" 'alias ll="ls -larth"'
+lineinfile ${ROOTFS}/home/${TARGET_USERNAME}/.bashrc ".*alias.*ll.*=.*" 'alias ll="ls -larth"'
 lineinfile ${ROOTFS}${BASHRC} ".*alias.*ap=.*" 'alias ap=ansible-playbook'
 
 
