@@ -2663,7 +2663,7 @@ iemucfg
 ips4controller(){
 trap 'return 1' ERR
 dlfiles="
-ps4connect.sh
+ps4connect
 "
 for fname in $dlfiles ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$fname https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/ds4/$fname
