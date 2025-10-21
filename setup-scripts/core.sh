@@ -3097,7 +3097,7 @@ git clone https://github.com/alainpham/lab.git
 cd lab
 touch secret
 source initlab
-lab rerun syncthing
+lab run syncthing
 curl http://192.168.8.100:28000/secret.sh > /tmp/secret.sh
 source /tmp/secret.sh
 rm /tmp/secret.sh
