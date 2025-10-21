@@ -1611,6 +1611,7 @@ EOF
 # avoid crackling with pulse
 lineinfile ${ROOTFS}/etc/pulse/default.pa ".*load-module module-suspend-on-idle.*" "load-module module-suspend-on-idle"
 lineinfile ${ROOTFS}/etc/pulse/system.pa ".*load-module module-suspend-on-idle.*" "load-module module-suspend-on-idle"
+lineinfile ${ROOTFS}/etc/pulse/default.pa ".*load-module module-switch-on-connect.*" "# load-module module-switch-on-connect"
 
 mkdir -p ${ROOTFS}/etc/pulse/default.pa.d/
 wget -O ${ROOTFS}/etc/pulse/default.pa.d/pulsepod.pa https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/pulseaudio/pulsepod.pa

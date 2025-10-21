@@ -1,6 +1,6 @@
 #!/bin/bash
 
-files="snd asnd asndenv asnddef csndfoczv csndjbr csndzv csndh6 csndacer csndint clrmix clrmixoff"
+files="snd asnd asndenv asnddef csndfoczv csndjbr csndbth csndhds csndzv csndh6 csndacer csndint clrmix clrmixoff jbrconnect"
 for file in $files; do
     sudo cp $file /usr/local/bin/$file
 done
