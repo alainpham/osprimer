@@ -2310,7 +2310,7 @@ fi
 #vscode
 if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 
-if [ ! -f "${ROOTFS}/opt/debs/vscode.deb" ] || [ "$force_reinstall" = "1" ]; then
+if [ ! -f "${ROOTFS}/usr/bin/code" ] || [ "$force_reinstall" = "1" ]; then
 mkdir -p ${ROOTFS}/opt/debs/
 wget -O ${ROOTFS}/opt/debs/vscode.deb "https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64"
 cat << EOF | chroot ${ROOTFS}
@@ -2320,7 +2320,7 @@ fi
 
 
 # install dbeaver
-if [ ! -f "${ROOTFS}/opt/debs/dbeaver.deb" ] || [ "$force_reinstall" = "1" ]; then
+if [ ! -f "${ROOTFS}/usr/bin/dbeaver" ] || [ "$force_reinstall" = "1" ]; then
 mkdir -p ${ROOTFS}/opt/debs/
 wget -O ${ROOTFS}/opt/debs/dbeaver.deb https://dbeaver.io/files/dbeaver-ce_latest_amd64.deb
 cat << EOF | chroot ${ROOTFS}
@@ -3384,10 +3384,14 @@ iupdate(){
     trap 'return 1' ERR
     init $TARGET_USERNAME "NA" "authorized_keys" "NA" "NA" "NA" "$KEYBOARD_LAYOUT" "$KEYBOARD_MODEL"
     bashaliases 1
-    igui
-    imaven 1
+    idev 1
+    idocker 1
     ikube 1
-    iappimages 1
+    igui 1
+    iffmpeg 1
+    itheming
+    iworkstation 1
+    ivirt 1
     iemulation 1
 }
 
