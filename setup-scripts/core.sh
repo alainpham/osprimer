@@ -174,7 +174,7 @@ trap 'return 1' ERR
 
 scripts="lineinfile"
 for script in $scripts ; do
-wget -O ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/utils/$script
+wget -O ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/utils/$script
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /usr/local/bin/$script
 EOF
@@ -651,9 +651,9 @@ if [ "$OSNAME" = "openmandriva" ]; then
 rm -f ${ROOTFS}/etc/yum.repos.d/*
 
     if [ "$OSVERSION" = "5.0" ]; then
-        curl -Lo ${ROOTFS}/etc/yum.repos.d/openmandriva-rock-x86_64.repo https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/om/openmandriva-rock-x86_64.repo
+        curl -Lo ${ROOTFS}/etc/yum.repos.d/openmandriva-rock-x86_64.repo https://raw.githubusercontent.com/alainpham/osprimer/refs/heads/master/om/openmandriva-rock-x86_64.repo
     else
-        curl -Lo ${ROOTFS}/etc/yum.repos.d/openmandriva-rolling-x86_64.repo https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/om/openmandriva-rolling-x86_64.repo
+        curl -Lo ${ROOTFS}/etc/yum.repos.d/openmandriva-rolling-x86_64.repo https://raw.githubusercontent.com/alainpham/osprimer/refs/heads/master/om/openmandriva-rolling-x86_64.repo
     fi
 fi
 
@@ -1234,7 +1234,7 @@ EOF
 
 kubescript="kubecr kubecrlocal kubemon kubeotel kubeexpose"
 for script in $kubescript ; do
-curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/k8s/$script
+curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/k8s/$script
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /usr/local/bin/$script
 EOF
@@ -1429,6 +1429,16 @@ cat << EOF | chroot ${ROOTFS}
     apt install -y ntfs-3g ifuse mousepad mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv acpitool lm-sensors fonts-noto libnotify-bin dunst mkvtoolnix-gui python3-mutagen imagemagick mediainfo-gui mediainfo arandr picom brightnessctl cups xsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze-gtk-theme breeze-icon-theme joystick gparted vulkan-tools flatpak
     apt install -y ffmpeg libfdk-aac2 libnppig12 libnppicc12 libnppidei12 libnppif12
 EOF
+dlfiles="
+SpeedCrunch.ini
+"
+for fname in $dlfiles ; do
+curl -Lo ${ROOTFS}/home/$TARGET_USERNAME/.config/SpeedCrunch/$fname https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/speedcrunch/$fname
+cat << EOF | chroot ${ROOTFS}
+    chown $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/SpeedCrunch/$fname
+EOF
+done
+
 
 fi
 
@@ -1568,7 +1578,7 @@ vconv-x264-vbr-2pass.sh
 "
 
 for script in $ffmpegscripts ; do
-curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/ffmpeg/$script
+curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/ffmpeg/$script
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /usr/local/bin/$script
 EOF
@@ -1616,7 +1626,7 @@ lineinfile ${ROOTFS}/etc/pulse/system.pa ".*load-module module-suspend-on-idle.*
 lineinfile ${ROOTFS}/etc/pulse/default.pa ".*load-module module-switch-on-connect.*" "# load-module module-switch-on-connect"
 
 mkdir -p ${ROOTFS}/etc/pulse/default.pa.d/
-wget -O ${ROOTFS}/etc/pulse/default.pa.d/pulsepod.pa https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/pulseaudio/pulsepod.pa
+wget -O ${ROOTFS}/etc/pulse/default.pa.d/pulsepod.pa https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/pulseaudio/pulsepod.pa
 
 lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-sample-rate.*" "default-sample-rate = 48000"
 lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-sample-format.*" "default-sample-format = s16le"
@@ -1625,14 +1635,14 @@ lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-sample-format.*" "default-
 lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*resample-method.*" "resample-method = soxr-hq"
 
 # install scripts for sound and monitor
-gitroot=https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/
+gitroot=https://raw.githubusercontent.com/alainpham/osprimer/refs/heads/master/scripts/pulseaudio/
 files="snd asnd asndenv asnddef csndfoczv csndjbr csndbth csndhds csndzv csndh6 csndacer csndint clrmix clrmixoff jbrconnect"
 for file in $files ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
 chmod 755 ${ROOTFS}/usr/local/bin/$file
 done
 
-gitroot=https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/x11/
+gitroot=https://raw.githubusercontent.com/alainpham/osprimer/refs/heads/master/scripts/x11/
 files="mon bestmode snotifs"
 for file in $files ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
@@ -1640,22 +1650,22 @@ chmod 755 ${ROOTFS}/usr/local/bin/$file
 done
 
 # wireplumber and pipewire
-curl -Lo ${ROOTFS}/etc/udev/rules.d/89-pulseaudio-udev.rules https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/89-pulseaudio-udev.rules
+curl -Lo ${ROOTFS}/etc/udev/rules.d/89-pulseaudio-udev.rules https://raw.githubusercontent.com/alainpham/osprimer/refs/heads/master/scripts/pulseaudio/89-pulseaudio-udev.rules
 
 # cat << EOF | chroot ${ROOTFS}
 # cp -R /usr/share/pipewire /home/${TARGET_USERNAME}/.config/
 # cp -R /usr/share/wireplumber /home/${TARGET_USERNAME}/.config/
 
 # mkdir -p /home/${TARGET_USERNAME}/.config/pipewire/pipewire.conf.d/
-# curl -Lo /home/$TARGET_USERNAME/.config/pipewire/pipewire.conf.d/podcast.conf https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/podcast.conf
-# curl -Lo /home/$TARGET_USERNAME/.config/pipewire/pipewire-pulse.conf https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/pipewire-pulse.conf
+# curl -Lo /home/$TARGET_USERNAME/.config/pipewire/pipewire.conf.d/podcast.conf https://raw.githubusercontent.com/alainpham/osprimer/refs/heads/master/scripts/pulseaudio/podcast.conf
+# curl -Lo /home/$TARGET_USERNAME/.config/pipewire/pipewire-pulse.conf https://raw.githubusercontent.com/alainpham/osprimer/refs/heads/master/scripts/pulseaudio/pipewire-pulse.conf
 
 # chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/pipewire
 # chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/wireplumber
 # EOF
 
 # install scripts for webcam
-gitroot=https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/camera/
+gitroot=https://raw.githubusercontent.com/alainpham/osprimer/refs/heads/master/scripts/camera/
 files="cint c920"
 for file in $files ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
@@ -2353,7 +2363,7 @@ fi
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/obs-studio
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/recordings
 cat << EOF | chroot ${ROOTFS}
-    curl -Lo /tmp/obs-studio.tar https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/obs/obs-studio.tar
+    curl -Lo /tmp/obs-studio.tar https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/obs/obs-studio.tar
     tar xvf /tmp/obs-studio.tar -C /home/$TARGET_USERNAME/.config/
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/obs-studio
     chown -R root:root /home/$TARGET_USERNAME/.config/obs-studio/basic/profiles
@@ -2659,7 +2669,7 @@ dlfiles="
 ps4connect
 "
 for fname in $dlfiles ; do
-curl -Lo ${ROOTFS}/usr/local/bin/$fname https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/ds4/$fname
+curl -Lo ${ROOTFS}/usr/local/bin/$fname https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/emulation/ds4/$fname
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /usr/local/bin/$fname
 EOF
@@ -2681,7 +2691,7 @@ gshorts
 "
 
 for fname in $dlfiles ; do
-curl -Lo ${ROOTFS}/usr/local/bin/$fname https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/gshorts/$fname
+curl -Lo ${ROOTFS}/usr/local/bin/$fname https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/emulation/gshorts/$fname
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /usr/local/bin/$fname
 EOF
@@ -3017,7 +3027,7 @@ lineinfile "$CTRLCFG" "input_state_slot_increase_btn.*=.*" 'input_state_slot_inc
 
 # configure cores options
 mkdir -p "${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/config/PCSX-ReARMed/"
-wget -O "${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/config/PCSX-ReARMed/PCSX-ReARMed.opt" "https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/PCSX-ReARMed/PCSX-ReARMed.opt"
+wget -O "${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/config/PCSX-ReARMed/PCSX-ReARMed.opt" "https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/emulation/PCSX-ReARMed/PCSX-ReARMed.opt"
 
 
 
@@ -3028,7 +3038,7 @@ EOF
 # configure PCSX2
 
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/inis
-wget -O ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/inis/PCSX2.ini https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation//pcsx2/PCSX2.ini
+wget -O ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/inis/PCSX2.ini https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/emulation//pcsx2/PCSX2.ini
 
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/memcards
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/sstates
@@ -3053,7 +3063,7 @@ Hotkeys.ini
 "
 
 for fname in $dolconfigs ; do
-curl -Lo ${ROOTFS}/home/$TARGET_USERNAME/.var/app/org.DolphinEmu.dolphin-emu/config/dolphin-emu/$fname https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/dolphin-emu/$fname
+curl -Lo ${ROOTFS}/home/$TARGET_USERNAME/.var/app/org.DolphinEmu.dolphin-emu/config/dolphin-emu/$fname https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/emulation/dolphin-emu/$fname
 done
 
 cat << EOF | chroot ${ROOTFS}
@@ -3071,7 +3081,7 @@ controllerProfiles/controller0.xml
 "
 
 for fname in $cemuconfigs ; do
-curl -Lo ${ROOTFS}/home/$TARGET_USERNAME/.config/Cemu/$fname https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/cemu/$fname
+curl -Lo ${ROOTFS}/home/$TARGET_USERNAME/.config/Cemu/$fname https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/emulation/cemu/$fname
 done
 
 cat << EOF | chroot ${ROOTFS}
@@ -3248,7 +3258,7 @@ EOF
 fi
 
 
-gitroot=https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/vms
+gitroot=https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/vms
 files="vmcr vmcrs vmcrm vmcrl vmdl vmls vmsh vmip"
 for file in $files ; do
     curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
@@ -3668,7 +3678,7 @@ sudo mv desktopvideo_12.9a3_amd64.deb /opt/debs/desktopvideo_12.9a3_amd64.deb
 sudo mv desktopvideo-gui_12.9a3_amd64.deb /opt/debs/desktopvideo-gui_12.9a3_amd64.deb
 
 sudo apt install -y /opt/debs/desktopvideo_12.9a3_amd64.deb /opt/debs/desktopvideo-gui_12.9a3_amd64.deb
-wget -O /tmp/blackmagic-io-12.9a3-001-fix_for_kernel_6.8.patch https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/decklink/blackmagic-io-12.9a3-001-fix_for_kernel_6.8.patch
+wget -O /tmp/blackmagic-io-12.9a3-001-fix_for_kernel_6.8.patch https://raw.githubusercontent.com/alainpham/osprimer/refs/heads/master/scripts/decklink/blackmagic-io-12.9a3-001-fix_for_kernel_6.8.patch
 cd /usr/src/
 patch -p1 /tmp/blackmagic-io-12.9a3-001-fix_for_kernel_6.8.patch
 sudo dkms autoinstall -k $(uname -r)
