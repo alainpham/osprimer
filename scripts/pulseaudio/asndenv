@@ -48,13 +48,16 @@ export jbrmicid="alsa_input.usb-_Jabra_Link_390_6CFBED605E08-00.mono-fallback"
 export jbrspeakervolume="45"
 export jbrmicvolume="100"
 
-export bthspeakerid="bluez_sink.6C_FB_ED_22_1A_86.a2dp_sink"
+btsink=$(pactl list sinks short | grep bluez_ | awk '{print $2}')
+btmacaddr=$(echo "$btsink" | grep -o '[0-9A-F]\{2\}_[0-9A-F]\{2\}_[0-9A-F]\{2\}_[0-9A-F]\{2\}_[0-9A-F]\{2\}_[0-9A-F]\{2\}')
+
+export bthspeakerid="bluez_sink.${btmacaddr}.a2dp_sink"
 export bthmicid="$internalmicid"
 export bthspeakervolume="45"
 export bthmicvolume="$internalmicvolume"
 
-export hdsspeakerid="bluez_sink.6C_FB_ED_22_1A_86.handsfree_head_unit"
-export hdsmicid="bluez_source.6C_FB_ED_22_1A_86.handsfree_head_unit"
+export hdsspeakerid="bluez_sink.${btmacaddr}.handsfree_head_unit"
+export hdsmicid="bluez_source.${btmacaddr}.handsfree_head_unit"
 export hdsspeakervolume="45"
 export hdsmicvolume="100"
 
@@ -87,11 +90,11 @@ shortsoundnames[${internalmicid}]="INT"
 shortsoundnames[${focspeakerid}]="2I2"
 shortsoundnames[${focmicid}]="2I2"
 
-shortsoundnames[${bthspeakerid}]="JBR"
+shortsoundnames[${bthspeakerid}]="BTH"
 shortsoundnames[${bthmicid}]="INT"
 
-shortsoundnames[${hdsspeakerid}]="JBR"
-shortsoundnames[${hdsmicid}]="JBR"
+shortsoundnames[${hdsspeakerid}]="HDS"
+shortsoundnames[${hdsmicid}]="HDS"
 
 shortsoundnames[${dummyspeakerid}]="DMY"
 shortsoundnames[${dummymicid}]="DMY"

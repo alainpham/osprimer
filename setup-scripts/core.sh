@@ -1624,7 +1624,7 @@ lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*resample-method.*" "resample-metho
 
 # install scripts for sound and monitor
 gitroot=https://raw.githubusercontent.com/alainpham/debian-os-image/refs/heads/master/scripts/pulseaudio/
-files="snd asnd asndenv asnddef csndfoczv csndjbr csndzv csndh6 csndacer csndint clrmix clrmixoff"
+files="snd asnd asndenv asnddef csndfoczv csndjbr csndbth csndhds csndzv csndh6 csndacer csndint clrmix clrmixoff jbrconnect"
 for file in $files ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
 chmod 755 ${ROOTFS}/usr/local/bin/$file
