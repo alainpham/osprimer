@@ -2876,7 +2876,9 @@ export RARCHFLD=${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch
 export RARCHCFG=${RARCHFLD}/retroarch.cfg
 
 rm -r $RARCHFLD/{playlists,cheats,config,logs,autoconfig}
-rm $RARCHCFG
+if [ -f "$RARCHCFG" ]; then
+    rm $RARCHCFG
+fi
 
 cp -R $ROOTFS/home/$TARGET_USERNAME/.config/ra-autoconfig $RARCHFLD/autoconfig
 
