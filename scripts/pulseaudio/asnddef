@@ -11,6 +11,12 @@ focmic=$(pactl list short sources | grep ${focmicid} | awk '{print $2}')
 jbrspeaker=$(pactl list short sinks | grep ${jbrspeakerid} | awk '{print $2}')
 jbrmic=$(pactl list short sources | grep ${jbrmicid} | awk '{print $2}')
 
+bthspeaker=$(pactl list short sinks | grep ${bthspeakerid} | awk '{print $2}')
+bthmic=$(pactl list short sources | grep ${bthmicid} | awk '{print $2}')
+
+hdsspeaker=$(pactl list short sinks | grep ${hdsspeakerid} | awk '{print $2}')
+hdsmic=$(pactl list short sources | grep ${hdsmicid} | awk '{print $2}')
+
 zvspeaker=$(pactl list short sinks | grep ${zvspeakerid} | awk '{print $2}')
 zvmic=$(pactl list short sources | grep ${zvmicid} | awk '{print $2}')
 
@@ -32,6 +38,24 @@ then
     selected_microphone_volume=$focmicvolume
 
     echo $selected_output $selected_input
+elif [ -n "$bthspeaker" ]
+then
+    echo "Bluetooth ADP speaker is present"
+    selected_output=$bthspeaker
+    selected_input=$bthmic
+    selected_speaker_volume=$bthspeakervolume
+    selected_microphone_volume=$bthmicvolume
+
+    echo $selected_output $selected_output
+elif [ -n "$hdsspeaker" ]
+then
+    echo "Bluetooth headset speaker is present"
+    selected_output=$hdsspeaker
+    selected_input=$hdsmic
+    selected_speaker_volume=$hdsspeakervolume
+    selected_microphone_volume=$hdsmicvolume
+
+    echo $selected_output $selected_output
 elif [ -n "$jbrspeaker" ]
 then
     echo "Jabra speaker is present"
