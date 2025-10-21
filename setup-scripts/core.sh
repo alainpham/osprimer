@@ -2406,7 +2406,7 @@ webapps=(
     "telegram|https://web.telegram.org"
     "notes|https://docs.google.com/document/d/1wTwA1NhzgYUGG1eyDyUZj8ExhbhdscQrdYWBOBkLnCs"
     "gco|https://docs.google.com/presentation/d/1yo6Q0p0OBK9vIh3abwigtBDlFGMy9NqU7EzRKYjraro"
-    "gdemo|https://assertsdemo.grafana.net/a/grafana-asserts-app/assertions?start=now-24h&end=now&we[0][n]=productcatalogservice&we[0][tp]=Service&we[0][sc][site]=us-east-2&we[0][sc][ns]=ditl-demo-prod&we[0][sc][env]=assertsdemo-cluster&we[1][n]=flagd&we[1][tp]=Service&we[1][sc][site]=us-east-2&we[1][sc][ns]=ditl-demo-prod&we[1][sc][env]=assertsdemo-cluster&we[2][n]=productcatalog-postgres&we[2][tp]=Service&we[2][sc][site]=us-east-2&we[2][sc][ns]=ditl-demo-prod&we[2][sc][env]=assertsdemo-cluster&we[3][n]=frontend&we[3][tp]=Service&we[3][sc][site]=us-east-2&we[3][sc][ns]=ditl-demo-prod&we[3][sc][env]=assertsdemo-cluster&we[4][n]=recommendationservice&we[4][tp]=Service&we[4][sc][site]=us-east-2&we[4][sc][ns]=ditl-demo-prod&we[4][sc][env]=assertsdemo-cluster&view=BY_ENTITY"
+    "gdemo|https://emea.cloud.demokit.grafana.com/a/grafana-asserts-app/assertions?start=now-24h&end=now&search=productcatalogservice%20connected%20services&view=BY_ENTITY"
     "spotify|https://open.spotify.com/"
     "youtube|https://www.youtube.com/"
     "grok|https://grok.com/"
