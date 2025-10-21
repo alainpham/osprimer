@@ -3530,69 +3530,76 @@ qemu-img convert -f raw -O qcow2 /home/apham/virt/images/lnsvr.raw /home/apham/v
 
 desktop_common(){
 trap 'return 1' ERR
-bashaliases
-fastboot
-smalllogs
-reposrc
-iessentials
-isudo
-ikeyboard
-itouchpad
-idev
-idocker
-ikube
-igui
-iffmpeg
-inumlocktty
-itheming
-iworkstation
-ivirt
-iemulation
-iautologin
-istartx
-itimezone
-inetworking
+force_reinstall=${1:-0}
+bashaliases $force_reinstall
+fastboot $force_reinstall
+smalllogs $force_reinstall
+reposrc $force_reinstall
+iessentials $force_reinstall
+isudo $force_reinstall
+ikeyboard $force_reinstall
+itouchpad $force_reinstall
+idev $force_reinstall
+idocker $force_reinstall
+ikube $force_reinstall
+igui $force_reinstall
+iffmpeg $force_reinstall
+inumlocktty $force_reinstall
+itheming $force_reinstall
+iworkstation $force_reinstall
+ivirt $force_reinstall
+iemulation $force_reinstall
+iautologin $force_reinstall
+istartx $force_reinstall
+itimezone $force_reinstall
+inetworking $force_reinstall
 }
 
 laptop_common(){
-trap 'return 1' ERR
-desktop_common
-disableturbo
+trap 'return 1' ERR 
+force_reinstall=${1:-0}
+desktop_common $force_reinstall
+disableturbo $force_reinstall
 }
 
 macs_common(){
 trap 'return 1' ERR
-laptop_common
-rmbroadcom
+force_reinstall=${1:-0}
+laptop_common $force_reinstall
+rmbroadcom $force_reinstall
 }
 
 ubvm(){
 trap 'return 1' ERR
+force_reinstall=${1:-0}
 init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
-desktop_common
+desktop_common $force_reinstall
 reboot
 }
 
 macus(){
 trap 'return 1' ERR
+force_reinstall=${1:-0}
 modprobe -r b43 brcmsmac
 init apham "NA" "authorized_keys" "NA" "NA" "NA" "us" "macbook79"
-macs_common
+macs_common $force_reinstall
 reboot
 }
 
 macfr(){
 trap 'return 1' ERR
+force_reinstall=${1:-0}
 modprobe -r b43 brcmsmac
 init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "macbook79"
-macs_common
+macs_common $force_reinstall
 reboot
 }
 
 aaon(){
 trap 'return 1' ERR
+force_reinstall=${1:-0}
 init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
-laptop_common
+laptop_common $force_reinstall
 reboot
 }
 
@@ -3623,8 +3630,9 @@ cp -r /media/m03/apps/retroarch/states  /home/$TARGET_USERNAME/.config/retroarch
 
 fujb(){
 trap 'return 1' ERR
+force_reinstall=${1:-0}
 init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
-desktop_common
+desktop_common $force_reinstall
 reboot
 }
 
@@ -3647,16 +3655,18 @@ sudo dkms autoinstall -k $(uname -r)
 
 hped(){
 trap 'return 1' ERR
+force_reinstall=${1:-0}
 init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
-desktop_common
+desktop_common $force_reinstall
 reboot
 }
 
 # old macbook pro
 ombp(){
 trap 'return 1' ERR
+force_reinstall=${1:-0}
 init apham "NA" "authorized_keys" "NA" "NA" "NA" "us" "pc105"
-desktop_common
+desktop_common $force_reinstall
 reboot
 }
 
@@ -3664,8 +3674,9 @@ reboot
 # dell G15
 lg15(){
 trap 'return 1' ERR
+force_reinstall=${1:-0}
 init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
-laptop_common
+laptop_common $force_reinstall
 reboot
 }
 
@@ -3678,8 +3689,9 @@ reboot
 # lenovo w541
 leol(){
 trap 'return 1' ERR
+force_reinstall=${1:-0}
 init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
-laptop_common
+laptop_common $force_reinstall
 rmnouveau
 reboot
 }
@@ -3687,24 +3699,25 @@ reboot
 # lenovo T14 amd ubuntu workstation for work
 lpro(){
 trap 'return 1' ERR
+force_reinstall=${1:-0}
 init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
-bashaliases
-fastboot
-smalllogs
-reposrc
-iessentials
-itouchpad
-idev
-idocker
-ikube
-igui
-inumlocktty
-itheming
-iworkstation
-istartx
-ivirt
-itimezone
-inetworking
+bashaliases $force_reinstall
+fastboot $force_reinstall
+smalllogs $force_reinstall
+reposrc $force_reinstall
+iessentials $force_reinstall
+itouchpad $force_reinstall
+idev $force_reinstall
+idocker $force_reinstall
+ikube $force_reinstall
+igui $force_reinstall
+inumlocktty $force_reinstall
+itheming $force_reinstall
+iworkstation $force_reinstall
+istartx $force_reinstall
+ivirt $force_reinstall
+itimezone $force_reinstall
+inetworking $force_reinstall
 reboot
 }
 
