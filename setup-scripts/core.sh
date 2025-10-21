@@ -2669,8 +2669,11 @@ done
 igshorts(){
 trap 'return 1' ERR
 
-killall gshorts
-sleep 3
+# Kill any running gshorts process first
+if pgrep -f gshorts > /dev/null; then
+    killall gshorts
+    sleep 3
+fi
 
 dlfiles="
 gshorts
