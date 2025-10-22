@@ -56,6 +56,11 @@ export bthmicid="$internalmicid"
 export bthspeakervolume="45"
 export bthmicvolume="$internalmicvolume"
 
+export btfspeakerid="$bthspeakerid"
+export btfmicid="$focspeakerid"
+export btfspeakervolume="$bthspeakervolume"
+export btfmicvolume="$focmicvolume"
+
 export hdsspeakerid="bluez_sink.${btmacaddr}.handsfree_head_unit"
 export hdsmicid="bluez_source.${btmacaddr}.handsfree_head_unit"
 export hdsspeakervolume="45"

@@ -4,11 +4,11 @@ source /usr/local/bin/asndenv
 csnddmy
 
 CARD=$(pactl list short cards | grep bluez_card | awk '{print $2}')
-pactl set-card-profile "$CARD" handsfree_head_unit
+pactl set-card-profile "$CARD" a2dp_sink
 
-speakers=$hdsspeakerid
-mic=$hdsmicid
-speakervolume=$hdsspeakervolume
-micvolume=$hdsmicvolume
+speakers=$bttspeakerid
+mic=$btfmicid
+speakervolume=$btfspeakervolume
+micvolume=$btfmicvolume
 
 asnd $speakers $mic $speakervolume $micvolume

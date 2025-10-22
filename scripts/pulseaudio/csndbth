@@ -1,7 +1,7 @@
 #!/bin/bash
 source /usr/local/bin/asndenv
 
-csndint
+csnddmy
 
 CARD=$(pactl list short cards | grep bluez_card | awk '{print $2}')
 pactl set-card-profile "$CARD" a2dp_sink
