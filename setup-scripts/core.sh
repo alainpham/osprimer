@@ -1432,6 +1432,7 @@ EOF
 dlfiles="
 SpeedCrunch.ini
 "
+sudo -u $TARGET_USERNAME mkdir ${ROOTFS}/home/$TARGET_USERNAME/.config/SpeedCrunch
 for fname in $dlfiles ; do
 curl -Lo ${ROOTFS}/home/$TARGET_USERNAME/.config/SpeedCrunch/$fname https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/speedcrunch/$fname
 cat << EOF | chroot ${ROOTFS}
