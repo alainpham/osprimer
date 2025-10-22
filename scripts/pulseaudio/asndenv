@@ -57,7 +57,7 @@ export bthspeakervolume="45"
 export bthmicvolume="$internalmicvolume"
 
 export btfspeakerid="$bthspeakerid"
-export btfmicid="$focspeakerid"
+export btfmicid="$focmicid"
 export btfspeakervolume="$bthspeakervolume"
 export btfmicvolume="$focmicvolume"
 

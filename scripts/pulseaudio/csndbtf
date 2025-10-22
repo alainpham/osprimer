@@ -6,7 +6,7 @@ csnddmy
 CARD=$(pactl list short cards | grep bluez_card | awk '{print $2}')
 pactl set-card-profile "$CARD" a2dp_sink
 
-speakers=$bttspeakerid
+speakers=$btfspeakerid
 mic=$btfmicid
 speakervolume=$btfspeakervolume
 micvolume=$btfmicvolume
