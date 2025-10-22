@@ -2812,11 +2812,15 @@ fi
 ibottles(){
 trap 'return 1' ERR
 # flatpaks
+cat << EOF | chroot ${ROOTFS}
 flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
 flatpak install -y flathub com.usebottles.bottles
+EOF
 
+cat << EOF | chroot ${ROOTFS}
 flatpak install -y flathub com.github.tchx84.Flatseal
+EOF
 
 cat <<EOF | tee ${ROOTFS}/usr/local/bin/bottles
 flatpak run com.usebottles.bottles
@@ -2829,7 +2833,6 @@ EOF
 cat <<EOF | tee ${ROOTFS}/usr/local/bin/flatseal
 flatpak run com.github.tchx84.Flatseal
 EOF
-
 cat << EOF | chroot ${ROOTFS}
    chmod 755 /usr/local/bin/flatseal
 EOF
@@ -2843,6 +2846,8 @@ EOF
 idolphin(){
 trap 'return 1' ERR
 cat << EOF | chroot ${ROOTFS}
+    flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+
     flatpak install -y flathub org.DolphinEmu.dolphin-emu
 EOF
 
