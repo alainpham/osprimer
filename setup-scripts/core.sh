@@ -3093,6 +3093,10 @@ EOF
 isyncthing(){
 trap 'return 1' ERR 
 cd ~
+if [ -d lab ]; then
+    echo "lab directory exists"
+    rm -rf lab
+fi
 git clone https://github.com/alainpham/lab.git
 cd lab
 touch secret
