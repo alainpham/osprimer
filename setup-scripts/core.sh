@@ -2814,6 +2814,7 @@ trap 'return 1' ERR
 # flatpaks
 cat << EOF | chroot ${ROOTFS}
 flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+
 flatpak install -y flathub com.usebottles.bottles
 EOF
 
