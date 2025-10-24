@@ -2419,6 +2419,7 @@ webapps=(
     "word|https://word.cloud.microsoft"
     "excel|https://excel.cloud.microsoft"
     "powerpoint|https://powerpoint.cloud.microsoft"
+    "deezer|https://www.deezer.com/"
 )
 
 for entry in "${webapps[@]}"; do
