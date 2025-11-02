@@ -230,7 +230,7 @@ home() {
 
 
 applylayout(){
-if [ "$command" == "l" ]; then
+if [ "$command" == "la" ]; then
     
     lap
 
