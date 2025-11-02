@@ -1732,6 +1732,10 @@ backend_files=(
     "https://free-images.com/lg/5cc4/lights_night_city_night.jpg"
     "https://raw.githubusercontent.com/simple-sunrise/Light-and-Dark-Wallpapers-for-Gnome/main/Wallpapers/LakesideDeer/LakesideDeer-1.png"
     "https://raw.githubusercontent.com/simple-sunrise/Light-and-Dark-Wallpapers-for-Gnome/main/Wallpapers/LakesideDeer/LakesideDeer-2.png"
+    "https://w.wallhaven.cc/full/5g/wallhaven-5g22q5.png"
+    "https://w.wallhaven.cc/full/21/wallhaven-21yd3m.jpg"
+    "https://w.wallhaven.cc/full/rq/wallhaven-rqr1xw.jpg"
+    "https://w.wallhaven.cc/full/zp/wallhaven-zpyr5y.png"
 )
 
 # Loop through the list and download each file
@@ -2061,7 +2065,7 @@ mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm
 cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm/autostart.sh
 asnddef &
 mon &
-sleep 5 && sbg &
+sleep 5 && ~/.fehbg &
 EOF
 
 cat << EOF | chroot ${ROOTFS}
