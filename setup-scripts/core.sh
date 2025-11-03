@@ -3160,6 +3160,8 @@ curl -s -X POST \
     -H "Content-Type: application/json" \
     -d "$DEVICE_JSON" \
     $SYNCTHING_HUB_APIURL/rest/config/devices
+
+echo "New device added on central server"
 # ##### ADD DEVICE ON CENTRAL SERVER
 
 # ##### ADD CENTRAL TO LOCAL
@@ -3176,6 +3178,7 @@ curl -s -X POST \
     -H "Content-Type: application/json" \
     -d "$DEVICE_JSON" \
     http://localhost:8384/rest/config/devices
+echo "Central server added on local device"
 # ##### ADD CENTRAL TO LOCAL
 
 # Define key+folder list (format: id|path). Add as many lines as needed.
@@ -3196,11 +3199,30 @@ entries=(
 for entry in "${entries[@]}"; do
     FOLDER_ID="${entry%%|*}"
     PATH_ON_HOST="${entry#*|}"
-curl -X DELETE -H "X-API-Key: ${API_KEY}" http://localhost:8384/rest/config/folders/${FOLDER_ID}
-docker exec syncthing syncthing cli config folders add --id $FOLDER_ID --path $PATH_ON_HOST
-docker exec syncthing syncthing cli config folders $FOLDER_ID devices add --device-id $SYNCTHING_HUB_ID
-done
 
+FOLDER_JSON=$(cat <<EOF
+{
+    "id": "$FOLDER_ID",
+    "path": "$PATH_ON_HOST",
+    "devices": [
+        {
+            "deviceID": "$SYNCTHING_HUB_ID"
+        }
+    ]
+}
+EOF
+)
+
+
+curl -X DELETE -H "X-API-Key: ${API_KEY}" http://localhost:8384/rest/config/folders/${FOLDER_ID}
+
+curl -s -X POST \
+    -H "X-API-Key: $API_KEY" \
+    -H "Content-Type: application/json" \
+    -d "$FOLDER_JSON" \
+    http://localhost:8384/rest/config/folders/${FOLDER_ID}
+
+done
 
 }
 
