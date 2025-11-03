@@ -3087,6 +3087,11 @@ mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.local/share/Cemu/mlc01
 cemuconfigs="
 settings.xml
 controllerProfiles/controller0.xml
+controllerProfiles/controller1.xml
+controllerProfiles/ps3.xml
+controllerProfiles/ps4.xml
+controllerProfiles/ps4usb.xml
+controllerProfiles/xbox360.xml
 "
 
 for fname in $cemuconfigs ; do
