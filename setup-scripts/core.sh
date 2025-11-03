@@ -3215,12 +3215,14 @@ EOF
 
 
 curl -X DELETE -H "X-API-Key: ${API_KEY}" http://localhost:8384/rest/config/folders/${FOLDER_ID}
+echo "purged folder $FOLDER_ID"
 
 curl -s -X POST \
     -H "X-API-Key: $API_KEY" \
     -H "Content-Type: application/json" \
     -d "$FOLDER_JSON" \
-    http://localhost:8384/rest/config/folders/${FOLDER_ID}
+    http://localhost:8384/rest/config/folders
+echo "created folder $FOLDER_ID"
 
 done
 
