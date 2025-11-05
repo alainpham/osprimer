@@ -95,6 +95,9 @@ shortsoundnames[${internalmicid}]="INT"
 shortsoundnames[${focspeakerid}]="2I2"
 shortsoundnames[${focmicid}]="2I2"
 
+shortsoundnames[${jbrspeakerid}]="JBR"
+shortsoundnames[${jbrmicid}]="JBR"
+
 shortsoundnames[${bthspeakerid}]="BTH"
 shortsoundnames[${bthmicid}]="INT"
 
