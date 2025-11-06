@@ -1225,12 +1225,7 @@ cat << EOF | chroot ${ROOTFS}
     helm completion bash | tee /etc/bash_completion.d/helm > /dev/null
 EOF
 
-curl -fsSL -o /tmp/k9s.tar.gz https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/k9s_Linux_amd64.tar.gz
-tar -xzvf /tmp/k9s.tar.gz  -C ${ROOTFS}/usr/local/bin/ k9s
-rm /tmp/k9s.tar.gz
-cat << EOF | chroot ${ROOTFS}
-    chown root:root /usr/local/bin/k9s
-EOF
+ik9s
 
 kubescript="kubecr kubecrlocal kubemon kubeotel kubeexpose"
 for script in $kubescript ; do
@@ -1240,6 +1235,15 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 done
 
+}
+
+ik9s() {
+curl -fsSL -o /tmp/k9s.tar.gz https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/k9s_Linux_amd64.tar.gz
+tar -xzvf /tmp/k9s.tar.gz  -C ${ROOTFS}/usr/local/bin/ k9s
+rm /tmp/k9s.tar.gz
+cat << EOF | chroot ${ROOTFS}
+    chown root:root /usr/local/bin/k9s
+EOF
 }
 
 invidia() {
