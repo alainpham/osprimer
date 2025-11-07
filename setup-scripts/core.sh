@@ -4,7 +4,7 @@
 inputversions() {
     trap 'return 1' ERR
 
-    export CORE_VERSION=20251022
+    export CORE_VERSION=20251108
     echo "export CORE_VERSION=${CORE_VERSION}"
 
     # https://kubernetes.io/releases/  https://cloud.google.com/kubernetes-engine/docs/release-notes
