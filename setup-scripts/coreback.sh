@@ -180,16 +180,25 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 done
 
-export BASHRC="/etc/bash.bashrc"
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ] || [ "$OSNAME" = "opensuse-tumbleweed" ] ; then
+    export BASHRC="/etc/bash.bashrc"
+fi
+
+if [ "$OSNAME" = "alpine" ]; then
+    export BASHRC="/etc/bash/bashrc"
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+    export BASHRC="/etc/bashrc"
+cat << EOF | chroot ${ROOTFS}
+    ln -sf /usr/bin/vim /usr/bin/vi
+EOF
+fi
 
 lineinfile ${ROOTFS}${BASHRC} ".*alias.*ll.*=.*" 'alias ll="ls -larth"'
-mkdir -p ${ROOTFS}/home/${TARGET_USERNAME}
-touch ${ROOTFS}/home/${TARGET_USERNAME}/.bashrc
+if [ -f ${ROOTFS}/home/${TARGET_USERNAME}/.bashrc ]; then
 lineinfile ${ROOTFS}/home/${TARGET_USERNAME}/.bashrc ".*alias.*ll.*=.*" 'alias ll="ls -larth"'
-cat << EOF | chroot ${ROOTFS}
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/${TARGET_USERNAME}
-EOF
-
+fi
 lineinfile ${ROOTFS}${BASHRC} ".*alias.*ap=.*" 'alias ap=ansible-playbook'
 
 
@@ -245,6 +254,7 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*APT_PROXY*=.*" "export APT_PROXY='${APT
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*CORE_VERSION*=.*" "export CORE_VERSION='${CORE_VERSION}'"
 
+
 echo "bash aliases setup finished"
 }
 
@@ -293,11 +303,19 @@ trap 'return 1' ERR
 
 echo "setup users"
 
+if [ "$OSNAME" = "alpine" ]; then
+cat << EOF | chroot ${ROOTFS}
+    /usr/sbin/adduser -D -s /bin/bash $TARGET_USERNAME
+    mkdir -p /home/${TARGET_USERNAME}/.ssh
+    chown -R ${TARGET_USERNAME}:${TARGET_USERNAME} /home/${TARGET_USERNAME}/.ssh
+EOF
+else
 cat << EOF | chroot ${ROOTFS}
     /usr/sbin/useradd -m -s /bin/bash $TARGET_USERNAME
     mkdir -p /home/${TARGET_USERNAME}/.ssh
     chown -R ${TARGET_USERNAME}:${TARGET_USERNAME} /home/${TARGET_USERNAME}/.ssh
 EOF
+fi
 }
 
 isshkey(){
@@ -359,10 +377,28 @@ echo "Deactivated broadcom drivers"
 fastboot() {
 trap 'return 1' ERR
 
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ] || [ "$OSNAME" = "opensuse-tumbleweed" ] ; then
 # accelerate grub startup
 mkdir -p ${ROOTFS}/etc/default/grub.d/
 echo 'GRUB_TIMEOUT=1' | tee ${ROOTFS}/etc/default/grub.d/15_timeout.cfg
 lineinfile ${ROOTFS}/etc/default/grub ".*GRUB_TIMEOUT=.*" 'GRUB_TIMEOUT=1'
+
+if [ "$OSNAME" = "opensuse-tumbleweed" ]; then
+grub2-mkconfig -o /boot/efi/EFI/opensuse/grub.cfg
+else
+update-grub2
+fi
+
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+echo openmandriva
+lineinfile ${ROOTFS}/etc/default/grub ".*GRUB_TIMEOUT=.*" 'GRUB_TIMEOUT=1'
+
+update-grub2
+fi
+
+
 
 echo "fastboot activated"
 
@@ -404,6 +440,9 @@ EOF
 
 chmod 755 ${ROOTFS}/usr/local/bin/turboboost.sh
 
+
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ]; then
+
 cat <<EOF | tee ${ROOTFS}/etc/systemd/system/disable-intel-turboboost.service
 [Unit]
 Description=Disable Intel Turbo Boost using pstate driver 
@@ -418,6 +457,56 @@ EOF
 cat << EOF | chroot ${ROOTFS}
     systemctl enable disable-intel-turboboost.service
 EOF
+fi
+
+
+if [ "$OSNAME" = "devuan" ]; then
+
+cat <<'EOF' | tee ${ROOTFS}/etc/init.d/disable-intel-turboboost
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          disable-intel-turboboost
+# Required-Start:    $all
+# Required-Stop:     $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Disable Intel Turbo Boost using pstate driver
+### END INIT INFO
+
+case "$1" in
+  start)
+    echo "Disabling Intel Turbo Boost..."
+    /usr/local/bin/turboboost.sh no
+    ;;
+  stop)
+    echo "Enabling Intel Turbo Boost..."
+    /usr/local/bin/turboboost.sh yes
+    ;;
+  restart)
+    $0 stop
+    $0 start
+    ;;
+  status)
+    echo "Turbo Boost control script : no_turbo state"
+    /usr/local/bin/turboboost.sh status
+    ;;
+  *)
+    echo "Usage: /etc/init.d/disable-intel-turboboost {start|stop|restart|status}"
+    exit 1
+    ;;
+esac
+
+exit 0
+EOF
+
+chmod 755 ${ROOTFS}/etc/init.d/disable-intel-turboboost
+
+cat << EOF | chroot ${ROOTFS}
+    update-rc.d disable-intel-turboboost defaults
+EOF
+
+fi
+
 }
 
 firstbootexpandfs() {
@@ -443,6 +532,7 @@ EOF
 
 chmod 755 ${ROOTFS}/usr/local/bin/firstboot.sh
 
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat <<EOF | tee ${ROOTFS}/etc/systemd/system/firstboot.service
 [Unit]
 Description=firstboot
@@ -463,27 +553,123 @@ EOF
 cat << EOF | chroot ${ROOTFS}
     systemctl enable firstboot.service
 EOF
+fi
+
+if [ "$OSNAME" = "devuan" ]; then
+cat <<'EOF' | tee ${ROOTFS}/etc/init.d/firstboot
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          firstboot
+# Required-Start:    $all
+# Required-Stop:     $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Expand filesystem on first boot
+### END INIT INFO
+
+case "$1" in
+  start)
+    /usr/local/bin/firstboot.sh
+    ;;
+  stop)
+    echo "Firstboot script has run"
+    ;;
+  *)
+    echo "Usage: /etc/init.d/firstboot {start|stop}"
+    exit 1
+    ;;
+esac
+
+exit 0
+EOF
+
+chmod 755 ${ROOTFS}/etc/init.d/firstboot
+
+cat << EOF | chroot ${ROOTFS}
+    update-rc.d firstboot defaults
+EOF
+fi
 
 echo "firstboot script activated"
 }
 
 smalllogs() {
 trap 'return 1' ERR
+
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ]; then
 lineinfile ${ROOTFS}/etc/systemd/journald.conf ".*SystemMaxUse=.*" "SystemMaxUse=50M"
 echo "lower log volume activated"
+fi
 }
 
 reposrc() {
 trap 'return 1' ERR
+
+if [ "$OSNAME" = "debian" ]; then
+echo "setup apt"
+cat <<EOF > ${ROOTFS}/etc/apt/sources.list
+deb http://deb.debian.org/debian bookworm main contrib non-free non-free-firmware
+deb http://deb.debian.org/debian-security/ bookworm-security main contrib non-free non-free-firmware
+deb http://deb.debian.org/debian bookworm-updates main contrib non-free non-free-firmware
+EOF
+
+echo "apt sources setup finished"
+fi
+
+if [ "$OSNAME" = "ubuntu" ]; then
 echo "TODO : apt sources setup finished"
+fi
+
+if [ "$OSNAME" = "alpine" ]; then
+cat <<EOF | tee ${ROOTFS}/etc/apk/repositories
+http://dl-cdn.alpinelinux.org/alpine/edge/main
+http://dl-cdn.alpinelinux.org/alpine/edge/community
+EOF
+fi
+
+
+if [ "$OSNAME" = "devuan" ]; then
+echo "setup apt"
+
+if [ "$OSVERSION" = "4" ]; then
+cat <<EOF > ${ROOTFS}/etc/apt/sources.list
+deb http://deb.devuan.org/merged chimaera main non-free contrib
+deb http://deb.devuan.org/merged chimaera-security main non-free contrib
+deb http://deb.devuan.org/merged chimaera-updates main non-free contrib
+EOF
+else
+cat <<EOF > ${ROOTFS}/etc/apt/sources.list
+deb http://deb.devuan.org/merged daedalus main non-free-firmware non-free contrib
+deb http://deb.devuan.org/merged daedalus-security main non-free-firmware non-free contrib
+deb http://deb.devuan.org/merged daedalus-updates main non-free-firmware non-free contrib
+EOF
+fi
+
+fi
+
+
+if [ "$OSNAME" = "openmandriva" ]; then
+
+rm -f ${ROOTFS}/etc/yum.repos.d/*
+
+    if [ "$OSVERSION" = "5.0" ]; then
+        curl -Lo ${ROOTFS}/etc/yum.repos.d/openmandriva-rock-x86_64.repo https://raw.githubusercontent.com/alainpham/osprimer/refs/heads/master/om/openmandriva-rock-x86_64.repo
+    else
+        curl -Lo ${ROOTFS}/etc/yum.repos.d/openmandriva-rolling-x86_64.repo https://raw.githubusercontent.com/alainpham/osprimer/refs/heads/master/om/openmandriva-rolling-x86_64.repo
+    fi
+fi
+
 }
 
 iaptproxy() {
 trap 'return 1' ERR
+
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | tee ${ROOTFS}/etc/apt/apt.conf.d/99proxy
 Acquire::HTTP::Proxy "${APT_PROXY}";
 Acquire::HTTPS::Proxy "false";
 EOF
+fi
 }
 
 iessentials() {
@@ -492,6 +678,7 @@ trap 'return 1' ERR
 # Essentials packages
 echo "install essentials"
 
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt -y update 
     apt install -y ncurses-term
@@ -500,12 +687,77 @@ cat << EOF | chroot ${ROOTFS}
     apt install -y systemd-timesyncd
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup iperf3
 EOF
+fi
 
-# No unattended upgrade
+if [ "$OSNAME" = "opensuse-tumbleweed" ]; then
+cat << EOF | chroot ${ROOTFS}
+zypper refresh
+zypper update
+zypper install -y ncurses
+zypper install -y sudo git tmux vim curl wget rsync ncdu bind-utils bmon htop btop bash-completion gpg whois haveged zip unzip virt-what wireguard-tools iptables jq jc sshfs iotop
+
+EOF
+fi
+
+if [ "$OSNAME" = "alpine" ]; then
+cat << EOF | chroot ${ROOTFS}
+apk add ncurses
+apk update
+apk upgrade
+apk add sudo git tmux vim curl wget rsync ncdu btop bash-completion gpg whois zip unzip virt-what wireguard-tools iptables jq jc sshfs iotop envsubst
+apk add chrony
+apk add cloud-utils-growpart openssh-server iperf3
+EOF
+fi
+
+
+if [ "$OSNAME" = "devuan" ]; then
+cat << EOF | chroot ${ROOTFS}
+    apt -y update 
+    apt install -y ncurses-term
+    apt -y upgrade
+    apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon htop btop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq jc sshfs iotop wakeonlan
+    DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup iperf3
+EOF
+fi
+
+# deactivate unattended upgrades
+if [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | tee ${ROOTFS}/etc/apt/apt.conf.d/20auto-upgrades
 APT::Periodic::Update-Package-Lists "0";
 APT::Periodic::Unattended-Upgrade "0";
 EOF
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+
+
+    if [ "$OSVERSION" = "5.0" ]; then
+cat << EOF | chroot ${ROOTFS}
+dnf clean -y all ; dnf -y repolist
+dnf -y upgrade
+EOF
+    else
+cat << EOF | chroot ${ROOTFS}
+dnf clean -y all ; dnf -y repolist
+dnf -y --allowerasing distro-sync
+EOF
+    fi
+
+
+
+# cat << EOF | chroot ${ROOTFS}
+#     dnf clean all ; dnf repolist
+#     dnf upgrade
+# EOF
+
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y ncurses-extraterms gettext
+    dnf install -y sudo git tmux vim curl wget rsync ncdu bind-utils htop bash-completion gnupg2 whois zip unzip virt-what wireguard-tools iptables jq sshfs iotop
+    dnf install -y cloud-utils openssh-server console-setup
+EOF
+fi
+
 
 # configure git to use vim as editor
 cat << EOF | tee ${ROOTFS}/home/${TARGET_USERNAME}/.gitconfig
@@ -528,6 +780,7 @@ echo "sudo setup finished"
 
 allowsshpwd() {
 trap 'return 1' ERR
+
 sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' ${ROOTFS}/etc/ssh/sshd_config
 }
 
@@ -566,10 +819,25 @@ cd libinput-gestures
 ./libinput-gestures-setup install
 cd $previousfld
 
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt -y install libinput-tools wmctrl
     adduser $TARGET_USERNAME input
 EOF
+fi
+
+if [ "$OSNAME" = "opensuse-tumbleweed" ]; then
+cat << EOF | chroot ${ROOTFS}
+    zypper install -y libinput-tools wmctrl
+    usermod -aG input $TARGET_USERNAME
+EOF
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+cat << EOF | chroot ${ROOTFS}
+    usermod -aG input $TARGET_USERNAME
+EOF
+fi
 
 mkdir -p ${ROOTFS}/home/${TARGET_USERNAME}/.config/
 
@@ -585,8 +853,10 @@ gesture pinch out       xdotool key ctrl+plus
 EOF
 
 cat << EOF | chroot ${ROOTFS}
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config
+    chown $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config
+    chown $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/libinput-gestures.conf
 EOF
+
 
 }
 
@@ -595,6 +865,7 @@ trap 'return 1' ERR
 
 force_reinstall=${1:-0}
 
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt install -y ansible openjdk-17-jdk-headless npm golang-go
 EOF
@@ -603,6 +874,43 @@ export JAVA_HOME_TARGET=/usr/lib/jvm/java-17-openjdk-amd64
 lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*JAVA_HOME*=.*" "export JAVA_HOME=${JAVA_HOME_TARGET}"
 
 echo "java home setup finished"
+fi
+
+if [ "$OSNAME" = "opensuse-tumbleweed" ]; then
+cat << EOF | chroot ${ROOTFS}
+    zypper install -y ansible java-17-openjdk-devel npm go
+EOF
+
+export JAVA_HOME_TARGET=/usr/lib64/jvm/java-17-openjdk
+lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*JAVA_HOME*=.*" "export JAVA_HOME=${JAVA_HOME_TARGET}"
+
+echo "java home setup finished"
+fi
+
+if [ "$OSNAME" = "alpine" ]; then
+cat << EOF | chroot ${ROOTFS}
+    apk add ansible openjdk17 nodejs go
+EOF
+
+export JAVA_HOME_TARGET=/usr/lib/jvm/default-jvm
+lineinfile ${ROOTFS}/etc/bash/bashrc ".*export.*JAVA_HOME*=.*" "export JAVA_HOME=${JAVA_HOME_TARGET}"
+
+echo "java home setup finished"
+fi
+
+
+
+if [ "$OSNAME" = "openmandriva" ]; then
+
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y ansible java-17-openjdk-devel npm golang
+EOF
+
+export JAVA_HOME_TARGET=/usr/lib/jvm/java-17-openjdk
+lineinfile ${ROOTFS}/etc/bashrc ".*export.*JAVA_HOME*=.*" "export JAVA_HOME=${JAVA_HOME_TARGET}"
+lineinfile ${ROOTFS}/etc/bashrc ".*export.*PATH*=.*" "export PATH=\$PATH:${JAVA_HOME_TARGET}/bin"
+
+fi
 
 imaven $force_reinstall
 
@@ -627,7 +935,9 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 rm -f /tmp/maven.tar.gz
 echo "maven installed"
+
 }
+
 
 idocker() {
 trap 'return 1' ERR
@@ -636,6 +946,7 @@ force_reinstall=${1:-0}
 
 echo "install docker"
 
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt install -y docker.io python3-docker docker-compose skopeo docker-buildx
 EOF
@@ -655,6 +966,51 @@ echo "docker logs configured"
 cat << EOF | chroot ${ROOTFS}
     adduser $TARGET_USERNAME docker
 EOF
+fi
+
+if [ "$OSNAME" = "opensuse-tumbleweed" ]; then
+cat << EOF | chroot ${ROOTFS}
+    zypper install -y docker python3-docker docker-compose skopeo docker-buildx
+    systemctl enable docker
+    systemctl start docker
+    usermod -aG docker $TARGET_USERNAME
+EOF
+fi
+
+if [ "$OSNAME" = "alpine" ]; then
+apk add docker docker-cli-compose docker-cli-buildx
+adduser $TARGET_USERNAME docker
+rc-update add docker default
+mkdir -p /etc/docker
+cat <<EOF | tee ${ROOTFS}/etc/docker/daemon.json
+{
+  "log-opts": {
+    "max-size": "10m",
+    "max-file": "2" 
+  }
+}
+EOF
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y docker python-docker docker-compose skopeo docker-buildx
+    systemctl enable docker
+EOF
+
+cat <<EOF | tee ${ROOTFS}/etc/docker/daemon.json
+{
+  "iptables": true
+}
+EOF
+echo "docker logs configured"
+
+cat << EOF | chroot ${ROOTFS}
+    usermod -aG docker $TARGET_USERNAME
+EOF
+fi
+
 
 cat <<'EOF' | tee ${ROOTFS}/usr/local/bin/firstboot-dockernet.sh
 #!/bin/bash
@@ -729,6 +1085,7 @@ EOF
 chmod 755 ${ROOTFS}/usr/local/bin/firstboot-dockernet.sh
 chmod 755 ${ROOTFS}/usr/local/bin/firstboot-dockerbuildx.sh
 
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ] || [ "$OSNAME" = "opensuse-tumbleweed" ] ; then
 cat <<EOF | tee ${ROOTFS}/etc/systemd/system/firstboot-dockernet.service
 [Unit]
 Description=firstboot-dockernet
@@ -767,6 +1124,71 @@ cat << EOF | chroot ${ROOTFS}
     systemctl enable firstboot-dockerbuildx.service
 EOF
 echo "docker network and buildx on first boot service configured"
+fi 
+
+if [ "$OSNAME" = "devuan" ]; then
+cat <<'EOF' | tee ${ROOTFS}/etc/init.d/firstboot-dockernet
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          firstboot-dockernet
+# Required-Start:    docker
+# Required-Stop:     $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Create docker network on first boot
+### END INIT INFO
+
+case "$1" in
+  start)
+    /usr/local/bin/firstboot-dockernet.sh
+    ;;
+  stop)
+    echo "Firstboot script has run"
+    ;;
+  *)
+    echo "Usage: /etc/init.d/firstboot-dockernet {start|stop}"
+    exit 1
+    ;;
+esac
+
+exit 0
+EOF
+
+cat <<'EOF' | tee ${ROOTFS}/etc/init.d/firstboot-dockerbuildx
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          firstboot-dockerbuildx
+# Required-Start:    docker
+# Required-Stop:     $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Create docker buildx on first boot
+### END INIT INFO
+EOF
+cat <<EOF | tee -a ${ROOTFS}/etc/init.d/firstboot-dockerbuildx
+case "\$1" in
+  start)
+    su - ${TARGET_USERNAME} -c /usr/local/bin/firstboot-dockerbuildx.sh
+    ;;
+  stop)
+    echo "Firstboot script has run"
+    ;;
+  *)
+    echo "Usage: /etc/init.d/firstboot-dockerbuildx {start|stop}"
+    exit 1
+    ;;
+esac
+EOF
+
+chmod 755 ${ROOTFS}/etc/init.d/firstboot-dockernet
+chmod 755 ${ROOTFS}/etc/init.d/firstboot-dockerbuildx
+
+cat << EOF | chroot ${ROOTFS}
+    update-rc.d firstboot-dockernet defaults
+    update-rc.d firstboot-dockerbuildx defaults
+EOF
+
+fi
 
 }
 
@@ -891,6 +1313,7 @@ cat << EOF | chroot ${ROOTFS}
     chmod 755 /usr/local/bin/nlock
 EOF
 
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME"  = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat <<EOF | tee ${ROOTFS}/etc/systemd/system/nlock.service
 [Unit]
 Description=nlock
@@ -907,6 +1330,44 @@ EOF
 cat << EOF | chroot ${ROOTFS}
     systemctl enable nlock
 EOF
+
+fi
+
+if [ "$OSNAME" = "devuan" ]; then
+cat <<'EOF' | tee ${ROOTFS}/etc/init.d/nlock
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          nlock
+# Required-Start:    $all
+# Required-Stop:     $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start daemon at boot time
+# Description:       Enable service provided by daemon.
+### END INIT INFO
+
+case "$1" in
+  start)
+    /usr/local/bin/nlock
+    ;;
+  stop)
+    echo "Stopping nlock"
+    ;;
+  *)
+    echo "Usage: /etc/init.d/firstboot {start|stop}"
+    exit 1
+    ;;
+esac
+
+exit 0
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /etc/init.d/nlock
+    update-rc.d nlock defaults
+EOF
+
+fi
 # end numlock tty
 
 }
@@ -924,12 +1385,36 @@ echo "install gui"
 # if pulse replace by this apt install -y pulseaudio
     # apt install -y  pipewire-audio wireplumber pipewire-pulse pipewire-alsa libspa-0.2-bluetooth pulseaudio-utils qpwgraph pavucontrol
 
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt install -y make gcc libx11-dev libxft-dev libxrandr-dev libimlib2-dev libfreetype-dev libxinerama-dev xorg numlockx usbutils libsdl2-dev
     apt install -y pulseaudio pulseaudio-module-bluetooth pulseaudio-utils pavucontrol alsa-utils
     apt remove -y xserver-xorg-video-intel
 EOF
+fi
+
+if [ "$OSNAME" = "opensuse-tumbleweed" ]; then
+cat << EOF | chroot ${ROOTFS}
+    zypper install -y make gcc libX11-devel libXft-devel libXrandr-devel imlib2-devel freetype2-devel libXinerama-devel xorg-x11 xorg-x11-server numlockx usbutils SDL2-devel ncurses-devel
+    zypper install -y pulseaudio pulseaudio-module-bluetooth pulseaudio-utils pavucontrol alsa-utils
+EOF
+fi
  
+
+if [ "$OSNAME" = "openmandriva" ]; then
+#  backup   dnf install -y make clang gcc gcc-c++ libx11-devel libxft-devel libxrandr-devel lib64imlib2-devel freetype-devel libxinerama-devel x11-server-xorg numlock x11-util-macros
+
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y make clang libx11-devel libxft-devel libxrandr-devel lib64imlib2-devel freetype-devel libxinerama-devel x11-server-xorg numlock usbutils x11-util-macros
+    dnf install -y meson cmake autoconf automake libtool lib64ev-devel glibc-devel libpixman-devel libx11-devel lib64xcb-util-image-devel lib64xcb-util-renderutil-devel libxcb-util-devel uthash-devel libpcre2-devel libepoxy-devel libdbus-1-devel
+    dnf remove -y pipewire-pulse
+    dnf install -y pulseaudio-server pulseaudio-module-bluetooth pulseaudio-utils pavucontrol alsa-utils
+    
+    systemctl --machine=${TARGET_USERNAME}@.host --user enable pulseaudio.service
+EOF
+fi
+
+
 if [ -d "${ROOTFS}/usr/share/fonts/nerd-fonts/" ] && [ "$force_reinstall" = "0" ]; then
     echo "Nerd Fonts already installed, skipping."
 else
@@ -945,8 +1430,9 @@ done
 fi
 
 echo "additional gui packages"
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
-    apt install -y ntfs-3g ifuse mousepad mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv acpitool lm-sensors fonts-noto libnotify-bin dunst mkvtoolnix-gui python3-mutagen imagemagick mediainfo-gui mediainfo arandr picom brightnessctl cups xsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze-gtk-theme breeze-icon-theme joystick gparted vulkan-tools flatpak
+    apt install -y ntfs-3g ifuse mousepad mpv haruna vlc cmatrix nmon mesa-utils neofetch feh acpitool lm-sensors fonts-noto libnotify-bin dunst mkvtoolnix-gui python3-mutagen imagemagick mediainfo-gui mediainfo arandr picom brightnessctl cups xsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze-gtk-theme breeze-icon-theme joystick gparted vulkan-tools flatpak
     apt install -y ffmpeg libfdk-aac2 libnppig12 libnppicc12 libnppidei12 libnppif12
 EOF
 dlfiles="
@@ -960,9 +1446,71 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 done
 
+
+fi
+
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
+cat << EOF | chroot ${ROOTFS}
+    apt install -y libsane firefox-esr
+EOF
+fi
+
+if [ "$OSNAME" = "opensuse-tumbleweed" ]; then
+cat << EOF | chroot ${ROOTFS}
+zypper install -y \
+  ntfs-3g ifuse mousepad mpv haruna vlc cmatrix nmon neofetch feh qimgv \
+  noto-sans-fonts noto-serif-fonts libnotify-tools dunst mkvtoolnix-gui \
+  python3-mutagen ImageMagick mediainfo-gui mediainfo arandr picom brightnessctl cups \
+  xsane sane-backends filezilla speedcrunch fontawesome-fonts lxappearance \
+  breeze-gtk gparted vulkan-tools flatpak
+
+zypper install -y ffmpeg libfdk-aac2 libnppig12 libnppicc12 libnppidei12 libnppif12
+EOF
+fi
+ 
+
+if [ "$OSNAME" = "openmandriva" ]; then
+
+if [ "$OSVERSION" = "5.0" ]; then
+cat << EOF | chroot ${ROOTFS}
+dnf install -y breeze
+EOF
+else
+cat << EOF | chroot ${ROOTFS}
+dnf install -y plasma6-breeze
+EOF
+fi
+
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y libgtk+3.0-devel python-gobject3-devel
+    dnf install -y ntfs-3g ifuse mousepad mpv haruna vlc nmon neofetch feh qimgv acpitool lm_sensors noto-sans-fonts noto-serif-fonts fonts-ttf-awesome fonts-otf-awesome libnotify dunst ffmpeg mutagen imagemagick mediainfo arandr  cups xsane sane-backends filezilla lxappearance
+    cd /tmp/
+    wget -O picom.zip "https://github.com/yshui/picom/archive/refs/tags/v${PICOM_VERSION}.zip"
+    unzip picom.zip
+    cd picom-${PICOM_VERSION}
+    meson setup --buildtype=release build
+    ninja -C build install
+
+    cd /tmp/
+    wget -O brightnessctl.zip https://github.com/Hummer12007/brightnessctl/archive/refs/tags/${BRIGHTNESSCTL_VERSION}.zip
+    unzip brightnessctl.zip
+    cd brightnessctl-${BRIGHTNESSCTL_VERSION}
+    make install
+
+    cd /tmp/
+    wget https://bitbucket.org/heldercorreia/speedcrunch/downloads/SpeedCrunch-${SPEEDCRUNCH_VERSION}-linux64.tar.bz2
+    tar xvf SpeedCrunch-${SPEEDCRUNCH_VERSION}-linux64.tar.bz2
+    cp speedcrunch /usr/local/bin/
+EOF
+#     picom brightnessctl
+
+
+fi
+
 # dunst notification
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/dunst
 
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ] || [ "$OSNAME" = "opensuse-tumbleweed" ]; then
 cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.config/dunst/dunstrc
 [global]
 monitor = 0
@@ -971,6 +1519,23 @@ font = Noto Sans 11
 frame_width = 2
 frame_color = "#4e9a06"
 offset = 20x65
+EOF
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.config/dunst/dunstrc
+[global]
+monitor = 0
+# follow = keyboard
+font = Noto Sans 11
+frame_width = 2
+frame_color = "#4e9a06"
+geometry = 300x5-20+65
+icon_path = "/usr/share/icons/breeze-dark/status/16:/usr/share/icons/breeze-dark/devices/16"
+EOF
+fi
+
+cat << 'EOF' | tee -a ${ROOTFS}/home/$TARGET_USERNAME/.config/dunst/dunstrc
 [urgency_low]
     background = "#4e9a06"
     foreground = "#eeeeec"
@@ -985,6 +1550,8 @@ EOF
 cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/dunst
 EOF
+
+
 
 #YT-DLP latest
 curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o ${ROOTFS}/usr/local/bin/yt-dlp
@@ -1016,6 +1583,7 @@ vconv-x264-lowres-lowvbr-2pass.sh
 vconv-x264-lowres-vbr-2pass.sh
 vconv-x264-vbr-2pass.sh
 "
+
 for script in $ffmpegscripts ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/ffmpeg/$script
 cat << EOF | chroot ${ROOTFS}
@@ -1042,8 +1610,17 @@ EOF
 
 # create alsa loopback
 
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 lineinfile ${ROOTFS}/etc/modules ".*snd-aloop.*" "snd-aloop"
 lineinfile ${ROOTFS}/etc/modules ".*snd-dummy.*" "snd-dummy"
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+cat << 'EOF' | tee ${ROOTFS}/etc/modules-load.d/alsa.conf
+snd-aloop
+snd-dummy
+EOF
+fi
 
 cat << 'EOF' | tee ${ROOTFS}/etc/modprobe.d/alsa-loopback.conf
 options snd-aloop index=10 id=loop
@@ -1060,6 +1637,8 @@ wget -O ${ROOTFS}/etc/pulse/default.pa.d/pulsepod.pa https://raw.githubuserconte
 
 lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-sample-rate.*" "default-sample-rate = 48000"
 lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-sample-format.*" "default-sample-format = s16le"
+# lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-fragment-size-msec.*" "default-fragment-size-msec = 40"
+# lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-fragments.*" "default-fragments = 4"
 lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*resample-method.*" "resample-method = soxr-hq"
 
 # install scripts for sound and monitor
@@ -1077,7 +1656,20 @@ curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
 chmod 755 ${ROOTFS}/usr/local/bin/$file
 done
 
+# wireplumber and pipewire
 curl -Lo ${ROOTFS}/etc/udev/rules.d/89-pulseaudio-udev.rules https://raw.githubusercontent.com/alainpham/osprimer/refs/heads/master/scripts/pulseaudio/89-pulseaudio-udev.rules
+
+# cat << EOF | chroot ${ROOTFS}
+# cp -R /usr/share/pipewire /home/${TARGET_USERNAME}/.config/
+# cp -R /usr/share/wireplumber /home/${TARGET_USERNAME}/.config/
+
+# mkdir -p /home/${TARGET_USERNAME}/.config/pipewire/pipewire.conf.d/
+# curl -Lo /home/$TARGET_USERNAME/.config/pipewire/pipewire.conf.d/podcast.conf https://raw.githubusercontent.com/alainpham/osprimer/refs/heads/master/scripts/pulseaudio/podcast.conf
+# curl -Lo /home/$TARGET_USERNAME/.config/pipewire/pipewire-pulse.conf https://raw.githubusercontent.com/alainpham/osprimer/refs/heads/master/scripts/pulseaudio/pipewire-pulse.conf
+
+# chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/pipewire
+# chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/wireplumber
+# EOF
 
 # install scripts for webcam
 gitroot=https://raw.githubusercontent.com/alainpham/osprimer/refs/heads/master/scripts/camera/
@@ -1088,6 +1680,7 @@ chmod 755 ${ROOTFS}/usr/local/bin/$file
 done
 
 # install chrome browser
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 
 if [ -f "${ROOTFS}/usr/bin/google-chrome" ] && [ "$force_reinstall" = "0" ]; then
     echo "Google Chrome already downloaded, skipping."
@@ -1096,6 +1689,21 @@ else
     wget -O ${ROOTFS}/opt/debs/google-chrome-stable_current_amd64.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb 
 cat << EOF | chroot ${ROOTFS}
     apt install -y /opt/debs/google-chrome-stable_current_amd64.deb
+EOF
+fi
+
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y google-chrome-stable
+    rm -f /etc/yum.repos.d/google-chrome.repo
+EOF
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+cat << EOF | chroot ${ROOTFS}
+    systemctl disable sddm
 EOF
 fi
 
@@ -1161,7 +1769,14 @@ if [ -f ${ROOTFS}/usr/share/dbus-1/services/org.knopwob.dunst.service ] ; then
 mv ${ROOTFS}/usr/share/dbus-1/services/org.knopwob.dunst.service ${ROOTFS}/usr/share/dbus-1/services/org.knopwob.dunst.service.disabled
 fi
 
+if [ "$OSNAME" = "devuan" ]; then
+cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
+#!/bin/sh
+eval $(dbus-launch --sh-syntax --exit-with-session)
+EOF
+fi
 
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
 #!/bin/sh
 if [ -z "$DBUS_SESSION_BUS_ADDRESS" ] && [ -n "$XDG_RUNTIME_DIR" ] && \
@@ -1181,6 +1796,7 @@ if [ -x "/usr/bin/dbus-update-activation-environment" ]; then
 fi
 
 EOF
+fi
 
 # check if inside virtual machine
 export hypervisor=$(echo "virt-what" | chroot ${ROOTFS})
@@ -1188,20 +1804,32 @@ export hypervisor=$(echo "virt-what" | chroot ${ROOTFS})
 if [ "$hypervisor" = "hyperv" ] || [ "$hypervisor" = "kvm" ]; then
 
 cat << 'EOF' | chroot ${ROOTFS}
-    apt install -y spice-vdagent
+    apt install -y  spice-vdagent
 EOF
 
 cat << 'EOF' | tee -a ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
 spice-vdagent
 EOF
 fi
-# END check if inside virtual machine
 
 # Xinit numlock
+if [[ "$(dmidecode -t 1 | grep 'Product Name')" == *"MacBook"* ]]; then
+    echo "Running on a MacBook, no numlock"
+else
+    
+    if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | tee -a ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
 numlockx
-EOF
 
+EOF
+    fi
+
+    if [ "$OSNAME" = "openmandriva" ]; then
+cat << 'EOF' | tee -a ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
+enable_X11_numlock
+EOF
+    fi
+fi
 
 cat << 'EOF' | tee -a ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
 dunst > ~/.dunst.log &
@@ -1264,9 +1892,38 @@ cat << EOF | chroot ${ROOTFS}
     chmod 755 /usr/local/bin/pdf2png
 EOF
 
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt install -y v4l2loopback-utils flameshot maim xclip xdotool thunar thunar-archive-plugin
 EOF
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y   v4l-utils flameshot xclip xdotool thunar thunar-archive-plugin 
+EOF
+
+# compile maim
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y libglew-devel glm-devel lib64glu-devel libwebp-devel
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    cd /tmp/
+    wget https://github.com/naelstrof/slop/archive/refs/tags/v${SLOP_VERSION}.zip
+    unzip slop-${SLOP_VERSION}.zip
+    cd slop-${SLOP_VERSION}
+    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="/usr" ./
+    make && sudo make install
+
+    cd /tmp/
+    wget https://github.com/naelstrof/maim/archive/refs/tags/v${MAIM_VERSION}.zip
+    unzip maim-${MAIM_VERSION}.zip
+    cd maim-${MAIM_VERSION}
+    cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="/usr" ./
+    make && sudo make install
+EOF
+fi
 
 cat << 'EOF' | tee ${ROOTFS}/usr/local/bin/winshot.sh
 maim -i $(xdotool getactivewindow) | xclip -selection clipboard -t image/png
@@ -1423,10 +2080,14 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 
 # video and audio group
+if [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
     adduser $TARGET_USERNAME audio
     adduser $TARGET_USERNAME video
 EOF
+fi
+
+ivmgui
 
 }
 
@@ -1449,14 +2110,54 @@ iffmpeg(){
 inetworking(){
 trap 'return 1' ERR
 
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt install -y network-manager dnsmasq
 EOF
+fi
 
+if [ "$OSNAME" = "openmandriva" ]; then
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y NetworkManager dnsmasq
+EOF
+fi
+
+# networking config to network manager
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
     systemctl disable dnsmasq
 EOF
+fi
 
+if [ "$OSNAME" = "devuan" ]; then
+cat << EOF | chroot ${ROOTFS}
+    rm /etc/insserv.conf.d/dnsmasq
+    update-rc.d -f dnsmasq remove
+EOF
+fi
+
+
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ]; then
+cat << 'EOF' | tee ${ROOTFS}/etc/network/interfaces
+# This file describes the network interfaces available on your system
+# and how to activate them. For more information, see interfaces(5).
+
+source /etc/network/interfaces.d/*
+
+# The loopback network interface
+auto lo
+iface lo inet loopback
+EOF
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+cat <<EOF | chroot ${ROOTFS}
+    systemctl disable systemd-resolved
+    rm -f ${ROOTFS}/etc/resolv.conf
+EOF
+fi
+
+if [ "$OSNAME" = "ubuntu" ]; then
 cat <<EOF | chroot ${ROOTFS}
     systemctl enable NetworkManager
     rm -f ${ROOTFS}/etc/resolv.conf
@@ -1469,6 +2170,7 @@ network:
   version: 2
   renderer: NetworkManager
 EOF
+fi
 
 cat << 'EOF' | tee ${ROOTFS}/etc/NetworkManager/conf.d/00-use-dnsmasq.conf
 [main]
@@ -1477,8 +2179,8 @@ EOF
 
 cat << 'EOF' | tee ${ROOTFS}/etc/NetworkManager/dnsmasq.d/dev.conf
 #/etc/NetworkManager/dnsmasq.d/dev.conf
-local=/houze.dns.army/
-address=/houze.dns.army/172.18.0.1
+local=/zez.duckdns.org/
+address=/zez.duckdns.org/172.18.0.1
 EOF
 
 # allow nmcli reload
@@ -1557,14 +2259,34 @@ EOF
 
 }
 
-ipicomgit(){
-apt install cmake meson libepoxy-dev uthash-dev libxcb-present-dev libxcb-glx0-dev libxcb-damage0-dev libxcb-composite0-dev libxcb-util-dev libxcb-render-util0-dev libxcb-image0-dev libx11-xcb-dev libev-dev  
-cd /tmp/
-wget -O picom.zip "https://github.com/yshui/picom/archive/refs/tags/v${PICOM_VERSION}.zip"
-unzip picom.zip
-cd picom-${PICOM_VERSION}
-meson setup --buildtype=release build
-ninja -C build install
+ivmgui() {
+trap 'return 1' ERR
+# if inside virtual machine
+# video=Virtual-1:1600x900
+
+if [ "$hypervisor" = "hyperv" ]; then
+cat << 'EOF' | tee ${ROOTFS}/home/${TARGET_USERNAME}/.config/picom/picom.conf
+# picom config
+backend = "xrender";
+use-damage = false
+EOF
+
+cat << EOF | chroot ${ROOTFS}
+    chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/${TARGET_USERNAME}/.config/picom
+EOF
+
+sed -i '/GRUB_CMDLINE_LINUX_DEFAULT/ {/video=Virtual-1:1600x900/! s/"$/ video=Virtual-1:1600x900"/}' ${ROOTFS}/etc/default/grub
+
+update-grub2
+
+cat <<EOF | tee ${ROOTFS}/etc/X11/xorg.conf.d/30-hyperv.conf
+Section "Device"
+  Identifier "HYPER_V Framebuffer"
+  Driver "fbdev"
+EndSection
+EOF
+#end hyperv
+fi
 }
 
 iworkstation() {
@@ -1573,10 +2295,20 @@ trap 'return 1' ERR
 echo "additional workstation tools"
 force_reinstall=${1:-0}
 
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt install -y handbrake gimp rawtherapee krita mypaint inkscape blender obs-studio mgba-qt easytag audacity mixxx
 EOF
+fi
 
+if [ "$OSNAME" = "openmandriva" ]; then
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y handbrake gimp rawtherapee krita python-numpy mypaint inkscape blender obs-studio audacity mixxx
+EOF
+# install easytag flathub
+fi
+
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
     DEBIAN_FRONTEND=noninteractive apt install -y libdvd-pkg
 EOF
@@ -1585,9 +2317,22 @@ echo "dpkg libdvd-pkg"
 cat << EOF | chroot ${ROOTFS}
     DEBIAN_FRONTEND=noninteractive dpkg-reconfigure libdvd-pkg
 EOF
+fi
 
+if [ "$OSNAME" = "openmandriva" ]; then
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y lib64dvdcss
+EOF
+fi
+
+# cat << EOF | chroot ${ROOTFS}
+#     apt install -y snapd
+#     snap install pinta
+#     snap install rpi-imager
+# EOF
 
 #vscode
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 
 if [ ! -f "${ROOTFS}/usr/bin/code" ] || [ "$force_reinstall" = "1" ]; then
 mkdir -p ${ROOTFS}/opt/debs/
@@ -1595,6 +2340,8 @@ wget -O ${ROOTFS}/opt/debs/vscode.deb "https://code.visualstudio.com/sha/downloa
 cat << EOF | chroot ${ROOTFS}
     DEBIAN_FRONTEND=noninteractive apt install -y /opt/debs/vscode.deb
 EOF
+fi
+
 
 # install dbeaver
 if [ ! -f "${ROOTFS}/usr/bin/dbeaver" ] || [ "$force_reinstall" = "1" ]; then
@@ -1603,6 +2350,24 @@ wget -O ${ROOTFS}/opt/debs/dbeaver.deb https://dbeaver.io/files/dbeaver-ce_lates
 cat << EOF | chroot ${ROOTFS}
     apt install -y /opt/debs/dbeaver.deb
 EOF
+fi
+
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+
+mkdir -p ${ROOTFS}/opt/debs/
+wget -O ${ROOTFS}/opt/debs/vscode.rpm "https://code.visualstudio.com/sha/download?build=stable&os=linux-rpm-x64"
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y /opt/debs/vscode.rpm
+EOF
+
+mkdir -p ${ROOTFS}/opt/debs/
+wget -O ${ROOTFS}/opt/debs/dbeaver.rpm https://dbeaver.io/files/dbeaver-ce-latest-stable.x86_64.rpm
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y ${ROOTFS}/opt/debs/dbeaver.rpm
+EOF
+
 fi
 
 # configure OBS
@@ -1678,6 +2443,7 @@ cat << EOF | chroot ${ROOTFS}
 chmod 755 /usr/local/bin/${name}
 EOF
 done
+
 
 }
 
@@ -2278,6 +3044,8 @@ lineinfile "$CTRLCFG" "input_state_slot_increase_btn.*=.*" 'input_state_slot_inc
 mkdir -p "${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/config/PCSX-ReARMed/"
 wget -O "${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/config/PCSX-ReARMed/PCSX-ReARMed.opt" "https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/emulation/PCSX-ReARMed/PCSX-ReARMed.opt"
 
+
+
 cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch
 EOF
@@ -2468,6 +3236,11 @@ done
 
 iautologin(){
 trap 'return 1' ERR
+if [ "$OSNAME" = "devuan" ]; then
+lineinfile ${ROOTFS}/etc/inittab "1.2345.respawn./sbin/getty.*tty1" "1:2345:respawn:/sbin/getty --autologin ${TARGET_USERNAME} --noclear 38400 tty1"
+fi
+
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ]; then
 
 lineinfile $ROOTFS/etc/systemd/logind.conf ".*NAutoVTs.*" "NAutoVTs=1"
 lineinfile $ROOTFS/etc/systemd/logind.conf ".*ReserveVT.*" "ReserveVT=2"
@@ -2478,6 +3251,7 @@ cat << EOF | tee ${ROOTFS}/etc/systemd/system/getty@tty1.service.d/override.conf
 ExecStart=
 ExecStart=-/sbin/getty --autologin ${TARGET_USERNAME} --noclear %I \$TERM
 EOF
+fi
 }
 
 istartx(){
@@ -2488,6 +3262,7 @@ lineinfile ${ROOTFS}/home/$TARGET_USERNAME/.bashrc .*startx.* '[ -z "$DISPLAY" ]
 icorporate(){
 trap 'return 1' ERR
 ## corporate apps
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 
 # install zoom
 mkdir -p ${ROOTFS}/opt/debs/
@@ -2496,16 +3271,40 @@ cat << EOF | chroot ${ROOTFS}
     apt install -y /opt/debs/zoom_amd64.deb
 EOF
 
+
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+
+
+mkdir -p ${ROOTFS}/opt/debs/
+wget -O ${ROOTFS}/opt/debs/zoom.rpm "https://zoom.us/client/${ZOOM_VERSION}/zoom_x86_64.rpm"
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y /opt/debs/zoom.rpm
+EOF
+
+fi
+
 }
 
 ivirt() {
 trap 'return 1' ERR
 echo "virtualization tools"
 
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "devuan" ] || [ "$OSNAME" = "ubuntu" ]; then
 cat << EOF | chroot ${ROOTFS}
     apt install -y qemu-system qemu-utils virtinst libvirt-clients libvirt-daemon-system libguestfs-tools bridge-utils libosinfo-bin virt-manager genisoimage
     adduser $TARGET_USERNAME libvirt
 EOF
+fi
+
+if [ "$OSNAME" = "openmandriva" ]; then
+cat << EOF | chroot ${ROOTFS}
+    dnf install -y qemu-kvm qemu-system-x86 qemu-img virt-install libvirt-utils libvirt-utils libguestfs bridge-utils libosinfo-common virt-manager genisoimage
+    usermod -a -G libvirt $TARGET_USERNAME
+EOF
+fi
+
 
 gitroot=https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/vms
 files="vmcr vmcrs vmcrm vmcrl vmdl vmls vmsh vmip"
@@ -2545,6 +3344,8 @@ EOF
 
 chmod 755 ${ROOTFS}/usr/local/bin/firstboot-virt.sh
 
+if [ "$OSNAME" = "debian" ] || [ "$OSNAME" = "openmandriva" ] || [ "$OSNAME" = "ubuntu" ]; then
+
 cat <<EOF | tee ${ROOTFS}/etc/systemd/system/firstboot-virt.service
 [Unit]
 Description=firstboot-virt
@@ -2565,6 +3366,44 @@ EOF
 cat << EOF | chroot ${ROOTFS}
     systemctl enable firstboot-virt.service
 EOF
+
+fi
+
+
+if [ "$OSNAME" = "devuan" ]; then
+
+cat <<'EOF' | tee ${ROOTFS}/etc/init.d/firstboot-virt
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          firstboot-virt
+# Required-Start:    $all
+# Required-Stop:     $all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Expand filesystem on first boot
+### END INIT INFO
+
+case "$1" in
+  start)
+    /usr/local/bin/firstboot-virt.sh
+    ;;
+  stop)
+    echo "Firstboot script has run"
+    ;;
+  *)
+    echo "Usage: /etc/init.d/firstboot-virt {start|stop}"
+    exit 1
+    ;;
+esac
+
+exit 0
+EOF
+
+cat << 'EOF' | chroot ${ROOTFS}
+    chmod 755 /etc/init.d/firstboot-virt
+    update-rc.d firstboot-virt defaults
+EOF
+fi
 
 }
 
