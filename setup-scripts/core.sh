@@ -90,10 +90,10 @@ inputversions() {
     # https://github.com/naelstrof/maim/releases
     export MAIM_VERSION=5.8.1
     echo "export MAIM_VERSION=${MAIM_VERSION}"
-    # https://gitlab.com/es-de/emulationstation-de/-/releases https://gitlab.com/es-de/emulationstation-de/-/package_files/210210324/download
-    export ESDE_VERSION=3.3.0
+    # https://gitlab.com/es-de/emulationstation-de/-/releases https://gitlab.com/es-de/emulationstation-de/-/package_files/243196984/download
+    export ESDE_VERSION=3.4.0
     echo "export ESDE_VERSION=${ESDE_VERSION}"
-    export ESDE_VERSION_ID=210210324
+    export ESDE_VERSION_ID=243196984
     echo "export ESDE_VERSION_ID=${ESDE_VERSION_ID}"
 
     # https://buildbot.libretro.com/stable/
