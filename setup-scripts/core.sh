@@ -1595,7 +1595,7 @@ wget -O ${ROOTFS}/opt/debs/vscode.deb "https://code.visualstudio.com/sha/downloa
 cat << EOF | chroot ${ROOTFS}
     DEBIAN_FRONTEND=noninteractive apt install -y /opt/debs/vscode.deb
 EOF
-
+fi
 # install dbeaver
 if [ ! -f "${ROOTFS}/usr/bin/dbeaver" ] || [ "$force_reinstall" = "1" ]; then
 mkdir -p ${ROOTFS}/opt/debs/
