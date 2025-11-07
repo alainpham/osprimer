@@ -271,6 +271,11 @@ elif [ "$command" == "" ] && echo "$monitors" | grep -q "$hdmi" ; then
     echo "Docking station detected, setting up DisplayPort monitors."
     default
 
+elif [ "$command" == "" ] && echo "$monitors" | grep -q "$dock_left" && echo "$monitors" | grep -q "$dock_center"  && echo "$monitors"; then
+    
+    echo "Docking station detected, setting up DisplayPort monitors."
+    default
+
 else
     echo "No specific command provided or no docking station detected. Defaulting to laptop screen only."
     lap
