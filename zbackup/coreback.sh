@@ -1757,7 +1757,13 @@ done
 # switching backgounds
 cat << 'EOF' | tee ${ROOTFS}/usr/local/bin/sbg
 #!/bin/bash
-bgfile=$(ls /usr/share/backgrounds/ | shuf -n 1)
+
+if [ -n "$1" ]; then
+    bgfile=$(printf "%02d.jpg" "$1")
+else
+    bgfile=$(ls /usr/share/backgrounds/ | shuf -n 1)
+fi
+
 feh --bg-fill /usr/share/backgrounds/${bgfile}
 EOF
 

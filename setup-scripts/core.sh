@@ -968,8 +968,8 @@ cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.config/dunst/dunstrc
 monitor = 0
 # follow = keyboard
 font = Noto Sans 11
-frame_width = 2
-frame_color = "#4e9a06"
+frame_width = 0
+frame_color = "#eeeeec"
 offset = 20x65
 [urgency_low]
     background = "#4e9a06"
@@ -1153,12 +1153,18 @@ for i in "${!backend_files[@]}"; do
 done
 
 # switching backgounds
+# switching backgounds
 cat << 'EOF' | tee ${ROOTFS}/usr/local/bin/sbg
 #!/bin/bash
-bgfile=$(ls /usr/share/backgrounds/ | shuf -n 1)
+
+if [ -n "$1" ]; then
+    bgfile=$(printf "%02d.jpg" "$1")
+else
+    bgfile=$(ls /usr/share/backgrounds/ | shuf -n 1)
+fi
+
 feh --bg-fill /usr/share/backgrounds/${bgfile}
 EOF
-
 chmod 755 ${ROOTFS}/usr/local/bin/sbg
 
 # deactivate service for dunst to work
@@ -1186,30 +1192,10 @@ if [ -x "/usr/bin/dbus-update-activation-environment" ]; then
     ${NULL+}
 fi
 
-EOF
+#spice-vdagent
 
-# check if inside virtual machine
-export hypervisor=$(echo "virt-what" | chroot ${ROOTFS})
-
-if [ "$hypervisor" = "hyperv" ] || [ "$hypervisor" = "kvm" ]; then
-
-cat << 'EOF' | chroot ${ROOTFS}
-    apt install -y spice-vdagent
-EOF
-
-cat << 'EOF' | tee -a ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
-spice-vdagent
-EOF
-fi
-# END check if inside virtual machine
-
-# Xinit numlock
-cat << EOF | tee -a ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
 numlockx
-EOF
 
-
-cat << 'EOF' | tee -a ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
 dunst > ~/.dunst.log &
 echo 1 | tee ~/.rebootdwm
 export rebootdwm=$(cat ~/.rebootdwm)
@@ -1231,8 +1217,12 @@ while true; do
             libinput-gestures &
         fi
     fi
-    bgfile=$(ls /usr/share/backgrounds/ | shuf -n 1)
-    feh --bg-fill /usr/share/backgrounds/${bgfile}
+    if [ -f "~/.fehbg" ]; then
+        ~/.fehbg &
+    else
+        bgfile=$(ls /usr/share/backgrounds/ | shuf -n 1)
+        feh --bg-fill /usr/share/backgrounds/${bgfile}
+    fi
     picom -b --config ~/.config/picom/picom.conf
     # Log stderror to a file
     dwm 2> ~/.dwm.log
@@ -1245,9 +1235,24 @@ while true; do
 done
 EOF
 
+# BEGIN check if inside virtual machine
+export hypervisor=$(echo "virt-what" | chroot ${ROOTFS})
+
+if [ "$hypervisor" = "hyperv" ] || [ "$hypervisor" = "kvm" ]; then
+
+cat << 'EOF' | chroot ${ROOTFS}
+    apt install -y spice-vdagent
+EOF
+
+lineinfile ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc ".*spice-vdagent.*" "spice-vdagent"
+
+fi
+# END check if inside virtual machine
+
 cat << EOF | chroot ${ROOTFS}
     chown $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.xinitrc
 EOF
+
 
 # picom initial config
 if [ ! -f ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/picom.conf ] ; then
