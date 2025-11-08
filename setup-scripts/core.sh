@@ -850,15 +850,6 @@ Section "Device"
 EndSection
 EOF
 
-mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/
-cat << 'EOF' >> ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/picom.conf
-backend = "glx";
-vsync = true;
-use-damage = false
-EOF
-
-chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/$TARGET_USERNAME/.config
-
 echo 'GRUB_CMDLINE_LINUX="$GRUB_CMDLINE_LINUX nvidia-drm.modeset=1"' > ${ROOTFS}/etc/default/grub.d/nvidia-modeset.cfg
 
 cat << EOF | chroot ${ROOTFS}
@@ -946,7 +937,7 @@ fi
 
 echo "additional gui packages"
 cat << EOF | chroot ${ROOTFS}
-    apt install -y ntfs-3g ifuse mousepad mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv nomacs kimageformat-plugins  acpitool lm-sensors fonts-noto libnotify-bin dunst mkvtoolnix-gui python3-mutagen imagemagick mediainfo-gui mediainfo arandr picom brightnessctl cups xsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze-gtk-theme breeze-icon-theme joystick gparted vulkan-tools flatpak
+    apt install -y ntfs-3g ifuse mousepad mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv nomacs kimageformat-plugins  acpitool lm-sensors fonts-noto libnotify-bin dunst mkvtoolnix-gui python3-mutagen imagemagick mediainfo-gui mediainfo arandr picom jgmenu brightnessctl cups xsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze-gtk-theme breeze-icon-theme joystick gparted vulkan-tools flatpak
     apt install -y ffmpeg libfdk-aac2 libnppig12 libnppicc12 libnppidei12 libnppif12
 EOF
 dlfiles="
@@ -1173,7 +1164,6 @@ if [ -f ${ROOTFS}/usr/share/dbus-1/services/org.knopwob.dunst.service ] ; then
 mv ${ROOTFS}/usr/share/dbus-1/services/org.knopwob.dunst.service ${ROOTFS}/usr/share/dbus-1/services/org.knopwob.dunst.service.disabled
 fi
 
-
 cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
 #!/bin/sh
 if [ -z "$DBUS_SESSION_BUS_ADDRESS" ] && [ -n "$XDG_RUNTIME_DIR" ] && \
@@ -1264,17 +1254,28 @@ vsync = true;
 use-damage = false;
 
 shadow = true;
-shadow-radius = 8;
+shadow-radius = 12;
 shadow-offset-x = -6;
 shadow-offset-y = -6;
-shadow-opacity = 0.30;
+shadow-opacity = 0.45;
 
-corner-radius = 10;
-
+corner-radius = 12;
 rules = (
-	{ match = "class_g = 'Thunar'"; opacity = 0.9; },
+	{ match = "class_g = 'Thunar'"; opacity = 0.92; },
 	{ match = "class_g = 'st-256color'"; opacity = 0.9; },
-	{ match = "class_g = 'dwm'"; opacity = 0.85; }
+	{ match = "class_g = 'dwm'"; opacity = 0.9; corner-radius = 5;},
+
+ 	{ match = "class_g = 'Google-chrome'";  clip-shadow-above = true;},
+
+  # no rounded corners
+  { match = "window_type = 'tooltip'"; corner-radius = 0;},
+  { match = "window_type = 'menu'"; corner-radius = 0;},
+  { match = "window_type = 'dropdown_menu'"; corner-radius = 0;},
+  { match = "window_type = 'popup_menu'"; corner-radius = 0;},
+  { match = "window_type = 'combo'"; corner-radius = 0;},
+
+  { match = "fullscreen"; corner-radius = 0;},
+
 )
 
 animations = (
@@ -1282,13 +1283,13 @@ animations = (
     triggers = ["close","hide"];
     preset = "disappear";
     scale = 0.7;
-    duration = 0.18;
+    duration = 0.1;
   },
   {
     triggers = ["open","show"];
     preset = "appear";
     scale = 0.7;
-    duration = 0.18;
+    duration = 0.1;
   },
   {
     triggers = ["geometry"];
@@ -1296,6 +1297,7 @@ animations = (
     duration = 0.18;
   }
 )
+
 EOF
 fi
 
@@ -1474,6 +1476,7 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 
 }
+# END igui()
 
 iprinter(){
     trap 'return 1' ERR
