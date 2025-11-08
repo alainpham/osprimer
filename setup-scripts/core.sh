@@ -1261,7 +1261,41 @@ cat << 'EOF' | tee ${ROOTFS}/home/${TARGET_USERNAME}/.config/picom/picom.conf
 # picom config
 backend = "glx";
 vsync = true;
-use-damage = false
+use-damage = false;
+
+shadow = true;
+shadow-radius = 8;
+shadow-offset-x = -6;
+shadow-offset-y = -6;
+shadow-opacity = 0.30;
+
+corner-radius = 10;
+
+rules = (
+	{ match = "class_g = 'Thunar'"; opacity = 0.9; },
+	{ match = "class_g = 'st-256color'"; opacity = 0.9; },
+	{ match = "class_g = 'dwm'"; opacity = 0.85; }
+)
+
+animations = (
+  {
+    triggers = ["close","hide"];
+    preset = "disappear";
+    scale = 0.7;
+    duration = 0.18;
+  },
+  {
+    triggers = ["open","show"];
+    preset = "appear";
+    scale = 0.7;
+    duration = 0.18;
+  },
+  {
+    triggers = ["geometry"];
+    preset = "geometry-change";
+    duration = 0.18;
+  }
+)
 EOF
 fi
 
