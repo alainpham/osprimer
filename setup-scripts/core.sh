@@ -1099,6 +1099,12 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 fi
 
+mkdir -p ${ROOTFS}/usr/share/google-chrome/extensions
+# ublock origin lite
+cat << EOF | tee ${ROOTFS}/usr/share/google-chrome/extensions/ddkjiahejlhfcafbddmgiahcphecmpfh.json
+{ "external_update_url": "https://clients2.google.com/service/update2/crx" }
+EOF
+
 #begin dwm
 echo "The does not exist, installing dwm"
 cat << EOF | chroot ${ROOTFS}
