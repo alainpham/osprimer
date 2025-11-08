@@ -187,7 +187,8 @@ mkdir -p ${ROOTFS}/home/${TARGET_USERNAME}
 touch ${ROOTFS}/home/${TARGET_USERNAME}/.bashrc
 lineinfile ${ROOTFS}/home/${TARGET_USERNAME}/.bashrc ".*alias.*ll.*=.*" 'alias ll="ls -larth"'
 cat << EOF | chroot ${ROOTFS}
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/${TARGET_USERNAME}
+    chown $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/${TARGET_USERNAME}
+    chown ${ROOTFS}/home/${TARGET_USERNAME}/.bashrc
 EOF
 
 lineinfile ${ROOTFS}${BASHRC} ".*alias.*ap=.*" 'alias ap=ansible-playbook'
@@ -242,6 +243,8 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_ID*=.*" "export SYNCTHING
 lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_APIKEY*=.*" "export SYNCTHING_HUB_APIKEY=X"
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*APT_PROXY*=.*" "export APT_PROXY='${APT_PROXY}'"
+
+lineinfile ${ROOTFS}${BASHRC} ".*export.*TERMINAL*=.*" "export TERMINAL=st"
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*CORE_VERSION*=.*" "export CORE_VERSION='${CORE_VERSION}'"
 
