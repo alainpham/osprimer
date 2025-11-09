@@ -976,15 +976,18 @@ cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.config/dunst/dunstrc
 [global]
 monitor = 0
 # follow = keyboard
-font = Noto Sans 11
+font = NotoSans NF 11
 frame_width = 0
-frame_color = "#eeeeec"
+frame_color = "#555753"
 offset = 20x65
+separator_height = 1
+separator_color = "#888a85"
+gap_size = 0
 [urgency_low]
     background = "#4e9a06"
     foreground = "#eeeeec"
 [urgency_normal]
-    background = "#2e3436"
+    background = "#555753"
     foreground = "#eeeeec"
 [urgency_critical]
     background = "#a40000"
@@ -1211,6 +1214,17 @@ echo 1 | tee ~/.rebootdwm
 export rebootdwm=$(cat ~/.rebootdwm)
 export XCURSOR_SIZE=24
 while true; do
+
+    piddunst=$(pgrep dunst)
+    if [ -z "$piddunst" ]; then
+        dunst > ~/.dunst.log &
+        echo dunst started>>~/.xinit.log
+    else
+        kill -9 $piddunst
+        dunst >> ~/.dunst.log &
+        echo dunst restarted>>~/.xinit.log
+    fi
+
     piddwmblocks=$(pgrep dwmblocks)
     if [ -z "$piddwmblocks" ]; then
         dwmblocks &
