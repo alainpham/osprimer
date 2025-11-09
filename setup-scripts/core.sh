@@ -943,6 +943,8 @@ cat << EOF | chroot ${ROOTFS}
     apt install -y ntfs-3g ifuse mousepad mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv nomacs kimageformat-plugins  acpitool lm-sensors fonts-noto libnotify-bin dunst mkvtoolnix-gui python3-mutagen imagemagick mediainfo-gui mediainfo arandr picom jgmenu brightnessctl cups xsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze-gtk-theme breeze-icon-theme joystick gparted vulkan-tools flatpak
     apt install -y ffmpeg libfdk-aac2 libnppig12 libnppicc12 libnppidei12 libnppif12
 EOF
+
+# speedcrunch
 dlfiles="
 SpeedCrunch.ini
 "
@@ -953,6 +955,19 @@ cat << EOF | chroot ${ROOTFS}
     chown $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/SpeedCrunch/$fname
 EOF
 done
+
+# jgmenu
+dlfiles="
+jgmenurc
+"
+sudo -u $TARGET_USERNAME mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/SpeedCrunch
+for fname in $dlfiles ; do
+curl -Lo ${ROOTFS}/home/$TARGET_USERNAME/.config/jgmenu/$fname https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/jgmenu/$fname
+cat << EOF | chroot ${ROOTFS}
+    chown $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/jgmenu/$fname
+EOF
+done
+
 
 # dunst notification
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/dunst
@@ -1247,7 +1262,10 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 
 
-# picom initial config
+# picom install & initial config
+
+ipicomgit
+
 if [ ! -f ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/picom.conf ] ; then
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/
 cat << 'EOF' | tee ${ROOTFS}/home/${TARGET_USERNAME}/.config/picom/picom.conf
@@ -2998,16 +3016,19 @@ fastboot $force_reinstall
 smalllogs $force_reinstall
 reposrc $force_reinstall
 iessentials $force_reinstall
+ikeyboard $force_reinstall
 itouchpad $force_reinstall
 idev $force_reinstall
 idocker $force_reinstall
 ikube $force_reinstall
 igui $force_reinstall
+iffmpeg $force_reinstall
 inumlocktty $force_reinstall
 itheming $force_reinstall
 iworkstation $force_reinstall
-istartx $force_reinstall
 ivirt $force_reinstall
+iemulation $force_reinstall
+istartx $force_reinstall
 itimezone $force_reinstall
 inetworking $force_reinstall
 reboot
