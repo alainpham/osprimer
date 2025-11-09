@@ -1302,7 +1302,7 @@ shadow-offset-x = -6;
 shadow-offset-y = -6;
 shadow-opacity = 0.45;
 
-corner-radius = 12;
+corner-radius = 14;
 rules = (
 	{ match = "class_g = 'Thunar'"; opacity = 0.92; },
 	{ match = "class_g = 'st-256color'"; opacity = 0.9; },
