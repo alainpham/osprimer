@@ -4,7 +4,7 @@
 inputversions() {
     trap 'return 1' ERR
 
-    export CORE_VERSION=20251108
+    export CORE_VERSION=20251109
     echo "export CORE_VERSION=${CORE_VERSION}"
 
     # https://kubernetes.io/releases/  https://cloud.google.com/kubernetes-engine/docs/release-notes
@@ -1288,8 +1288,8 @@ EOF
 
 ipicomgit
 
-if [ ! -f ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/picom.conf ] ; then
-mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/picom/
+sudo -u $TARGET_USERNAME mkdir -p /home/$TARGET_USERNAME/.config/picom/
+
 cat << 'EOF' | tee ${ROOTFS}/home/${TARGET_USERNAME}/.config/picom/picom.conf
 # picom config
 backend = "glx";
@@ -1493,8 +1493,6 @@ cat << EOF | chroot ${ROOTFS}
     sudo -u $TARGET_USERNAME xdg-mime default ctext.desktop "$mime"
 EOF
 done
-
-
 
 cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config
