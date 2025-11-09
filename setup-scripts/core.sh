@@ -1343,7 +1343,6 @@ animations = (
 )
 
 EOF
-fi
 
 # convert pdf to png with whitebackground
 cat << 'EOF' | tee ${ROOTFS}/usr/local/bin/pdf2png
