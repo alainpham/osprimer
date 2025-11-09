@@ -188,7 +188,7 @@ touch ${ROOTFS}/home/${TARGET_USERNAME}/.bashrc
 lineinfile ${ROOTFS}/home/${TARGET_USERNAME}/.bashrc ".*alias.*ll.*=.*" 'alias ll="ls -larth"'
 cat << EOF | chroot ${ROOTFS}
     chown $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/${TARGET_USERNAME}
-    chown ${ROOTFS}/home/${TARGET_USERNAME}/.bashrc
+    chown $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/${TARGET_USERNAME}/.bashrc
 EOF
 
 lineinfile ${ROOTFS}${BASHRC} ".*alias.*ap=.*" 'alias ap=ansible-playbook'
@@ -1184,6 +1184,8 @@ fi
 
 cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
 #!/bin/sh
+echo starting X>~/.xinit.log
+
 if [ -z "$DBUS_SESSION_BUS_ADDRESS" ] && [ -n "$XDG_RUNTIME_DIR" ] && \
     [ "$XDG_RUNTIME_DIR" = "/run/user/`id -u`" ] && \
     [ -S "$XDG_RUNTIME_DIR/bus" ]; then
@@ -1212,24 +1214,30 @@ while true; do
     piddwmblocks=$(pgrep dwmblocks)
     if [ -z "$piddwmblocks" ]; then
         dwmblocks &
+        echo dwmblocks started>>~/.xinit.log
     else
         kill -9 $piddwmblocks
         dwmblocks &
+        echo dwmblocks restarted>>~/.xinit.log
     fi
     if command -v libinput-gestures >/dev/null 2>&1; then
         pidgestures=$(pgrep -f libinput-gestures)
         if [ -z "$pidgestures" ]; then
             libinput-gestures &
+            echo libinput-gestures started>>~/.xinit.log
         else
             kill -9 $pidgestures
             libinput-gestures &
+            echo libinput-gestures restarted>>~/.xinit.log
         fi
     fi
-    if [ -f "~/.fehbg" ]; then
-        ~/.fehbg &
+    if [ -f ~/.fehbg ]; then
+        ~/.fehbg
+        echo feh script exists, setting backround with it>>~/.xinit.log
     else
         bgfile=$(ls /usr/share/backgrounds/ | shuf -n 1)
         feh --bg-fill /usr/share/backgrounds/${bgfile}
+        echo first boot, setting random>>~/.xinit.log
     fi
     picom -b --config ~/.config/picom/picom.conf
     # Log stderror to a file
@@ -3040,7 +3048,7 @@ trap 'return 1' ERR
     snap install firefox
     snap install slack
 
-    sudo -u $TARGET_USERNAME lineinfile ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm/autostart.sh ".*slack.*" 'sleep 5 \&\& slack \&'
+    sudo -u $TARGET_USERNAME lineinfile ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm/autostart.sh ".*slack.*" 'slack \&'
 
     echo "make sure to install kolide"
     mkdir -p ~/ssh/
