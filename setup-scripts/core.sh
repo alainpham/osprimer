@@ -1294,13 +1294,14 @@ rules = (
 	{ match = "class_g = 'st-256color'"; opacity = 0.9; },
 	{ match = "class_g = 'dwm'"; opacity = 0.9; corner-radius = 5;},
 
- 	{ match = "class_g = 'Google-chrome'";  clip-shadow-above = true;},
+ 	{ match = "class_g = 'Google-chrome'"; clip-shadow-above = true; opacity = 1;},
+ 	{ match = "class_g = 'SpeedCrunch'"; corner-radius = 0;},
 
   # no rounded corners
-  { match = "window_type = 'tooltip'"; corner-radius = 0;},
   { match = "window_type = 'menu'"; corner-radius = 0;},
   { match = "window_type = 'dropdown_menu'"; corner-radius = 0;},
   { match = "window_type = 'popup_menu'"; corner-radius = 0;},
+  { match = "window_type = 'tooltip'"; corner-radius = 0;},
   { match = "window_type = 'combo'"; corner-radius = 0;},
 
   { match = "fullscreen"; corner-radius = 0;},
