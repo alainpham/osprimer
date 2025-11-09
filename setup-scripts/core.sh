@@ -960,7 +960,7 @@ done
 dlfiles="
 jgmenurc
 "
-sudo -u $TARGET_USERNAME mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/SpeedCrunch
+sudo -u $TARGET_USERNAME mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/jgmenu
 for fname in $dlfiles ; do
 curl -Lo ${ROOTFS}/home/$TARGET_USERNAME/.config/jgmenu/$fname https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/jgmenu/$fname
 cat << EOF | chroot ${ROOTFS}
