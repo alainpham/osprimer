@@ -649,7 +649,6 @@ cat <<EOF | tee ${ROOTFS}/etc/docker/daemon.json
 {
   "log-opts": {
     "max-size": "10m",
-    "max-file": "2" 
   }
 }
 EOF
