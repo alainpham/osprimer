@@ -229,8 +229,8 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*CEMU_VERSION*=.*" "export CEMU_VERSION=
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*OSNAME*=.*" "export OSNAME=${OSNAME}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*OSVERSION*=.*" "export OSVERSION=${OSVERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*WILDCARD_DOMAIN*=.*" "export WILDCARD_DOMAIN=zez.duckdns.org"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*EMAIL*=.*" "export EMAIL=admin@zez.duckdns.org"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*WILDCARD_DOMAIN*=.*" "export WILDCARD_DOMAIN=houze.dns.army"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*EMAIL*=.*" "export EMAIL=admin@houze.dns.army"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*DUCKDNS_TOKEN*=.*" "export DUCKDNS_TOKEN=xxxx-xxxx-xxxx-xxxx-xxxx"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*PRODUCT_NAME*=.*" "export PRODUCT_NAME='${PRODUCT_NAME}'"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*TIMEZONE*=.*" "export TIMEZONE=${TIMEZONE}"
@@ -649,6 +649,7 @@ cat <<EOF | tee ${ROOTFS}/etc/docker/daemon.json
 {
   "log-opts": {
     "max-size": "10m",
+    "max-file": "2" 
   }
 }
 EOF

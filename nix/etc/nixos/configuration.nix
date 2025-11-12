@@ -1,5 +1,14 @@
 { config, lib, pkgs, ... }:
 
+let
+  nixversion = "25.05";
+  hostname= "nxvm";
+  targetUser = "apham";
+  keyboardLayout = "fr";
+  keyboardModel = "pc105"; # for macbook use "macbook79"
+  wildcardDomain = "houze.dns.army";
+  enablekubernetes = true;
+in
 {
   imports =
     [
@@ -10,8 +19,9 @@
   boot.loader.timeout = 1;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  system.stateVersion = nixversion;
 
-  networking.hostName = "nxvm"; # Define your hostname.
+  networking.hostName = hostname;
   networking.networkmanager.enable = true;  # Easiest to use and most distros use this by default.
 
   time.timeZone = "Europe/Paris";
@@ -19,21 +29,27 @@
   i18n.defaultLocale = "en_GB.UTF-8";
   console = {
     font = "LatArCyrHeb-16";
-    keyMap = "fr";
+    keyMap = keyboardLayout;
   };
 
-  users.groups.apham = { };
-
-  users.users.apham = {
-    isNormalUser = true;
-    extraGroups = [ "wheel" "docker" ];
+  users.groups = { 
+    ${targetUser} = { };
   };
 
+  users.users = {
+    ${targetUser} = {
+      isNormalUser = true;
+      extraGroups = [ "wheel" "docker" ];
+    };
+  };
+
+  # passwordless sudo for users in wheel group
   security.sudo = {
     enable = true;
     wheelNeedsPassword = false;
   };
 
+  # small logs
   services.journald.extraConfig = ''
     SystemMaxUse=50M
     SystemMaxFileSize=10M
@@ -41,11 +57,13 @@
   
   services.openssh.enable = true;
 
+  # enable spice agent only when running in a VM
   services.spice-vdagentd.enable = true;
 
   services.xserver = {
     enable = true;
-    xkb.layout = "fr";
+    xkb.layout = keyboardLayout;
+    xkb.model = keyboardModel;
     displayManager.startx.enable = true;
     windowManager.dwm.enable = true;
   };
@@ -57,10 +75,27 @@
   programs.neovim.enable = true;
   programs.htop.enable = true;
   programs.gnupg.agent.enable = true;
-  
+  programs.bash = {
+    promptInit = ''
+      # Provide a nice prompt if the terminal supports it.
+      if [ "$TERM" != "dumb" ] || [ -n "$INSIDE_EMACS" ]; then
+        PROMPT_COLOR="1;31m"
+        ((UID)) && PROMPT_COLOR="1;32m"
+        if [ -n "$INSIDE_EMACS" ]; then
+          # Emacs term mode doesn't support xterm title escape sequence (\e]0;)
+          PS1="\[\033[$PROMPT_COLOR\][\u@\h:\w]\\$\[\033[0m\] "
+        else
+          PS1="\[\033[$PROMPT_COLOR\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "
+        fi
+        if test "$TERM" = "xterm"; then
+          PS1="\[\033]2;\h:\u:\w\007\]$PS1"
+        fi
+      fi
+  '';
+  };
+
   environment.systemPackages = with pkgs; [
     # essentials
-
     curl
     wget
     ncdu
@@ -80,14 +115,13 @@
     iperf
 
 
-    # Dev environment
+    # dev environment
     ansible
     nodejs_24
     go
     maven
 
-    # kube
-    k3s_1_33
+    # kubernetes
     k9s
     kubernetes-helm
 
@@ -102,12 +136,31 @@
 
   # Docker
   virtualisation.docker.enable = true;
-  virtualisation.docker.extraPackages = with pkgs; [
-    docker-compose docker-buildx skopeo 
-  ];
+
+  systemd.services.dockernet = {
+    description = "dockernet";
+    after = [ "docker.service" ];
+    wantedBy = [ "multi-user.target" ];
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = lib.mkForce (pkgs.writeShellScript "dockernet" ''
+        /run/current-system/sw/bin/docker network create --driver=bridge --subnet=172.18.0.0/16 --gateway=172.18.0.1 primenet || true
+      '');
+    };
+  };
+
+  # kubernetes
+  services.k3s = {
+    enable = enablekubernetes;
+    extraFlags = [ 
+      "--disable=traefik" 
+      "--disable=servicelb"
+      "--tls-san=${wildcardDomain}"
+      "--write-kubeconfig-mode=644"
+    ];
+  };
 
   # GUI applications
-
   systemd.services.numLockOnTty = {
     wantedBy = [ "multi-user.target" ];
     serviceConfig = {
@@ -120,7 +173,6 @@
     };
   };
 
-  system.stateVersion = "25.05";
 
 }
 
