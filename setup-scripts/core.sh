@@ -2032,7 +2032,7 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 done
 
-lineinfile ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm/autostart.sh .*gshorts.* "killall gshorts ; gshorts \&"
+lineinfile ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm/autostart.sh ".*gshorts.*" 'killall gshorts ; gshorts \&'
 }
 
 iesde(){
