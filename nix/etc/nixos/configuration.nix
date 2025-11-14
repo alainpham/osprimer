@@ -39,11 +39,16 @@ in
   users.users = {
     ${targetUser} = {
       isNormalUser = true;
-      extraGroups = [ "wheel" "docker" ];
+      extraGroups = [ 
+        "wheel"
+        "docker"
+      ];
     };
   };
 
+  ##################################################
   # passwordless sudo for users in wheel group
+  ##################################################
   security.sudo = {
     enable = true;
     wheelNeedsPassword = false;
@@ -60,15 +65,9 @@ in
   # enable spice agent only when running in a VM
   services.spice-vdagentd.enable = true;
 
-  services.xserver = {
-    enable = true;
-    xkb.layout = keyboardLayout;
-    xkb.model = keyboardModel;
-    displayManager.startx.enable = true;
-    windowManager.dwm.enable = true;
-  };
-
+  ##################################################
   # essentials
+  ##################################################
   programs.git.enable = true;
   programs.tmux.enable = true;
   programs.vim.enable = true;
@@ -129,12 +128,16 @@ in
     st
   ];
 
+  ##################################################
   # Dev environment
+  ##################################################
   programs.java.enable = true;
   programs.java.package = pkgs.jdk17_headless;
 
 
+  ##################################################
   # Docker
+  ##################################################
   virtualisation.docker.enable = true;
 
   systemd.services.dockernet = {
@@ -149,7 +152,9 @@ in
     };
   };
 
+  ##################################################
   # kubernetes
+  ##################################################
   services.k3s = {
     enable = enablekubernetes;
     extraFlags = [ 
@@ -159,7 +164,9 @@ in
       "--write-kubeconfig-mode=644"
     ];
   };
-
+  # Disable k3s from starting at boot; we'll manage it manually
+  systemd.services.k3s.wantedBy = lib.mkForce [ ];
+  
   # GUI applications
   systemd.services.numLockOnTty = {
     wantedBy = [ "multi-user.target" ];
@@ -173,6 +180,14 @@ in
     };
   };
 
-
+  ##################################################
+  # gui
+  ##################################################
+  services.xserver = {
+    enable = true;
+    xkb.layout = keyboardLayout;
+    xkb.model = keyboardModel;
+    displayManager.startx.enable = true;
+  };
 }
 
