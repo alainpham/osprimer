@@ -1136,7 +1136,7 @@ cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/wm
 EOF
 
-# link st as default terminal
+# link st as default terminal on x
 ln -sf /usr/local/bin/st /usr/bin/x-terminal-emulator
 
 # wallpaper
