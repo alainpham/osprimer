@@ -499,7 +499,7 @@ cat << EOF | chroot ${ROOTFS}
     apt -y update 
     apt install -y ncurses-term
     apt -y upgrade
-    apt install -y sudo git tmux vim curl wget rsync ncdu dnsutils bmon htop btop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq jc sshfs iotop wakeonlan
+    apt install -y sudo git tmux vim micro curl wget rsync ncdu dnsutils bmon htop btop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq jc sshfs iotop wakeonlan
     apt install -y systemd-timesyncd
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup iperf3
 EOF
@@ -720,7 +720,7 @@ fi
 if [[ -z "$(docker buildx ls | grep multibuilder.*linux)" ]] then
      docker buildx create --name multibuilder --platform linux/amd64,linux/arm/v7,linux/arm64 --use
      echo "firstboot-dockerbuildx.sh : docker multibuilder created"
-     echo "✅ multibuilder docker buildx created !">/var/log/firstboot-dockerbuildx.log
+     echo "✅ multibuilder docker buildx created !">~/firstboot-dockerbuildx.log
 else
      echo "firstboot-dockerbuildx.sh : docker multibuilder exists alread"
      echo "✅ multibuilder already exisits ! ">~/firstboot-dockerbuildx.log
@@ -1138,6 +1138,9 @@ cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/wm
 EOF
 
+# link st as default terminal
+ln -sf /usr/local/bin/st /usr/bin/x-terminal-emulator
+
 # wallpaper
 mkdir -p ${ROOTFS}/usr/share/backgrounds/
 
@@ -1205,7 +1208,10 @@ if [ -x "/usr/bin/dbus-update-activation-environment" ]; then
     ${NULL+}
 fi
 
-#spice-vdagent
+if grep -qi hypervisor /proc/cpuinfo; then
+    echo inside vm, launching spice-vdagent >>~/.xinit.log
+    spice-vdagent
+fi
 
 numlockx
 
@@ -1216,50 +1222,48 @@ export XCURSOR_SIZE=24
 while true; do
 
     piddunst=$(pgrep dunst)
-    if [ -z "$piddunst" ]; then
-        dunst > ~/.dunst.log &
-        echo dunst started>>~/.xinit.log
-    else
+    if [ ! -z "$piddunst" ]; then
         kill -9 $piddunst
-        dunst >> ~/.dunst.log &
         echo dunst restarted>>~/.xinit.log
     fi
+    dunst > ~/.dunst.log &
 
     piddwmblocks=$(pgrep dwmblocks)
-    if [ -z "$piddwmblocks" ]; then
-        dwmblocks &
-        echo dwmblocks started>>~/.xinit.log
-    else
+    if [ ! -z "$piddwmblocks" ]; then
         kill -9 $piddwmblocks
-        dwmblocks &
         echo dwmblocks restarted>>~/.xinit.log
     fi
+    dwmblocks &
+
     if command -v libinput-gestures >/dev/null 2>&1; then
         pidgestures=$(pgrep -f libinput-gestures)
-        if [ -z "$pidgestures" ]; then
-            libinput-gestures &
-            echo libinput-gestures started>>~/.xinit.log
-        else
+        if [ ! -z "$pidgestures" ]; then
             kill -9 $pidgestures
-            libinput-gestures &
             echo libinput-gestures restarted>>~/.xinit.log
         fi
+        libinput-gestures &
     fi
+
     if [ -f ~/.fehbg ]; then
         ~/.fehbg
         echo feh script exists, setting backround with it>>~/.xinit.log
     else
-        bgfile=$(ls /usr/share/backgrounds/ | shuf -n 1)
-        feh --bg-fill /usr/share/backgrounds/${bgfile}
+        sbg
         echo first boot, setting random>>~/.xinit.log
     fi
+    
+    pidpicom=$(pgrep dwmblocks)
+    if [ ! -z "$pidpicom" ]; then
+        kill -9 $pidpicom
+    fi
     picom -b --config ~/.config/picom/picom.conf
+
     # Log stderror to a file
     dwm 2> ~/.dwm.log
     # No error logging
     #dwm >/dev/null 2>&1
     rebootdwm=$(cat ~/.rebootdwm)
-    if [ "$rebootdwm" = '0' ]; then
+    if [ "$rebootdwm" != '1' ]; then
             break
     fi
 done
@@ -1424,6 +1428,7 @@ cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.config/xfce4/xfconf/xfce-per
   <property name="last-splitview-separator-position" type="int" value="291"/>
   <property name="misc-date-style" type="string" value="THUNAR_DATE_STYLE_YYYYMMDD"/>
   <property name="last-compact-view-zoom-level" type="string" value="THUNAR_ZOOM_LEVEL_25_PERCENT"/>
+  <property name="misc-thumbnail-mode" type="string" value="THUNAR_THUMBNAIL_MODE_NEVER"/>
 </channel>
 EOF
 

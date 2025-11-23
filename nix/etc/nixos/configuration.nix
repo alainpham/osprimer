@@ -189,5 +189,7 @@ in
     xkb.model = keyboardModel;
     displayManager.startx.enable = true;
   };
+  windowManager.dwm.enable = true;
+
 }
 
