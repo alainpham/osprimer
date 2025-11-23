@@ -1737,35 +1737,56 @@ isunshine $force_reinstall
 iwebapps(){
 trap 'return 1' ERR
 
-webapps=(
-    "gpt|https://chatgpt.com"
-    "gm|https://mail.google.com/mail/u/1/#inbox"
-    "cal|https://calendar.google.com/calendar/u/1/r"
-    "teams|https://teams.microsoft.com/v2/"
-    "whatsapp|https://web.whatsapp.com"
-    "messenger|https://www.messenger.com"
-    "telegram|https://web.telegram.org"
-    "notes|https://docs.google.com/document/d/1wTwA1NhzgYUGG1eyDyUZj8ExhbhdscQrdYWBOBkLnCs"
-    "gco|https://docs.google.com/presentation/d/1yo6Q0p0OBK9vIh3abwigtBDlFGMy9NqU7EzRKYjraro"
-    "gdemo|https://emea.cloud.demokit.grafana.com/a/grafana-asserts-app/assertions?start=now-24h&end=now&search=productcatalogservice%20connected%20services&view=BY_ENTITY"
-    "spotify|https://open.spotify.com/"
-    "youtube|https://www.youtube.com/"
-    "grok|https://grok.com/"
-    "sd|https://stablediffusionweb.com/app/image-generator"
-    "brm|https://stablediffusionweb.com/background-remover"
-    "word|https://word.cloud.microsoft"
-    "excel|https://excel.cloud.microsoft"
-    "powerpoint|https://powerpoint.cloud.microsoft"
-    "deezer|https://www.deezer.com/"
-)
+# todo download and copy all logos
 
-for entry in "${webapps[@]}"; do
+export WEBAPPSLIST="
+    gpt|chatgpt-color|https://chatgpt.com
+    gm|gmail-color|https://mail.google.com/mail/u/1/#inbox
+    cal|google|https://calendar.google.com/calendar/u/1/r
+    teams|teams|https://teams.microsoft.com/v2/
+    whatsapp|whatsapp|https://web.whatsapp.com
+    messenger|messenger|https://www.messenger.com
+    telegram|telegram|https://web.telegram.org
+    notes|onenote|https://docs.google.com/document/d/1wTwA1NhzgYUGG1eyDyUZj8ExhbhdscQrdYWBOBkLnCs
+    gco|grafana|https://docs.google.com/presentation/d/1yo6Q0p0OBK9vIh3abwigtBDlFGMy9NqU7EzRKYjraro
+    gdemo|grafana|https://emea.cloud.demokit.grafana.com/a/grafana-asserts-app/assertions?start=now-24h&end=now&search=productcatalogservice%20connected%20services&view=BY_ENTITY
+    spotify|spotify|https://open.spotify.com/
+    youtube|youtube|https://www.youtube.com/
+    grok|grok|https://grok.com/
+    sd|chatgpt-color|https://stablediffusionweb.com/app/image-generator
+    brm|chatgpt-color|https://stablediffusionweb.com/background-remover
+    word|word|https://word.cloud.microsoft
+    excel|excel|https://excel.cloud.microsoft
+    powerpoint|powerpoint|https://powerpoint.cloud.microsoft
+    deezer|applemusic|https://www.deezer.com/
+"
+
+export APPDIR=${ROOTFS}/usr/local/bin
+export SHORTCUTDIR=${ROOTFS}/usr/local/share/applications
+ 
+
+for entry in $(echo $WEBAPPSLIST); do
     name="${entry%%|*}"
-    url="${entry#*|}"
-cat << EOF | tee ${ROOTFS}/usr/local/bin/${name}
+    icon="${entry#*|}"
+    icon="${icon%%|*}"
+    url="${entry##*|}"
+
+cat << EOF | tee $APPDIR/$name
 #!/bin/bash
-google-chrome --app="${url}"
+google-chrome-stable --app="${url}"
 EOF
+
+cat << EOF | tee $SHORTCUTDIR/$name.desktop
+[Desktop Entry]
+Name=$name
+Exec=$name
+Icon=$icon
+Terminal=false
+Type=Application
+Categories=Network;
+EOF
+
+
 cat << EOF | chroot ${ROOTFS}
 chmod 755 /usr/local/bin/${name}
 EOF
