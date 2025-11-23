@@ -244,8 +244,6 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_APIKEY*=.*" "export SYNCT
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*APT_PROXY*=.*" "export APT_PROXY='${APT_PROXY}'"
 
-lineinfile ${ROOTFS}${BASHRC} ".*export.*TERMINAL*=.*" "export TERMINAL=st"
-
 lineinfile ${ROOTFS}${BASHRC} ".*export.*CORE_VERSION*=.*" "export CORE_VERSION='${CORE_VERSION}'"
 
 echo "bash aliases setup finished"
