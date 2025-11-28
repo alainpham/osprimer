@@ -183,8 +183,8 @@ done
 export BASHRC="/etc/bash.bashrc"
 
 lineinfile ${ROOTFS}${BASHRC} ".*alias.*ll.*=.*" 'alias ll="ls -larth"'
-mkdir -p ${ROOTFS}/home/${TARGET_USERNAME}
-touch ${ROOTFS}/home/${TARGET_USERNAME}/.bashrc
+# mkdir -p ${ROOTFS}/home/${TARGET_USERNAME}
+# touch ${ROOTFS}/home/${TARGET_USERNAME}/.bashrc
 # lineinfile ${ROOTFS}/home/${TARGET_USERNAME}/.bashrc ".*alias.*ll.*=.*" 'alias ll="ls -larth"'
 # cat << EOF | chroot ${ROOTFS}
 #     chown $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/${TARGET_USERNAME}
