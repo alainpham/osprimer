@@ -131,6 +131,9 @@ inputversions() {
 
     export APT_PROXY="http://192.168.8.100:3142"
     echo "export APT_PROXY=${APT_PROXY}"
+
+    export SDL_GAMECONTROLLERCONFIG="0300d859bc2000000055000010010000,ShanWanWireless,a:b0,b:b1,back:b10,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b13,lefttrigger:a5,leftx:a0,lefty:a1,rightshoulder:b7,rightstick:b14,righttrigger:a4,rightx:a2,righty:a3,start:b11,x:b3,y:b4"
+    echo "export SDL_GAMECONTROLLERCONFIG=${SDL_GAMECONTROLLERCONFIG}"
 }
 
 
@@ -195,56 +198,58 @@ lineinfile ${ROOTFS}${BASHRC} ".*alias.*ap=.*" 'alias ap=ansible-playbook'
 
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*ROOTFS*=.*" 'export ROOTFS=\/'
-lineinfile ${ROOTFS}${BASHRC} ".*export.*TARGET_USERNAME*=.*" "export TARGET_USERNAME=${TARGET_USERNAME}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*MAJOR_KUBE_VERSION*=.*" "export MAJOR_KUBE_VERSION=${MAJOR_KUBE_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*K3S_VERSION*=.*" "export K3S_VERSION=${K3S_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*K9S_VERSION*=.*" "export K9S_VERSION=${K9S_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*MVN_VERSION*=.*" "export MVN_VERSION=${MVN_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*NERDFONTS*=.*" "export NERDFONTS=\"${NERDFONTS}\""
-lineinfile ${ROOTFS}${BASHRC} ".*export.*ZOOM_VERSION*=.*" "export ZOOM_VERSION=${ZOOM_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*MLVAPP_VERSION*=.*" "export MLVAPP_VERSION=${MLVAPP_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*BEEREF_VERSION*=.*" "export BEEREF_VERSION=${BEEREF_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*FREAC_VERSION*=.*" "export FREAC_VERSION=${FREAC_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*DRAWIO_VERSION*=.*" "export DRAWIO_VERSION=${DRAWIO_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*CERTBOT_DUCKDNS_VERSION*=.*" "export CERTBOT_DUCKDNS_VERSION=${CERTBOT_DUCKDNS_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*ONLYOFFICE_VERSION*=.*" "export ONLYOFFICE_VERSION=${ONLYOFFICE_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*TARGET_USERNAME.*=.*" "export TARGET_USERNAME=${TARGET_USERNAME}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*MAJOR_KUBE_VERSION.*=.*" "export MAJOR_KUBE_VERSION=${MAJOR_KUBE_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*K3S_VERSION.*=.*" "export K3S_VERSION=${K3S_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*K9S_VERSION.*=.*" "export K9S_VERSION=${K9S_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*MVN_VERSION.*=.*" "export MVN_VERSION=${MVN_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*NERDFONTS.*=.*" "export NERDFONTS=\"${NERDFONTS}\""
+lineinfile ${ROOTFS}${BASHRC} ".*export.*ZOOM_VERSION.*=.*" "export ZOOM_VERSION=${ZOOM_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*MLVAPP_VERSION.*=.*" "export MLVAPP_VERSION=${MLVAPP_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*BEEREF_VERSION.*=.*" "export BEEREF_VERSION=${BEEREF_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*FREAC_VERSION.*=.*" "export FREAC_VERSION=${FREAC_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*DRAWIO_VERSION.*=.*" "export DRAWIO_VERSION=${DRAWIO_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*CERTBOT_DUCKDNS_VERSION.*=.*" "export CERTBOT_DUCKDNS_VERSION=${CERTBOT_DUCKDNS_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*ONLYOFFICE_VERSION.*=.*" "export ONLYOFFICE_VERSION=${ONLYOFFICE_VERSION}"
 
-lineinfile ${ROOTFS}${BASHRC} ".*export.*PICOM_VERSION*=.*" "export PICOM_VERSION=${PICOM_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*BRIGHTNESSCTL_VERSION*=.*" "export BRIGHTNESSCTL_VERSION=${BRIGHTNESSCTL_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*SLOP_VERSION*=.*" "export SLOP_VERSION=${SLOP_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*MAIM_VERSION*=.*" "export MAIM_VERSION=${MAIM_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*KDENLIVE_MAIN_VERSION*=.*" "export KDENLIVE_MAIN_VERSION=${KDENLIVE_MAIN_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*KDENLIVE_FULL_VERSION*=.*" "export KDENLIVE_FULL_VERSION=${KDENLIVE_FULL_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*SPEEDCRUNCH_VERSION*=.*" "export SPEEDCRUNCH_VERSION=${SPEEDCRUNCH_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*AVIDEMUX_VERSION*=.*" "export AVIDEMUX_VERSION=${AVIDEMUX_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*LOCALSEND_VERSION*=.*" "export LOCALSEND_VERSION=${LOCALSEND_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*ESDE_VERSION*=.*" "export ESDE_VERSION=${ESDE_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*ESDE_VERSION_ID*=.*" "export ESDE_VERSION_ID=${ESDE_VERSION_ID}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*RETROARCH_VERSION*=.*" "export RETROARCH_VERSION=${RETROARCH_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*MOONLIGHT_VERSION*=.*" "export MOONLIGHT_VERSION=${MOONLIGHT_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*SUNSHINE_VERSION*=.*" "export SUNSHINE_VERSION=${SUNSHINE_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*PCSX2_VERSION*=.*" "export PCSX2_VERSION=${PCSX2_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*CEMU_VERSION*=.*" "export CEMU_VERSION=${CEMU_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*PICOM_VERSION.*=.*" "export PICOM_VERSION=${PICOM_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*BRIGHTNESSCTL_VERSION.*=.*" "export BRIGHTNESSCTL_VERSION=${BRIGHTNESSCTL_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*SLOP_VERSION.*=.*" "export SLOP_VERSION=${SLOP_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*MAIM_VERSION.*=.*" "export MAIM_VERSION=${MAIM_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*KDENLIVE_MAIN_VERSION.*=.*" "export KDENLIVE_MAIN_VERSION=${KDENLIVE_MAIN_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*KDENLIVE_FULL_VERSION.*=.*" "export KDENLIVE_FULL_VERSION=${KDENLIVE_FULL_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*SPEEDCRUNCH_VERSION.*=.*" "export SPEEDCRUNCH_VERSION=${SPEEDCRUNCH_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*AVIDEMUX_VERSION.*=.*" "export AVIDEMUX_VERSION=${AVIDEMUX_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*LOCALSEND_VERSION.*=.*" "export LOCALSEND_VERSION=${LOCALSEND_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*ESDE_VERSION.*=.*" "export ESDE_VERSION=${ESDE_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*ESDE_VERSION_ID.*=.*" "export ESDE_VERSION_ID=${ESDE_VERSION_ID}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*RETROARCH_VERSION.*=.*" "export RETROARCH_VERSION=${RETROARCH_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*MOONLIGHT_VERSION.*=.*" "export MOONLIGHT_VERSION=${MOONLIGHT_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*SUNSHINE_VERSION.*=.*" "export SUNSHINE_VERSION=${SUNSHINE_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*PCSX2_VERSION.*=.*" "export PCSX2_VERSION=${PCSX2_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*CEMU_VERSION.*=.*" "export CEMU_VERSION=${CEMU_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*SDL_GAMECONTROLLERCONFIG.*=.*" "export CORE_VERSION='${CORE_VERSION}'"
 
 
-lineinfile ${ROOTFS}${BASHRC} ".*export.*OSNAME*=.*" "export OSNAME=${OSNAME}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*OSVERSION*=.*" "export OSVERSION=${OSVERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*WILDCARD_DOMAIN*=.*" "export WILDCARD_DOMAIN=houze.dns.army"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*EMAIL*=.*" "export EMAIL=admin@houze.dns.army"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*DUCKDNS_TOKEN*=.*" "export DUCKDNS_TOKEN=xxxx-xxxx-xxxx-xxxx-xxxx"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*PRODUCT_NAME*=.*" "export PRODUCT_NAME='${PRODUCT_NAME}'"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*TIMEZONE*=.*" "export TIMEZONE=${TIMEZONE}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*KEYBOARD_LAYOUT*=.*" "export KEYBOARD_LAYOUT=${KEYBOARD_LAYOUT}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*KEYBOARD_MODEL*=.*" "export KEYBOARD_MODEL=${KEYBOARD_MODEL}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*OSNAME.*=.*" "export OSNAME=${OSNAME}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*OSVERSION.*=.*" "export OSVERSION=${OSVERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*WILDCARD_DOMAIN.*=.*" "export WILDCARD_DOMAIN=houze.dns.army"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*EMAIL.*=.*" "export EMAIL=admin@houze.dns.army"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*DUCKDNS_TOKEN.*=.*" "export DUCKDNS_TOKEN=xxxx-xxxx-xxxx-xxxx-xxxx"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*PRODUCT_NAME.*=.*" "export PRODUCT_NAME='${PRODUCT_NAME}'"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*TIMEZONE.*=.*" "export TIMEZONE=${TIMEZONE}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*KEYBOARD_LAYOUT.*=.*" "export KEYBOARD_LAYOUT=${KEYBOARD_LAYOUT}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*KEYBOARD_MODEL.*=.*" "export KEYBOARD_MODEL=${KEYBOARD_MODEL}"
 
-lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_ADDR*=.*" "export SYNCTHING_HUB_ADDR=tcp://192.168.8.100:22000"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_APIURL*=.*" "export SYNCTHING_HUB_APIURL=http://192.168.8.100:8384"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_ID*=.*" "export SYNCTHING_HUB_ID=XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_APIKEY*=.*" "export SYNCTHING_HUB_APIKEY=X"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_ADDR.*=.*" "export SYNCTHING_HUB_ADDR=tcp://192.168.8.100:22000"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_APIURL.*=.*" "export SYNCTHING_HUB_APIURL=http://192.168.8.100:8384"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_ID.*=.*" "export SYNCTHING_HUB_ID=XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_APIKEY.*=.*" "export SYNCTHING_HUB_APIKEY=X"
 
-lineinfile ${ROOTFS}${BASHRC} ".*export.*APT_PROXY*=.*" "export APT_PROXY='${APT_PROXY}'"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*APT_PROXY.*=.*" "export APT_PROXY='${APT_PROXY}'"
 
-lineinfile ${ROOTFS}${BASHRC} ".*export.*CORE_VERSION*=.*" "export CORE_VERSION='${CORE_VERSION}'"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*CORE_VERSION.*=.*" "export CORE_VERSION='${CORE_VERSION}'"
+
 
 echo "bash aliases setup finished"
 }
@@ -2047,6 +2052,7 @@ fi
 
 dlfiles="
 gshorts
+udevgpadsetup
 "
 
 for fname in $dlfiles ; do
@@ -2055,6 +2061,7 @@ cat << EOF | chroot ${ROOTFS}
     chmod 755 /usr/local/bin/$fname
 EOF
 done
+curl -Lo ${ROOTFS}/etc/udev/rules.d/99-gpad.rules https://raw.githubusercontent.com/alainpham/osprimer/refs/heads/master/scripts/emulation/gshorts/99-gpad.rules
 
 lineinfile ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm/autostart.sh ".*gshorts.*" 'killall gshorts ; gshorts \&'
 }

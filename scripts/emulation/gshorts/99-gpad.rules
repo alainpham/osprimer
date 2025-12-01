@@ -1,0 +1,7 @@
+# shanwan controller with keyboard to be deactivated
+SUBSYSTEM=="input",ATTRS{id/vendor}=="20bc",ATTRS{id/product}=="5500",ATTRS{capabilities/key}=="1000002000000 39fad941d801 1c000000000000 0", RUN+="/usr/local/bin/udevgpadsetup"
+
+
+# Detect when a gamepad/joystick is connected
+# SUBSYSTEM=="input", ENV{ID_INPUT_JOYSTICK}=="1",RUN+="/usr/local/bin/glauncher"
+
