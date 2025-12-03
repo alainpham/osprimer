@@ -2507,6 +2507,14 @@ desktop_common $force_reinstall
 reboot
 }
 
+ubsvr(){
+trap 'return 1' ERR
+force_reinstall=${1:-0}
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
+cloudvm_common
+reboot
+}
+
 macus(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
