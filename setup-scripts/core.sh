@@ -477,12 +477,12 @@ echo "sudo setup finished"
 
 istowdotfiles() {
 cd ${ROOTFS}/home/${TARGET_USERNAME}
-git clone http://github.com/alainpham/dotfiles.git
 
 cat << EOF | chroot ${ROOTFS}
     cd /home/$TARGET_USERNAME/dotfiles
-    stow --target=/home/$TARGET_USERNAME --adopt  home
-    git restore .
+    sudo -u $TARGET_USERNAME git clone http://github.com/alainpham/dotfiles.git
+    sudo -u $TARGET_USERNAME stow --target=/home/$TARGET_USERNAME --adopt home
+    sudo -u $TARGET_USERNAME git restore .
 EOF
 }
 
