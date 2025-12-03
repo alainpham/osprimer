@@ -377,45 +377,16 @@ echo "fastboot activated"
 disableturbo() {
 trap 'return 1' ERR
 
-if [ ! -f /sys/devices/system/cpu/intel_pstate/no_turbo ]; then
-    echo "no_turbo file not found, exiting"
-    return 0
-fi
+curl -Lo ${ROOTFS}/usr/local/bin/turboboost https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/os/turboboost
 
-cat <<'EOF' | tee ${ROOTFS}/usr/local/bin/turboboost.sh
-#!/bin/bash
-input=$1
-if [ "$input" = "no" ]; then
-    state=1	
-elif [ "$input" = "yes" ]; then
-    state=0
-elif [ "$input" = "status" ]; then
-    if [ -f /sys/devices/system/cpu/intel_pstate/no_turbo ]; then
-        cat /sys/devices/system/cpu/intel_pstate/no_turbo
-    else
-        echo "no_turbo file not found"
-    fi
-    exit 0
-else
-    echo "Usage: turboboost.sh {no|yes|status}"
-    exit 1
-fi
-echo "no_turbo=$state"
-if [ -f /sys/devices/system/cpu/intel_pstate/no_turbo ]; then
-    echo $state > /sys/devices/system/cpu/intel_pstate/no_turbo
-else
-    echo "did nothing, no_turbo file not found"
-fi
-EOF
-
-chmod 755 ${ROOTFS}/usr/local/bin/turboboost.sh
+chmod 755 ${ROOTFS}/usr/local/bin/turboboost
 
 cat <<EOF | tee ${ROOTFS}/etc/systemd/system/disable-intel-turboboost.service
 [Unit]
 Description=Disable Intel Turbo Boost using pstate driver 
 [Service]
-ExecStart=/bin/sh -c "/usr/local/bin/turboboost.sh no"
-ExecStop=/bin/sh -c "/usr/local/bin/turboboost.sh yes"
+ExecStart=/bin/sh -c "/usr/local/bin/turboboost no"
+ExecStop=/bin/sh -c "/usr/local/bin/turboboost yes"
 RemainAfterExit=yes
 [Install]
 WantedBy=sysinit.target
@@ -430,24 +401,9 @@ firstbootexpandfs() {
 trap 'return 1' ERR
 
 # first boot script
-cat << 'EOF' | tee ${ROOTFS}/usr/local/bin/firstboot.sh
-#!/bin/bash
-if [ ! -f /var/log/firstboot.log ]; then
-    if lsblk | grep -q vda; then
-        DEVICE="/dev/vda"
-    elif lsblk | grep -q sda; then
-        DEVICE="/dev/sda"
-    else
-        DEVICE="/dev/sda"
-    fi
-    # Code to execute if log file does not exist
-    echo "First boot script has run">/var/log/firstboot.log
-    growpart $DEVICE 1
-    resize2fs ${DEVICE}1
-fi
-EOF
+curl -Lo ${ROOTFS}/usr/local/bin/firstboot https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/os/firstboot
 
-chmod 755 ${ROOTFS}/usr/local/bin/firstboot.sh
+chmod 755 ${ROOTFS}/usr/local/bin/firstboot
 
 cat <<EOF | tee ${ROOTFS}/etc/systemd/system/firstboot.service
 [Unit]
@@ -458,7 +414,7 @@ After=network.target
 [Service]
 Type=oneshot
 User=root
-ExecStart=/usr/local/bin/firstboot.sh
+ExecStart=/usr/local/bin/firstboot
 RemainAfterExit=yes
 
 
@@ -576,24 +532,6 @@ cat << EOF | chroot ${ROOTFS}
     apt -y install libinput-tools wmctrl
     adduser $TARGET_USERNAME input
 EOF
-
-mkdir -p ${ROOTFS}/home/${TARGET_USERNAME}/.config/
-
-cat <<EOF | tee ${ROOTFS}/home/${TARGET_USERNAME}/.config/libinput-gestures.conf
-gesture swipe up        xdotool key super+m
-gesture swipe down      xdotool key super+t
-gesture swipe left      3 xdotool key alt+Left
-gesture swipe left      4 xdotool key super+Left
-gesture swipe right     3 xdotool key alt+Right
-gesture swipe right     4 xdotool key super+Right
-gesture pinch in        xdotool key ctrl+minus
-gesture pinch out       xdotool key ctrl+plus
-EOF
-
-cat << EOF | chroot ${ROOTFS}
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config
-EOF
-
 }
 
 idev(){
@@ -626,7 +564,7 @@ fi
 
 mkdir -p ${ROOTFS}/opt/appimages/
 rm -rf ${ROOTFS}/opt/appimages/apache-maven-*
-curl -L -o /tmp/maven.tar.gz https://dlcdn.apache.org/maven/maven-3/${MVN_VERSION}/binaries/apache-maven-${MVN_VERSION}-bin.tar.gz
+curl -Lo /tmp/maven.tar.gz https://dlcdn.apache.org/maven/maven-3/${MVN_VERSION}/binaries/apache-maven-${MVN_VERSION}-bin.tar.gz
 tar xzvf /tmp/maven.tar.gz  -C ${ROOTFS}/opt/appimages/
 cat << EOF | chroot ${ROOTFS}
     ln -sf /opt/appimages/apache-maven-${MVN_VERSION}/bin/mvn /usr/local/bin/mvn
@@ -662,78 +600,11 @@ cat << EOF | chroot ${ROOTFS}
     adduser $TARGET_USERNAME docker
 EOF
 
-cat <<'EOF' | tee ${ROOTFS}/usr/local/bin/firstboot-dockernet.sh
-#!/bin/bash
-echo "firstboot-dockernet.sh : Setting up dedicated network bridge.."
-
-retry=0
-max_retries=5
-while [ $retry -lt $max_retries ]; do
-    if curl -s --unix-socket /var/run/docker.sock http/_ping 2>&1; then
-        echo "Docker is running."
-        break
-    else
-        echo "Docker is not running. Retrying in 1 seconds..."
-        sleep 1
-        retry=$((retry + 1))
-    fi
+fnamelist="firstboot-dockernet firstboot-dockerbuildx"
+for fname in $fnamelist ; do
+curl -Lo ${ROOTFS}/usr/local/bin/$fname https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/docker/$fname
+chmod 755 ${ROOTFS}/usr/local/bin/$fname
 done
-
-if [ $retry -eq $max_retries ]; then
-    echo "Docker failed to start after $max_retries attempts."
-    exit 1
-fi
-
-if [[ -z "$(docker network ls | grep primenet)" ]] then
-     docker network create --driver=bridge --subnet=172.18.0.0/16 --gateway=172.18.0.1 primenet
-     echo "firstboot-dockernet.sh : docker primenet created"
-     echo "✅ primenet docker network created !">/var/log/firstboot-dockernet.log
-else
-     echo "firstboot-dockernet.sh : docker primenet exists already"
-     echo "✅ primenet already exisits ! ">/var/log/firstboot-dockernet.log
-fi
-
-exit 0
-
-EOF
-
-cat <<'EOF' | tee ${ROOTFS}/usr/local/bin/firstboot-dockerbuildx.sh
-#!/bin/bash
-echo "firstboot-dockerbuildx.sh: Setting up multi target builder"
-
-
-retry=0
-max_retries=5
-while [ $retry -lt $max_retries ]; do
-    if curl -s --unix-socket /var/run/docker.sock http/_ping 2>&1; then
-        echo "Docker is running."
-        break
-    else
-        echo "Docker is not running. Retrying in 1 seconds..."
-        sleep 1
-        retry=$((retry + 1))
-    fi
-done
-
-if [ $retry -eq $max_retries ]; then
-    echo "Docker failed to start after $max_retries attempts."
-    exit 1
-fi
-
-if [[ -z "$(docker buildx ls | grep multibuilder.*linux)" ]] then
-     docker buildx create --name multibuilder --platform linux/amd64,linux/arm/v7,linux/arm64 --use
-     echo "firstboot-dockerbuildx.sh : docker multibuilder created"
-     echo "✅ multibuilder docker buildx created !">~/firstboot-dockerbuildx.log
-else
-     echo "firstboot-dockerbuildx.sh : docker multibuilder exists alread"
-     echo "✅ multibuilder already exisits ! ">~/firstboot-dockerbuildx.log
-fi
-
-exit 0
-EOF
-
-chmod 755 ${ROOTFS}/usr/local/bin/firstboot-dockernet.sh
-chmod 755 ${ROOTFS}/usr/local/bin/firstboot-dockerbuildx.sh
 
 cat <<EOF | tee ${ROOTFS}/etc/systemd/system/firstboot-dockernet.service
 [Unit]
@@ -744,9 +615,8 @@ After=network.target docker.service
 [Service]
 Type=oneshot
 User=root
-ExecStart=/usr/local/bin/firstboot-dockernet.sh
+ExecStart=/usr/local/bin/firstboot-dockernet
 RemainAfterExit=yes
-
 
 [Install]
 WantedBy=multi-user.target
@@ -761,7 +631,7 @@ After=network.target docker.service
 [Service]
 Type=oneshot
 User=${TARGET_USERNAME}
-ExecStart=/usr/local/bin/firstboot-dockerbuildx.sh
+ExecStart=/usr/local/bin/firstboot-dockerbuildx
 RemainAfterExit=yes
 
 [Install]
@@ -1768,34 +1638,8 @@ export WEBAPPSLIST="
 
 export APPDIR=${ROOTFS}/usr/local/bin
 export SHORTCUTDIR=${ROOTFS}/usr/local/share/applications
- 
 
-for entry in $(echo $WEBAPPSLIST); do
-    name="${entry%%|*}"
-    icon="${entry#*|}"
-    icon="${icon%%|*}"
-    url="${entry##*|}"
-
-cat << EOF | tee $APPDIR/$name
-#!/bin/bash
-google-chrome-stable --app="${url}"
-EOF
-
-cat << EOF | tee $SHORTCUTDIR/$name.desktop
-[Desktop Entry]
-Name=$name
-Exec=$name
-Icon=$icon
-Terminal=false
-Type=Application
-Categories=Network;
-EOF
-
-
-cat << EOF | chroot ${ROOTFS}
-chmod 755 /usr/local/bin/${name}
-EOF
-done
+curl -L https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/webapps/genapps | bash
 
 }
 
