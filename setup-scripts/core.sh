@@ -744,19 +744,11 @@ echo 'options nvidia NVreg_PreserveVideoMemoryAllocations=1' > ${ROOTFS}/etc/mod
 inumlocktty(){
 trap 'return 1' ERR
 
-#enable numlock tty
-cat <<'EOF' | tee ${ROOTFS}/usr/local/bin/nlock
-#!/bin/bash
-echo "nlock : activate numlock on tty"
-for tty in /dev/tty{1..6}
-do
-    /usr/bin/setleds -D +num < "$tty";
+fnamelist="nlock"
+for fname in $fnamelist ; do
+curl -Lo ${ROOTFS}/usr/local/bin/$fname https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/os/$fname
+chmod 755 ${ROOTFS}/usr/local/bin/$fname
 done
-EOF
-
-cat << EOF | chroot ${ROOTFS}
-    chmod 755 /usr/local/bin/nlock
-EOF
 
 cat <<EOF | tee ${ROOTFS}/etc/systemd/system/nlock.service
 [Unit]
@@ -774,7 +766,6 @@ EOF
 cat << EOF | chroot ${ROOTFS}
     systemctl enable nlock
 EOF
-# end numlock tty
 
 }
 
