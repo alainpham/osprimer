@@ -449,7 +449,7 @@ cat << EOF | chroot ${ROOTFS}
     apt -y update 
     apt install -y ncurses-term
     apt -y upgrade
-    apt install -y sudo git tmux vim micro curl wget rsync ncdu dnsutils bmon htop btop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq jc sshfs iotop wakeonlan
+    apt install -y sudo git tmux vim micro curl wget rsync ncdu dnsutils bmon htop btop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq jc sshfs iotop wakeonlan stow
     apt install -y systemd-timesyncd
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup iperf3
 EOF
@@ -477,6 +477,17 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 
 echo "sudo setup finished"
+}
+
+istowdotfiles() {
+cd ${ROOTFS}/home/${TARGET_USERNAME}
+git clone http://github.com/alainpham/dotfiles.git
+
+cat << EOF | chroot ${ROOTFS}
+    cd /home/$TARGET_USERNAME/dotfiles
+    stow --target=/home/$TARGET_USERNAME --adopt  home
+    git restore .
+EOF
 }
 
 allowsshpwd() {
@@ -1647,11 +1658,20 @@ cd -
 wget -O ${ROOTFS}/tmp/bios.zip https://github.com/Abdess/retroarch_system/releases/download/v20220308/RetroArch_v1.10.1.zip
 unzip ${ROOTFS}/tmp/bios.zip 'system/*' -d /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/
 
+rm -f /usr/local/bin/retroarch
+
+cat > ${ROOTFS}/usr/local/bin/retroarch << 'EOF'
+#!/bin/bash
+/opt/appimages/RetroArch-Linux-x86_64.AppImage --appendconfig ~/.config/retroarch/retroarch.override.cfg "$@"
+EOF
+
+chmod 755 ${ROOTFS}/usr/local/bin/retroarch
 
 cat << EOF | chroot ${ROOTFS}
     mkdir -p /opt/appimages/
     mv /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage /opt/appimages/RetroArch-Linux-x86_64.AppImage
     chmod 755 /opt/appimages/RetroArch-Linux-x86_64.AppImage
+    
     ln -sf /opt/appimages/RetroArch-Linux-x86_64.AppImage /usr/local/bin/retroarch
     
     if [ -d "/home/$TARGET_USERNAME/.config/retroarch/saves" ]; then
