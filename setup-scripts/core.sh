@@ -177,10 +177,8 @@ trap 'return 1' ERR
 
 scripts="lineinfile"
 for script in $scripts ; do
-wget -O ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/utils/$script
-cat << EOF | chroot ${ROOTFS}
-    chmod 755 /usr/local/bin/$script
-EOF
+wget -O ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/dotfiles/master/scripts/utils/$script
+chmod 755 ${ROOTFS}/usr/local/bin/$script
 done
 
 export BASHRC="/etc/bash.bashrc"
@@ -808,113 +806,42 @@ cat << EOF | chroot ${ROOTFS}
     apt install -y ffmpeg libfdk-aac2 libnppig12 libnppicc12 libnppidei12 libnppif12
 EOF
 
-# speedcrunch
-dlfiles="
-SpeedCrunch.ini
-"
-sudo -u $TARGET_USERNAME mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/SpeedCrunch
-for fname in $dlfiles ; do
-curl -Lo ${ROOTFS}/home/$TARGET_USERNAME/.config/SpeedCrunch/$fname https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/speedcrunch/$fname
-cat << EOF | chroot ${ROOTFS}
-    chown $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/SpeedCrunch/$fname
-EOF
-done
-
-# jgmenu
-dlfiles="
-jgmenurc
-"
-sudo -u $TARGET_USERNAME mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/jgmenu
-for fname in $dlfiles ; do
-curl -Lo ${ROOTFS}/home/$TARGET_USERNAME/.config/jgmenu/$fname https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/jgmenu/$fname
-cat << EOF | chroot ${ROOTFS}
-    chown $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/jgmenu/$fname
-EOF
-done
-
-
-# dunst notification
-mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/dunst
-
-cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.config/dunst/dunstrc
-[global]
-monitor = 0
-# follow = keyboard
-font = NotoSans NF 11
-frame_width = 0
-frame_color = "#555753"
-offset = 20x65
-separator_height = 1
-separator_color = "#888a85"
-gap_size = 0
-[urgency_low]
-    background = "#4e9a06"
-    foreground = "#eeeeec"
-[urgency_normal]
-    background = "#555753"
-    foreground = "#eeeeec"
-[urgency_critical]
-    background = "#a40000"
-    foreground = "#eeeeec"
-EOF
-
-cat << EOF | chroot ${ROOTFS}
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/dunst
-EOF
-
 #YT-DLP latest
 curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o ${ROOTFS}/usr/local/bin/yt-dlp
-cat << EOF | chroot ${ROOTFS}
-    chmod 755 /usr/local/bin/yt-dlp
-EOF
+chmod 755 ${ROOTFS}/usr/local/bin/yt-dlp
 
 # ffmpeg scripts
 ffmpegscripts="
-imdb.sh
-ripbm.sh
-ripscreen.sh
-riptv.sh
-vconv-archive-lossless-h264-vaapi.sh
-vconv-audiosync.sh
-vconv-extract-audio.sh
-vconv-h264-vaapi-qp.sh
-vconv-h264-vaapi-vbr.sh
-vconv-hevc-vaapi-qp.sh
-vconv-make-mkv.sh
-vconv-make-mp4.sh
-vconv-make-mp4-singletrack.sh
-vconv-mkvmerge.sh
-vconv-mp3-hq.sh
-vconv-travel.sh
-vconv-vp9-vaapi-qp.sh
-vconv-x264-crf.sh
-vconv-x264-lowres-lowvbr-2pass.sh
-vconv-x264-lowres-vbr-2pass.sh
-vconv-x264-vbr-2pass.sh
+vconv-archive-lossless-h264-vaapi
+vconv-audiosync
+vconv-extract-audio
+vconv-h264-vaapi-qp
+vconv-h264-vaapi-vbr
+vconv-hevc-vaapi-qp
+vconv-imdb
+vconv-make-mkv
+vconv-make-mp4
+vconv-make-mp4-singletrack
+vconv-mkvmerge
+vconv-mp3-hq
+vconv-playdubbed
+vconv-ripbm
+vconv-ripscreen
+vconv-travel
+vconv-vp9-vaapi-qp
+vconv-x264-crf
+vconv-x264-lowres-lowvbr-2pass
+vconv-x264-lowres-vbr-2pass
+vconv-x264-vbr-2pass
 "
 for script in $ffmpegscripts ; do
-curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/ffmpeg/$script
+curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/dotfiles/master/scripts/av/$script
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /usr/local/bin/$script
 EOF
 done
 
 # pulseaudio podcast setup
-
-# asoundrc
-cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.asoundrc
-pcm.pulse {
-    type pulse
-}
-
-ctl.pulse {
-    type pulse
-}
-EOF
-
-cat << EOF | chroot ${ROOTFS}
-    chown $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.asoundrc
-EOF
 
 # create alsa loopback
 
@@ -926,38 +853,40 @@ options snd-aloop index=10 id=loop
 options snd-dummy index=11 id=dummy
 EOF
 
-# avoid crackling with pulse
-lineinfile ${ROOTFS}/etc/pulse/default.pa ".*load-module module-suspend-on-idle.*" "load-module module-suspend-on-idle"
-lineinfile ${ROOTFS}/etc/pulse/system.pa ".*load-module module-suspend-on-idle.*" "load-module module-suspend-on-idle"
-lineinfile ${ROOTFS}/etc/pulse/default.pa ".*load-module module-switch-on-connect.*" "# load-module module-switch-on-connect"
+cat << 'EOF' | tee ${ROOTFS}/etc/udev/rules.d/89-pulseaudio-udev.rules
+# to be pasted in sudo cp 89-pulseaudio-udev.rules /etc/udev/rules.d/
+# reload rules : sudo udevadm control --reload-rules && sudo  udevadm trigger
+# udevadm info -a -p /sys/class/sound/card11
+ATTR{id}=="dummy", ATTR{number}=="11",SUBSYSTEM=="sound", ENV{PULSE_IGNORE}="1",ENV{ACP_IGNORE}="1"
+ATTR{id}=="loop", ATTR{number}=="10",SUBSYSTEM=="sound", ENV{PULSE_IGNORE}="1"
+ATTR{id}=="C920", SUBSYSTEM=="sound", ENV{PULSE_IGNORE}="1",ENV{ACP_IGNORE}="1"
 
-mkdir -p ${ROOTFS}/etc/pulse/default.pa.d/
-wget -O ${ROOTFS}/etc/pulse/default.pa.d/pulsepod.pa https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/pulseaudio/pulsepod.pa
-
-lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-sample-rate.*" "default-sample-rate = 48000"
-lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*default-sample-format.*" "default-sample-format = s16le"
-lineinfile ${ROOTFS}/etc/pulse/daemon.conf ".*resample-method.*" "resample-method = soxr-hq"
+# ATTR{id}=="dummy", ATTR{number}=="11",SUBSYSTEM=="sound", ENV{PULSE_IGNORE}="1"
+# ATTR{id}=="loop", ATTR{number}=="10",SUBSYSTEM=="sound", ENV{PULSE_IGNORE}="1"
+# ATTR{id}=="C920", SUBSYSTEM=="sound", ENV{PULSE_IGNORE}="1"
+EOF
 
 # install scripts for sound and monitor
-gitroot=https://raw.githubusercontent.com/alainpham/osprimer/refs/heads/master/scripts/pulseaudio/
+gitroot=https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/sound
 files="snd asnd asndenv asnddef csndfoczv csndjbr csndbth csndbtf csndhds csndzv csndh6 csndacer csndint csnddmy clrmix clrmixoff jbrconnect"
 for file in $files ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
 chmod 755 ${ROOTFS}/usr/local/bin/$file
 done
 
-gitroot=https://raw.githubusercontent.com/alainpham/osprimer/refs/heads/master/scripts/x11/
-files="mon bestmode snotifs"
+gitroot=https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/desktop
+files="bestmode mon sbg snotifs winshot"
 for file in $files ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
 chmod 755 ${ROOTFS}/usr/local/bin/$file
 done
 
-curl -Lo ${ROOTFS}/etc/udev/rules.d/89-pulseaudio-udev.rules https://raw.githubusercontent.com/alainpham/osprimer/refs/heads/master/scripts/pulseaudio/89-pulseaudio-udev.rules
+# link st as default terminal on x
+ln -sf /usr/local/bin/st /usr/bin/x-terminal-emulator
 
 # install scripts for webcam
-gitroot=https://raw.githubusercontent.com/alainpham/osprimer/refs/heads/master/scripts/camera/
-files="cint c920"
+gitroot=https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/webcam
+files="c920"
 for file in $files ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
 chmod 755 ${ROOTFS}/usr/local/bin/$file
@@ -1002,136 +931,12 @@ cat << EOF | chroot ${ROOTFS}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/wm
 EOF
 
-# link st as default terminal on x
-ln -sf /usr/local/bin/st /usr/bin/x-terminal-emulator
-
-# wallpaper
-mkdir -p ${ROOTFS}/usr/share/backgrounds/
-
-# Define a list of backend files to be downloaded
-backend_files=(
-    "https://free-images.com/or/8606/canyon_antelope_canyon_usa_1.jpg"
-    "https://free-images.com/lg/ac18/city_night_light_bokeh.jpg"
-    "https://free-images.com/lg/5cc4/lights_night_city_night.jpg"
-    "https://raw.githubusercontent.com/simple-sunrise/Light-and-Dark-Wallpapers-for-Gnome/main/Wallpapers/LakesideDeer/LakesideDeer-1.png"
-    "https://raw.githubusercontent.com/simple-sunrise/Light-and-Dark-Wallpapers-for-Gnome/main/Wallpapers/LakesideDeer/LakesideDeer-2.png"
-    "https://w.wallhaven.cc/full/5g/wallhaven-5g22q5.png"
-    "https://w.wallhaven.cc/full/21/wallhaven-21yd3m.jpg"
-    "https://w.wallhaven.cc/full/rq/wallhaven-rqr1xw.jpg"
-    "https://w.wallhaven.cc/full/zp/wallhaven-zpyr5y.png"
-)
-
-# Loop through the list and download each file
-for i in "${!backend_files[@]}"; do
-    if [ ! -f "${ROOTFS}/usr/share/backgrounds/$(printf "%02d" $((i+1))).jpg" ]; then
-        wget -O "${ROOTFS}/usr/share/backgrounds/$(printf "%02d" $((i+1))).jpg" "${backend_files[$i]}"
-        echo "Downloaded background image $(printf "%02d" $((i+1))).jpg"
-    else
-        echo "Background image $(printf "%02d" $((i+1))).jpg already exists, skipping."
-    fi
-done
-
-# switching backgounds
-# switching backgounds
-cat << 'EOF' | tee ${ROOTFS}/usr/local/bin/sbg
-#!/bin/bash
-
-if [ -n "$1" ]; then
-    bgfile=$(printf "%02d.jpg" "$1")
-else
-    bgfile=$(ls /usr/share/backgrounds/ | shuf -n 1)
-fi
-
-feh --bg-fill /usr/share/backgrounds/${bgfile}
-EOF
-chmod 755 ${ROOTFS}/usr/local/bin/sbg
-
 # deactivate service for dunst to work
 
 if [ -f ${ROOTFS}/usr/share/dbus-1/services/org.knopwob.dunst.service ] ; then
 mv ${ROOTFS}/usr/share/dbus-1/services/org.knopwob.dunst.service ${ROOTFS}/usr/share/dbus-1/services/org.knopwob.dunst.service.disabled
 fi
 
-cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc
-#!/bin/sh
-echo starting X>~/.xinit.log
-
-if [ -z "$DBUS_SESSION_BUS_ADDRESS" ] && [ -n "$XDG_RUNTIME_DIR" ] && \
-    [ "$XDG_RUNTIME_DIR" = "/run/user/`id -u`" ] && \
-    [ -S "$XDG_RUNTIME_DIR/bus" ]; then
-  DBUS_SESSION_BUS_ADDRESS="unix:path=$XDG_RUNTIME_DIR/bus"
-  export DBUS_SESSION_BUS_ADDRESS
-fi
-
-if [ -x "/usr/bin/dbus-update-activation-environment" ]; then
-  dbus-update-activation-environment --verbose --systemd \
-    DBUS_SESSION_BUS_ADDRESS \
-    DISPLAY \
-    XAUTHORITY \
-    XDG_CURRENT_DESKTOP \
-    ${NULL+}
-fi
-
-if grep -qi hypervisor /proc/cpuinfo; then
-    echo inside vm, launching spice-vdagent >>~/.xinit.log
-    spice-vdagent
-fi
-
-numlockx
-
-dunst > ~/.dunst.log &
-echo 1 | tee ~/.rebootdwm
-export rebootdwm=$(cat ~/.rebootdwm)
-export XCURSOR_SIZE=24
-while true; do
-
-    piddunst=$(pgrep dunst)
-    if [ ! -z "$piddunst" ]; then
-        kill -9 $piddunst
-        echo dunst restarted>>~/.xinit.log
-    fi
-    dunst > ~/.dunst.log &
-
-    piddwmblocks=$(pgrep dwmblocks)
-    if [ ! -z "$piddwmblocks" ]; then
-        kill -9 $piddwmblocks
-        echo dwmblocks restarted>>~/.xinit.log
-    fi
-    dwmblocks &
-
-    if command -v libinput-gestures >/dev/null 2>&1; then
-        pidgestures=$(pgrep -f libinput-gestures)
-        if [ ! -z "$pidgestures" ]; then
-            kill -9 $pidgestures
-            echo libinput-gestures restarted>>~/.xinit.log
-        fi
-        libinput-gestures &
-    fi
-
-    if [ -f ~/.fehbg ]; then
-        ~/.fehbg
-        echo feh script exists, setting backround with it>>~/.xinit.log
-    else
-        sbg
-        echo first boot, setting random>>~/.xinit.log
-    fi
-    
-    pidpicom=$(pgrep dwmblocks)
-    if [ ! -z "$pidpicom" ]; then
-        kill -9 $pidpicom
-    fi
-    picom -b --config ~/.config/picom/picom.conf
-
-    # Log stderror to a file
-    dwm 2> ~/.dwm.log
-    # No error logging
-    #dwm >/dev/null 2>&1
-    rebootdwm=$(cat ~/.rebootdwm)
-    if [ "$rebootdwm" != '1' ]; then
-            break
-    fi
-done
-EOF
 
 # BEGIN check if inside virtual machine
 export hypervisor=$(echo "virt-what" | chroot ${ROOTFS})
@@ -1142,75 +947,12 @@ cat << 'EOF' | chroot ${ROOTFS}
     apt install -y spice-vdagent
 EOF
 
-lineinfile ${ROOTFS}/home/$TARGET_USERNAME/.xinitrc ".*spice-vdagent.*" "spice-vdagent"
-
 fi
 # END check if inside virtual machine
-
-cat << EOF | chroot ${ROOTFS}
-    chown $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.xinitrc
-EOF
-
 
 # picom install & initial config
 
 ipicomgit
-
-sudo -u $TARGET_USERNAME mkdir -p /home/$TARGET_USERNAME/.config/picom/
-
-cat << 'EOF' | tee ${ROOTFS}/home/${TARGET_USERNAME}/.config/picom/picom.conf
-# picom config
-backend = "glx";
-vsync = true;
-use-damage = false;
-
-shadow = true;
-shadow-radius = 12;
-shadow-offset-x = -6;
-shadow-offset-y = -6;
-shadow-opacity = 0.45;
-
-corner-radius = 14;
-rules = (
-	{ match = "class_g = 'Thunar'"; opacity = 0.92; },
-	{ match = "class_g = 'st-256color'"; opacity = 0.9; },
-	{ match = "class_g = 'dwm'"; opacity = 0.9; corner-radius = 5;},
-
- 	{ match = "class_g = 'Google-chrome'"; clip-shadow-above = true; opacity = 1;},
- 	{ match = "class_g = 'SpeedCrunch'"; corner-radius = 0;},
-
-  # no rounded corners
-  { match = "window_type = 'menu'"; corner-radius = 0;},
-  { match = "window_type = 'dropdown_menu'"; corner-radius = 0;},
-  { match = "window_type = 'popup_menu'"; corner-radius = 0;},
-  { match = "window_type = 'tooltip'"; corner-radius = 0;},
-  { match = "window_type = 'combo'"; corner-radius = 0;},
-
-  { match = "fullscreen"; corner-radius = 0;},
-
-)
-
-animations = (
-  {
-    triggers = ["close","hide"];
-    preset = "disappear";
-    scale = 0.7;
-    duration = 0.1;
-  },
-  {
-    triggers = ["open","show"];
-    preset = "appear";
-    scale = 0.7;
-    duration = 0.1;
-  },
-  {
-    triggers = ["geometry"];
-    preset = "geometry-change";
-    duration = 0.18;
-  }
-)
-
-EOF
 
 # convert pdf to png with whitebackground
 cat << 'EOF' | tee ${ROOTFS}/usr/local/bin/pdf2png
