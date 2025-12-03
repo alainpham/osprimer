@@ -4,7 +4,7 @@
 inputversions() {
     trap 'return 1' ERR
 
-    export CORE_VERSION=20251109
+    export CORE_VERSION=20251203
     echo "export CORE_VERSION=${CORE_VERSION}"
 
     # https://kubernetes.io/releases/  https://cloud.google.com/kubernetes-engine/docs/release-notes
@@ -184,13 +184,6 @@ done
 export BASHRC="/etc/bash.bashrc"
 
 lineinfile ${ROOTFS}${BASHRC} ".*alias.*ll.*=.*" 'alias ll="ls -larth"'
-# mkdir -p ${ROOTFS}/home/${TARGET_USERNAME}
-# touch ${ROOTFS}/home/${TARGET_USERNAME}/.bashrc
-# lineinfile ${ROOTFS}/home/${TARGET_USERNAME}/.bashrc ".*alias.*ll.*=.*" 'alias ll="ls -larth"'
-# cat << EOF | chroot ${ROOTFS}
-#     chown $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/${TARGET_USERNAME}
-#     chown $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/${TARGET_USERNAME}/.bashrc
-# EOF
 
 lineinfile ${ROOTFS}${BASHRC} ".*alias.*ap=.*" 'alias ap=ansible-playbook'
 
@@ -1345,35 +1338,17 @@ isunshine $force_reinstall
 iwebapps(){
 trap 'return 1' ERR
 
-# todo download and copy all logos
-
-export WEBAPPSLIST="
-    gpt|chatgpt-color|https://chatgpt.com
-    gm|gmail-color|https://mail.google.com/mail/u/1/#inbox
-    cal|google|https://calendar.google.com/calendar/u/1/r
-    teams|teams|https://teams.microsoft.com/v2/
-    whatsapp|whatsapp|https://web.whatsapp.com
-    messenger|messenger|https://www.messenger.com
-    telegram|telegram|https://web.telegram.org
-    notes|onenote|https://docs.google.com/document/d/1wTwA1NhzgYUGG1eyDyUZj8ExhbhdscQrdYWBOBkLnCs
-    gco|grafana|https://docs.google.com/presentation/d/1yo6Q0p0OBK9vIh3abwigtBDlFGMy9NqU7EzRKYjraro
-    gdemo|grafana|https://emea.cloud.demokit.grafana.com/a/grafana-asserts-app/assertions?start=now-24h&end=now&search=productcatalogservice%20connected%20services&view=BY_ENTITY
-    spotify|spotify|https://open.spotify.com/
-    youtube|youtube|https://www.youtube.com/
-    grok|grok|https://grok.com/
-    sd|chatgpt-color|https://stablediffusionweb.com/app/image-generator
-    brm|chatgpt-color|https://stablediffusionweb.com/background-remover
-    word|word|https://word.cloud.microsoft
-    excel|excel|https://excel.cloud.microsoft
-    powerpoint|powerpoint|https://powerpoint.cloud.microsoft
-    deezer|applemusic|https://www.deezer.com/
-"
-
 export APPDIR=${ROOTFS}/usr/local/bin
 export SHORTCUTDIR=${ROOTFS}/usr/local/share/applications
 
 curl -L https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/webapps/genapps | bash
 
+
+cd ${ROOTFS}/tmp
+rm -rf coloured-icons
+git clone https://github.com/alainpham/coloured-icons.git
+cp -r ${ROOTFS}/tmp/coloured-icons/public/logos ${ROOTFS}/usr/local/share/icons/hicolor/scalable
+cd -
 }
 
 isunshine(){
