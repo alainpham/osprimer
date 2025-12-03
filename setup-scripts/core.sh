@@ -483,7 +483,7 @@ cat << EOF | chroot ${ROOTFS}
     rm -rf dotfiles
     sudo -u $TARGET_USERNAME git clone http://github.com/alainpham/dotfiles.git
     cd /home/$TARGET_USERNAME/dotfiles
-    sudo -u $TARGET_USERNAME stow --target=/home/$TARGET_USERNAME --adopt home
+    sudo -u $TARGET_USERNAME stow --no-folding --target=/home/$TARGET_USERNAME --adopt home
     sudo -u $TARGET_USERNAME git restore .
 EOF
 }
