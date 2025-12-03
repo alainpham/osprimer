@@ -460,11 +460,7 @@ APT::Periodic::Update-Package-Lists "0";
 APT::Periodic::Unattended-Upgrade "0";
 EOF
 
-# configure git to use vim as editor
-cat << EOF | tee ${ROOTFS}/home/${TARGET_USERNAME}/.gitconfig
-[core]
-    editor = vim
-EOF
+istowdotfiles
 
 echo "essentials installed"
 }
