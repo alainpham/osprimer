@@ -219,7 +219,7 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*MOONLIGHT_VERSION.*=.*" "export MOONLIG
 lineinfile ${ROOTFS}${BASHRC} ".*export.*SUNSHINE_VERSION.*=.*" "export SUNSHINE_VERSION=${SUNSHINE_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*PCSX2_VERSION.*=.*" "export PCSX2_VERSION=${PCSX2_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*CEMU_VERSION.*=.*" "export CEMU_VERSION=${CEMU_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*SDL_GAMECONTROLLERCONFIG.*=.*" "export CORE_VERSION='${CORE_VERSION}'"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*SDL_GAMECONTROLLERCONFIG.*=.*" "export SDL_GAMECONTROLLERCONFIG='${SDL_GAMECONTROLLERCONFIG}'"
 
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*OSNAME.*=.*" "export OSNAME=${OSNAME}"
@@ -683,9 +683,9 @@ EOF
 
 ik9s
 
-kubescript="kubecr kubecrlocal kubemon kubeotel kubeexpose"
+kubescript="kubecr kubemon kubeotel kubeexpose"
 for script in $kubescript ; do
-curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/k8s/$script
+curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/dotfiles/master/scripts/kube/$script
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /usr/local/bin/$script
 EOF
@@ -957,128 +957,12 @@ fi
 ipicomgit
 
 # convert pdf to png with whitebackground
-cat << 'EOF' | tee ${ROOTFS}/usr/local/bin/pdf2png
-#!/bin/bash
-convert -density 150 "$1" -background white -alpha remove -alpha off "$1.png"
-EOF
-
-cat << EOF | chroot ${ROOTFS}
-    chmod 755 /usr/local/bin/pdf2png
-EOF
-
-cat << EOF | chroot ${ROOTFS}
-    apt install -y v4l2loopback-utils flameshot maim xclip xdotool thunar thunar-archive-plugin
-EOF
-
-cat << 'EOF' | tee ${ROOTFS}/usr/local/bin/winshot.sh
-maim -i $(xdotool getactivewindow) | xclip -selection clipboard -t image/png
-EOF
-cat << EOF | chroot ${ROOTFS}
-    chmod 755 /usr/local/bin/winshot.sh
-EOF
-
-# configure Thunar
-mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/Thunar/
-
-cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.config/Thunar/uca.xml
-<?xml version="1.0" encoding="UTF-8"?>
-<actions>
-<action>
-        <icon>utilities-terminal</icon>
-        <name>Open Terminal Here</name>
-        <submenu></submenu>
-        <unique-id>1727457442655389-1</unique-id>
-        <command>st -d %f</command>
-        <description>Open Terminal here</description>
-        <range></range>
-        <patterns>*</patterns>
-        <startup-notify/>
-        <directories/>
-</action>
-<action>
-        <icon>vscode</icon>
-        <name>VSCode</name>
-        <submenu></submenu>
-        <unique-id>1727457442655389-2</unique-id>
-        <command>code %f</command>
-        <description>Open VSCode here</description>
-        <range></range>
-        <patterns>*</patterns>
-        <startup-notify/>
-        <directories/>
-</action>
-</actions>
-EOF
-
-mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/xfce4/xfconf/xfce-perchannel-xml/
-
-cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.config/xfce4/xfconf/xfce-perchannel-xml/thunar.xml
-
-<?xml version="1.0" encoding="UTF-8"?>
-
-<channel name="thunar" version="1.0">
-  <property name="last-view" type="string" value="ThunarDetailsView"/>
-  <property name="last-icon-view-zoom-level" type="string" value="THUNAR_ZOOM_LEVEL_100_PERCENT"/>
-  <property name="last-window-width" type="int" value="750"/>
-  <property name="last-window-height" type="int" value="242"/>
-  <property name="last-window-maximized" type="bool" value="false"/>
-  <property name="last-separator-position" type="int" value="166"/>
-  <property name="misc-single-click" type="bool" value="false"/>
-  <property name="last-details-view-zoom-level" type="string" value="THUNAR_ZOOM_LEVEL_38_PERCENT"/>
-  <property name="last-details-view-column-widths" type="string" value="50,50,137,113,50,457,50,50,392,50,50,69,50,140"/>
-  <property name="last-sort-column" type="string" value="THUNAR_COLUMN_NAME"/>
-  <property name="last-sort-order" type="string" value="GTK_SORT_ASCENDING"/>
-  <property name="last-show-hidden" type="bool" value="false"/>
-  <property name="last-details-view-visible-columns" type="string" value="THUNAR_COLUMN_DATE_MODIFIED,THUNAR_COLUMN_NAME,THUNAR_COLUMN_SIZE,THUNAR_COLUMN_TYPE"/>
-  <property name="last-side-pane" type="string" value="ThunarShortcutsPane"/>
-  <property name="last-toolbar-item-order" type="string" value="0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18"/>
-  <property name="last-toolbar-visible-buttons" type="string" value="0,1,1,1,1,0,0,0,0,0,0,0,0,0,1,0,1,1,1"/>
-  <property name="last-splitview-separator-position" type="int" value="291"/>
-  <property name="misc-date-style" type="string" value="THUNAR_DATE_STYLE_YYYYMMDD"/>
-  <property name="last-compact-view-zoom-level" type="string" value="THUNAR_ZOOM_LEVEL_25_PERCENT"/>
-  <property name="misc-thumbnail-mode" type="string" value="THUNAR_THUMBNAIL_MODE_NEVER"/>
-</channel>
-EOF
-
-# deactivate thumbler cause it causes issues with usb
-if [ -f "${ROOTFS}/etc/xdg/tumbler/tumbler.rc" ]; then
-    sed -i 's/Disabled=false/Disabled=true/g' ${ROOTFS}/etc/xdg/tumbler/tumbler.rc
-fi
-
-# Set default apps
-cat << EOF | chroot ${ROOTFS}
-    sudo -u $TARGET_USERNAME xdg-mime default thunar.desktop inode/directory
-EOF
-
-# videos
-mimetypes=$(grep -E '^video/' /usr/share/mime/types | cut -d: -f1)
-for mime in $mimetypes; do
-cat << EOF | chroot ${ROOTFS}
-    sudo -u $TARGET_USERNAME xdg-mime default org.kde.haruna.desktop "$mime"
-EOF
+gitroot=https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/utils
+files="pdf2png ctext"
+for file in $files ; do
+curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
+chmod 755 ${ROOTFS}/usr/local/bin/$file
 done
-
-# audio
-mimetypes=$(grep -E '^audio/' /usr/share/mime/types | cut -d: -f1)
-for mime in $mimetypes; do
-cat << EOF | chroot ${ROOTFS}
-    sudo -u $TARGET_USERNAME xdg-mime default org.kde.haruna.desktop "$mime"
-EOF
-done
-
-# images
-mimetypes=$(grep -E '^image/' /usr/share/mime/types | cut -d: -f1)
-for mime in $mimetypes; do
-cat << EOF | chroot ${ROOTFS}
-    sudo -u $TARGET_USERNAME xdg-mime default qimgv.desktop "$mime"
-EOF
-done
-
-# create vscode shortcut
-cat << EOF | chroot ${ROOTFS}
-    sudo -u $TARGET_USERNAME mkdir -p /home/$TARGET_USERNAME/codefld
-EOF
-
 
 cat << EOF | tee ${ROOTFS}/usr/share/applications/ctext.desktop
 [Desktop Entry]
@@ -1090,38 +974,22 @@ Terminal=false
 EOF
 
 cat << EOF | chroot ${ROOTFS}
-    sudo -u $TARGET_USERNAME xdg-mime default ctext.desktop application/x-shellscript
+    apt install -y v4l2loopback-utils flameshot maim xclip xdotool thunar thunar-archive-plugin
 EOF
 
+#vscode
+if [ ! -f "${ROOTFS}/usr/bin/code" ] || [ "$force_reinstall" = "1" ]; then
+mkdir -p ${ROOTFS}/opt/debs/
+wget -O ${ROOTFS}/opt/debs/vscode.deb "https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64"
 cat << EOF | chroot ${ROOTFS}
-    sudo -u $TARGET_USERNAME xdg-mime default ctext.desktop application/xml
+    DEBIAN_FRONTEND=noninteractive apt install -y /opt/debs/vscode.deb
 EOF
+fi
 
-
-# txt
-mimetypes=$(grep -E '^text/' /usr/share/mime/types | cut -d: -f1)
-for mime in $mimetypes; do
-cat << EOF | chroot ${ROOTFS}
-    sudo -u $TARGET_USERNAME xdg-mime default ctext.desktop "$mime"
-EOF
-done
-
-cat << EOF | chroot ${ROOTFS}
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config
-EOF
-
-#autostart apps
-mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm
-cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm/autostart.sh
-asnddef &
-mon &
-sleep 5 && ~/.fehbg &
-EOF
-
-cat << EOF | chroot ${ROOTFS}
-    chmod 755 /home/$TARGET_USERNAME/.local/share/dwm/autostart.sh
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.local
-EOF
+# deactivate thumbler cause it causes issues with usb
+if [ -f "${ROOTFS}/etc/xdg/tumbler/tumbler.rc" ]; then
+    sed -i 's/Disabled=false/Disabled=true/g' ${ROOTFS}/etc/xdg/tumbler/tumbler.rc
+fi
 
 # video and audio group
 cat << EOF | chroot ${ROOTFS}
@@ -1204,59 +1072,7 @@ EOF
 
 itheming() {
 trap 'return 1' ERR
-cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.gtkrc-2.0
-# DO NOT EDIT! This file will be overwritten by LXAppearance.
-# Any customization should be done in ~/.gtkrc-2.0.mine instead.
-
-include "/home/apham/.gtkrc-2.0.mine"
-gtk-theme-name="Breeze-Dark"
-gtk-icon-theme-name="breeze-dark"
-gtk-font-name="NotoSans Nerd Font 10"
-gtk-cursor-theme-name="breeze_cursors"
-gtk-cursor-theme-size=0
-gtk-toolbar-style=GTK_TOOLBAR_BOTH
-gtk-toolbar-icon-size=GTK_ICON_SIZE_LARGE_TOOLBAR
-gtk-button-images=1
-gtk-menu-images=1
-gtk-enable-event-sounds=1
-gtk-enable-input-feedback-sounds=1
-gtk-xft-antialias=1
-gtk-xft-hinting=1
-gtk-xft-hintstyle="hintfull"
-
-EOF
-cat << EOF | chroot ${ROOTFS}
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.gtkrc-2.0
-EOF
-
-rm -rf ${ROOTFS}/home/$TARGET_USERNAME/.config/gtk*
-
-mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/gtk-3.0/
-
-
-cat << 'EOF' | tee ${ROOTFS}/home/$TARGET_USERNAME/.config/gtk-3.0/settings.ini
-[Settings]
-gtk-theme-name=Breeze-Dark
-gtk-icon-theme-name=breeze-dark
-gtk-font-name=NotoSans Nerd Font 10
-gtk-cursor-theme-name=breeze_cursors
-gtk-cursor-theme-size=0
-gtk-toolbar-style=GTK_TOOLBAR_BOTH
-gtk-toolbar-icon-size=GTK_ICON_SIZE_LARGE_TOOLBAR
-gtk-button-images=1
-gtk-menu-images=1
-gtk-enable-event-sounds=1
-gtk-enable-input-feedback-sounds=1
-gtk-xft-antialias=1
-gtk-xft-hinting=1
-gtk-xft-hintstyle=hintfull
-
-EOF
-
-cat << EOF | chroot ${ROOTFS}
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/gtk-3.0
-EOF
-
+echo theming
 }
 
 ipicomgit(){
@@ -1288,16 +1104,6 @@ cat << EOF | chroot ${ROOTFS}
     DEBIAN_FRONTEND=noninteractive dpkg-reconfigure libdvd-pkg
 EOF
 
-
-#vscode
-
-if [ ! -f "${ROOTFS}/usr/bin/code" ] || [ "$force_reinstall" = "1" ]; then
-mkdir -p ${ROOTFS}/opt/debs/
-wget -O ${ROOTFS}/opt/debs/vscode.deb "https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64"
-cat << EOF | chroot ${ROOTFS}
-    DEBIAN_FRONTEND=noninteractive apt install -y /opt/debs/vscode.deb
-EOF
-fi
 # install dbeaver
 if [ ! -f "${ROOTFS}/usr/bin/dbeaver" ] || [ "$force_reinstall" = "1" ]; then
 mkdir -p ${ROOTFS}/opt/debs/
@@ -1308,13 +1114,8 @@ EOF
 fi
 
 # configure OBS
-mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/obs-studio
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/recordings
 cat << EOF | chroot ${ROOTFS}
-    curl -Lo /tmp/obs-studio.tar https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/obs/obs-studio.tar
-    tar xvf /tmp/obs-studio.tar -C /home/$TARGET_USERNAME/.config/
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/obs-studio
-    chown -R root:root /home/$TARGET_USERNAME/.config/obs-studio/basic/profiles
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/recordings
 EOF
 
@@ -1611,20 +1412,29 @@ if pgrep -f gshorts > /dev/null; then
     sleep 3
 fi
 
-dlfiles="
-gshorts
-udevgpadsetup
-"
-
+dlfiles="gshorts"
 for fname in $dlfiles ; do
-curl -Lo ${ROOTFS}/usr/local/bin/$fname https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/emulation/gshorts/$fname
+curl -Lo ${ROOTFS}/usr/local/bin/$fname https://raw.githubusercontent.com/alainpham/gshorts/refs/heads/master/$fname
 cat << EOF | chroot ${ROOTFS}
     chmod 755 /usr/local/bin/$fname
 EOF
 done
-curl -Lo ${ROOTFS}/etc/udev/rules.d/99-gpad.rules https://raw.githubusercontent.com/alainpham/osprimer/refs/heads/master/scripts/emulation/gshorts/99-gpad.rules
 
-lineinfile ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm/autostart.sh ".*gshorts.*" 'killall gshorts ; gshorts \&'
+dlfiles="inhibit-gpad-kbd"
+for fname in $dlfiles ; do
+curl -Lo ${ROOTFS}/usr/local/bin/$fname https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/gaming/$fname
+cat << EOF | chroot ${ROOTFS}
+    chmod 755 /usr/local/bin/$fname
+EOF
+done
+
+cat << 'EOF' | tee ${ROOTFS}/etc/udev/rules.d/99-gpad.rules
+# shanwan controller with keyboard to be deactivated
+SUBSYSTEM=="input",ATTRS{id/vendor}=="20bc",ATTRS{id/product}=="5500",ATTRS{capabilities/key}=="1000002000000 39fad941d801 1c000000000000 0", RUN+="/usr/local/bin/inhibit-gpad-kbd"
+# Detect when a gamepad/joystick is connected
+# SUBSYSTEM=="input", ENV{ID_INPUT_JOYSTICK}=="1",RUN+="/usr/local/bin/glauncher"
+EOF
+
 }
 
 iesde(){
@@ -2198,7 +2008,7 @@ cat << EOF | chroot ${ROOTFS}
     adduser $TARGET_USERNAME libvirt
 EOF
 
-gitroot=https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/vms
+gitroot=https://raw.githubusercontent.com/alainpham/dotfiles/master/scripts/vm
 files="vmcr vmcrs vmcrm vmcrl vmdl vmls vmsh vmip"
 for file in $files ; do
     curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
