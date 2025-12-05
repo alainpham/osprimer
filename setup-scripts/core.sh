@@ -1485,6 +1485,8 @@ cat << EOF | chroot ${ROOTFS}
 
     mkdir -p /home/$TARGET_USERNAME/.config/retroarch
 
+    rm -rf /home/$TARGET_USERNAME/.config/retroarch/{assets,cores,filters,overlays,shaders,system,database}
+
     mv /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/assets /home/$TARGET_USERNAME/.config/retroarch/
     mv /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/cores /home/$TARGET_USERNAME/.config/retroarch/
     mv /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/filters /home/$TARGET_USERNAME/.config/retroarch/
@@ -1607,159 +1609,13 @@ EOF
 iemucfg(){
 trap 'return 1' ERR
 cat << EOF | chroot ${ROOTFS}
-    mkdir -p /home/${TARGET_USERNAME}/ROMs
-    mkdir -p /home/${TARGET_USERNAME}/ES-DE/downloaded_media
-    mkdir -p /home/${TARGET_USERNAME}/.config/retroarch/states
-    mkdir -p /home/${TARGET_USERNAME}/.config/retroarch/saves
-    mkdir -p /home/${TARGET_USERNAME}/.config/retroarch/{playlists,cheats,config,logs}
-
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/${TARGET_USERNAME}/ROMs
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/${TARGET_USERNAME}/ES-DE
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/${TARGET_USERNAME}/.config/retroarch
+    sudo -u $TARGET_USERNAME mkdir -p /home/${TARGET_USERNAME}/ROMs
+    sudo -u $TARGET_USERNAME mkdir -p /home/${TARGET_USERNAME}/ES-DE/downloaded_media
+    sudo -u $TARGET_USERNAME mkdir -p /home/${TARGET_USERNAME}/.config/retroarch/states
+    sudo -u $TARGET_USERNAME mkdir -p /home/${TARGET_USERNAME}/.config/retroarch/saves
+    sudo -u $TARGET_USERNAME mkdir -p /home/${TARGET_USERNAME}/.config/retroarch/{playlists,cheats,config,logs}
 EOF
 
-
-export RARCHFLD=${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch
-export RARCHCFG=${RARCHFLD}/retroarch.cfg
-
-rm -r $RARCHFLD/{playlists,cheats,config,logs,autoconfig}
-if [ -f "$RARCHCFG" ]; then
-    rm $RARCHCFG
-fi
-
-cp -R $ROOTFS/home/$TARGET_USERNAME/.config/ra-autoconfig $RARCHFLD/autoconfig
-
-# export RARCHCFG=/home/$TARGET_USERNAME/.config/retroarch/retroarch.cfg
-touch $RARCHCFG
-lineinfile $RARCHCFG "video_windowed_fullscreen.*=.*" 'video_windowed_fullscreen = "false"'
-lineinfile $RARCHCFG "video_fullscreen.*=.*" 'video_fullscreen = "true"'
-lineinfile $RARCHCFG "quit_press_twice.*=.*" 'quit_press_twice = "false"'
-lineinfile $RARCHCFG "menu_swap_ok_cancel_buttons.*=.*" 'menu_swap_ok_cancel_buttons = "true"'
-lineinfile $RARCHCFG "savestate_auto_index.*=.*" 'savestate_auto_index = "true"'
-lineinfile $RARCHCFG "savestate_thumbnail_enable.*=.*" 'savestate_thumbnail_enable = "true"'
-lineinfile $RARCHCFG "video_driver.*=.*" 'video_driver = "glcore"'
-lineinfile $RARCHCFG "audio_latency.*=.*" 'audio_latency = "128"'
-lineinfile $RARCHCFG "microphone_latency.*=.*" 'microphone_latency = "128"'
-lineinfile $RARCHCFG "video_swap_interval.*=.*" 'video_swap_interval = "0"'
-
-lineinfile $RARCHCFG "video_vsync.*=.*" 'video_vsync = "false"'
-
-# deactivate menu button
-lineinfile $RARCHCFG "input_menu_toggle_btn.*=.*" 'input_menu_toggle_btn = "nul"'
-
-#dpad mode analogue
-for i in $(seq 1 16); do
-lineinfile $RARCHCFG "input_player${i}_analog_dpad_mode.*=.*" "input_player${i}_analog_dpad_mode = \"1\""
-done
-
-cat << EOF | chroot ${ROOTFS}
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME $RARCHFLD
-EOF
-
-# Configure ES DE to point alternative emus
-mkdir -p ${ROOTFS}/home/${TARGET_USERNAME}/ES-DE/gamelists/gc/
-cat <<EOF | tee ${ROOTFS}/home/${TARGET_USERNAME}/ES-DE/gamelists/gc/gamelist.xml
-<?xml version="1.0"?>
-<alternativeEmulator>
-	<label>Dolphin (Standalone)</label>
-</alternativeEmulator>
-<gameList>
-</gameList>
-EOF
-
-mkdir -p ${ROOTFS}/home/${TARGET_USERNAME}/ES-DE/gamelists/wii/
-cat <<EOF | tee ${ROOTFS}/home/${TARGET_USERNAME}/ES-DE/gamelists/wii/gamelist.xml
-<?xml version="1.0"?>
-<alternativeEmulator>
-	<label>Dolphin (Standalone)</label>
-</alternativeEmulator>
-<gameList>
-</gameList>
-EOF
-
-mkdir -p ${ROOTFS}/home/${TARGET_USERNAME}/ES-DE/gamelists/psx/
-cat <<EOF | tee ${ROOTFS}/home/${TARGET_USERNAME}/ES-DE/gamelists/psx/gamelist.xml
-<?xml version="1.0"?>
-<alternativeEmulator>
-	<label>PCSX ReARMed</label>
-</alternativeEmulator>
-<gameList>
-</gameList>
-EOF
-
-
-mkdir -p ${ROOTFS}/home/${TARGET_USERNAME}/ES-DE/gamelists/ps2/
-cat <<EOF | tee ${ROOTFS}/home/${TARGET_USERNAME}/ES-DE/gamelists/ps2/gamelist.xml
-<?xml version="1.0"?>
-<alternativeEmulator>
-	<label>PCSX2 (Standalone)</label>
-</alternativeEmulator>
-<gameList />
-EOF
-
-cat << EOF | chroot ${ROOTFS}
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/${TARGET_USERNAME}/ES-DE
-EOF
-
-# ### Per controller settings
-
-# PS3 controller 1356:616
-export CTRLCFG=${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/autoconfig/udev/Sony-PlayStation3-DualShock3-Controller-USB.cfg
-# export CTRLCFG=/home/$TARGET_USERNAME/.config/retroarch/autoconfig/udev/Sony-PlayStation3-DualShock3-Controller-USB.cfg
-touch "$CTRLCFG"
-lineinfile "$CTRLCFG" "input_enable_hotkey_btn.*=.*" 'input_enable_hotkey_btn = "10"'
-lineinfile "$CTRLCFG" "input_exit_emulator_btn.*=.*" 'input_exit_emulator_btn = "9"'
-lineinfile "$CTRLCFG" "input_load_state_btn.*=.*" 'input_load_state_btn = "2"'
-lineinfile "$CTRLCFG" "input_save_state_btn.*=.*" 'input_save_state_btn = "3"'
-lineinfile "$CTRLCFG" "input_state_slot_decrease_btn.*=.*" 'input_state_slot_decrease_btn = "0"'
-lineinfile "$CTRLCFG" "input_state_slot_increase_btn.*=.*" 'input_state_slot_increase_btn = "1"'
-lineinfile "$CTRLCFG" "input_menu_toggle_btn.*=.*" 'input_menu_toggle_btn = "5"'
-
-# PS4 controller bluetooth
-export CTRLCFG="${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/autoconfig/udev/Sony-PlayStation4-DualShock4v2-Controller.cfg"
-touch "$CTRLCFG"
-lineinfile "$CTRLCFG" "input_device.*=.*" 'input_device = "Wireless Controller"'
-lineinfile "$CTRLCFG" "input_enable_hotkey_btn.*=.*" 'input_enable_hotkey_btn = "10"'
-lineinfile "$CTRLCFG" "input_exit_emulator_btn.*=.*" 'input_exit_emulator_btn = "9"'
-lineinfile "$CTRLCFG" "input_load_state_btn.*=.*" 'input_load_state_btn = "2"'
-lineinfile "$CTRLCFG" "input_save_state_btn.*=.*" 'input_save_state_btn = "3"'
-lineinfile "$CTRLCFG" "input_state_slot_decrease_btn.*=.*" 'input_state_slot_decrease_btn = "0"'
-lineinfile "$CTRLCFG" "input_state_slot_increase_btn.*=.*" 'input_state_slot_increase_btn = "1"'
-lineinfile "$CTRLCFG" "input_menu_toggle_btn.*=.*" 'input_menu_toggle_btn = "5"'
-
-# Xbox 360 Controller
-export CTRLCFG="${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/autoconfig/udev/Microsoft X-Box 360 pad.cfg"
-# export CTRLCFG="/home/$TARGET_USERNAME/.config/retroarch/autoconfig/udev/Microsoft X-Box 360 pad.cfg"
-touch "$CTRLCFG"
-lineinfile "$CTRLCFG" "input_enable_hotkey_btn.*=.*" 'input_enable_hotkey_btn = "8"'
-lineinfile "$CTRLCFG" "input_exit_emulator_btn.*=.*" 'input_exit_emulator_btn = "7"'
-lineinfile "$CTRLCFG" "input_load_state_btn.*=.*" 'input_load_state_btn = "3"'
-lineinfile "$CTRLCFG" "input_save_state_btn.*=.*" 'input_save_state_btn = "2"'
-lineinfile "$CTRLCFG" "input_state_slot_decrease_btn.*=.*" 'input_state_slot_decrease_btn = "0"'
-lineinfile "$CTRLCFG" "input_state_slot_increase_btn.*=.*" 'input_state_slot_increase_btn = "1"'
-lineinfile "$CTRLCFG" "input_menu_toggle_btn.*=.*" 'input_menu_toggle_btn = "5"'
-
-
-# "ShanWan PS3/PC Wired GamePad 8380:21760
-export CTRLCFG="${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/autoconfig/udev/Spartan Gear Oplon.cfg"
-touch "$CTRLCFG"
-lineinfile "$CTRLCFG" "input_enable_hotkey_btn.*=.*" 'input_enable_hotkey_btn = "12"'
-lineinfile "$CTRLCFG" "input_exit_emulator_btn.*=.*" 'input_exit_emulator_btn = "11"'
-lineinfile "$CTRLCFG" "input_load_state_btn.*=.*" 'input_load_state_btn = "4"'
-lineinfile "$CTRLCFG" "input_save_state_btn.*=.*" 'input_save_state_btn = "3"'
-lineinfile "$CTRLCFG" "input_state_slot_decrease_btn.*=.*" 'input_state_slot_decrease_btn = "0"'
-lineinfile "$CTRLCFG" "input_state_slot_increase_btn.*=.*" 'input_state_slot_increase_btn = "1"'
-lineinfile "$CTRLCFG" "input_menu_toggle_btn.*=.*" 'input_menu_toggle_btn = "7"'
-
-# BETOP AX1 BFM 8380:21760
-export CTRLCFG="${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/autoconfig/udev/BETOP_AX1_BFM.cfg"
-touch "$CTRLCFG"
-lineinfile "$CTRLCFG" "input_enable_hotkey_btn.*=.*" 'input_enable_hotkey_btn = "12"'
-lineinfile "$CTRLCFG" "input_exit_emulator_btn.*=.*" 'input_exit_emulator_btn = "11"'
-lineinfile "$CTRLCFG" "input_load_state_btn.*=.*" 'input_load_state_btn = "4"'
-lineinfile "$CTRLCFG" "input_save_state_btn.*=.*" 'input_save_state_btn = "3"'
-lineinfile "$CTRLCFG" "input_state_slot_decrease_btn.*=.*" 'input_state_slot_decrease_btn = "0"'
-lineinfile "$CTRLCFG" "input_state_slot_increase_btn.*=.*" 'input_state_slot_increase_btn = "1"'
 
 # configure cores options
 mkdir -p "${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/config/PCSX-ReARMed/"
@@ -1783,49 +1639,17 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 
 # configure dolphin emulator
-mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.var/app/org.DolphinEmu.dolphin-emu/config/dolphin-emu/
-mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/GC
-mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/Wii
 
-dolconfigs="
-Dolphin.ini
-GCPadNew.ini
-GFX.ini
-GCPadNew.ini
-WiimoteNew.ini
-Hotkeys.ini
-"
-
-for fname in $dolconfigs ; do
-curl -Lo ${ROOTFS}/home/$TARGET_USERNAME/.var/app/org.DolphinEmu.dolphin-emu/config/dolphin-emu/$fname https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/emulation/dolphin-emu/$fname
-done
 
 cat << EOF | chroot ${ROOTFS}
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.var
+    sudo -u $TARGET_USERNAME mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/GC
+    sudo -u $TARGET_USERNAME mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/Wii
 EOF
 
 #configure cemu wiiu emulator
-mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/Cemu
-mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/Cemu/controllerProfiles
-mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.local/share/Cemu/mlc01
-
-cemuconfigs="
-settings.xml
-controllerProfiles/controller0.xml
-controllerProfiles/controller1.xml
-controllerProfiles/ps3.xml
-controllerProfiles/ps4.xml
-controllerProfiles/ps4usb.xml
-controllerProfiles/xbox360.xml
-"
-
-for fname in $cemuconfigs ; do
-curl -Lo ${ROOTFS}/home/$TARGET_USERNAME/.config/Cemu/$fname https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/emulation/cemu/$fname
-done
-
 cat << EOF | chroot ${ROOTFS}
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/$TARGET_USERNAME/.config/Cemu
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/$TARGET_USERNAME/.local/share/Cemu
+    sudo -u $TARGET_USERNAME mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/GC
+    sudo -u $TARGET_USERNAME mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.local/share/Cemu/mlc01
 EOF
 }
 
