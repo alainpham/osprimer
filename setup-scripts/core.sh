@@ -1373,6 +1373,9 @@ ipcsx2 $force_reinstall
 #dolphin GC wii
 idolphin $force_reinstall
 
+#jellyfin
+ijfin $force_reinstall
+
 #cemu wiiu
 icemu $force_reinstall
 
@@ -1479,35 +1482,18 @@ cat << EOF | chroot ${ROOTFS}
     mkdir -p /opt/appimages/
     mv /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage /opt/appimages/RetroArch-Linux-x86_64.AppImage
     chmod 755 /opt/appimages/RetroArch-Linux-x86_64.AppImage
-    
-    ln -sf /opt/appimages/RetroArch-Linux-x86_64.AppImage /usr/local/bin/retroarch
-    
-    if [ -d "/home/$TARGET_USERNAME/.config/retroarch/saves" ]; then
-        mv /home/$TARGET_USERNAME/.config/retroarch/saves /home/$TARGET_USERNAME/.config/ra-saves
-    fi
-    if [ -d "/home/$TARGET_USERNAME/.config/retroarch/states" ]; then
-        mv /home/$TARGET_USERNAME/.config/retroarch/states /home/$TARGET_USERNAME/.config/ra-states
-    fi
 
-    rm -rf /home/$TARGET_USERNAME/.config/retroarch
+    mkdir -p /home/$TARGET_USERNAME/.config/retroarch
 
-    mv /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch /home/$TARGET_USERNAME/.config/
-    cp -R /home/$TARGET_USERNAME/.config/retroarch/autoconfig /home/$TARGET_USERNAME/.config/ra-autoconfig
-
-    if [ -d "/home/$TARGET_USERNAME/.config/ra-saves" ]; then
-        rm -rf /home/$TARGET_USERNAME/.config/retroarch/saves
-        mv /home/$TARGET_USERNAME/.config/ra-saves /home/$TARGET_USERNAME/.config/retroarch/saves
-    fi
-    if [ -d "/home/$TARGET_USERNAME/.config/ra-states" ]; then
-        rm -rf /home/$TARGET_USERNAME/.config/retroarch/states
-        mv /home/$TARGET_USERNAME/.config/ra-states /home/$TARGET_USERNAME/.config/retroarch/states 
-    fi
-    
-    
-
+    mv /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/assets /home/$TARGET_USERNAME/.config/retroarch/
+    mv /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/cores /home/$TARGET_USERNAME/.config/retroarch/
+    mv /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/filters /home/$TARGET_USERNAME/.config/retroarch/
+    mv /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/overlays /home/$TARGET_USERNAME/.config/retroarch/
+    mv /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/shaders /home/$TARGET_USERNAME/.config/retroarch/
+    mv /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/system /home/$TARGET_USERNAME/.config/retroarch/
+    mv /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/database /home/$TARGET_USERNAME/.config/retroarch/
 
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/retroarch
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/ra-autoconfig
 EOF
 else
 echo "RetroArch already installed, skipping"
