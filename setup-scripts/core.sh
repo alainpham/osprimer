@@ -1814,7 +1814,7 @@ cat << EOF | chroot ${ROOTFS}
 EOF
 
 gitroot=https://raw.githubusercontent.com/alainpham/dotfiles/master/scripts/vm
-files="vmcr vmcrs vmcrm vmcrl vmdl vmls vmsh vmip"
+files="vmcr vmcrs vmcrm vmcrl vmdl vmls vmsh vmip firstboot-virt"
 for file in $files ; do
     curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
     chmod 755 ${ROOTFS}/usr/local/bin/$file
@@ -1834,23 +1834,6 @@ cat << EOF | chroot ${ROOTFS}
     chown -R ${TARGET_USERNAME}:${TARGET_USERNAME} /home/${TARGET_USERNAME}/ssh
 EOF
 
-# first boot script
-cat <<EOF | tee ${ROOTFS}/usr/local/bin/firstboot-virt.sh
-#!/bin/bash
-echo "Setting up network for virtualization.."
-if [[ -z "\$(virsh net-list | grep default)" ]] then
-     virsh net-autostart default
-     virsh net-start default
-     echo "net autostart activated"
-     echo "default net autostart activated !">/var/log/firstboot-virt.log
-else
-     echo "net exists"
-     echo "default already autostarted ! ">/var/log/firstboot-virt.log
-fi
-EOF
-
-chmod 755 ${ROOTFS}/usr/local/bin/firstboot-virt.sh
-
 cat <<EOF | tee ${ROOTFS}/etc/systemd/system/firstboot-virt.service
 [Unit]
 Description=firstboot-virt
@@ -1860,9 +1843,8 @@ After=network.target libvirtd.service
 [Service]
 Type=oneshot
 User=root
-ExecStart=/usr/local/bin/firstboot-virt.sh
+ExecStart=/usr/local/bin/firstboot-virt
 RemainAfterExit=yes
-
 
 [Install]
 WantedBy=multi-user.target
