@@ -33,6 +33,10 @@ Start-Process explorer
 6. Install winget
 
 ```PS1
+Invoke-WebRequest https://raw.githubusercontent.com/asheroto/winget-install/master/winget-install.ps1 -UseBasicParsing | iex
+```
+
+```PS1
 Set-ExecutionPolicy Unrestricted
 
 Write-Host "Attempting to download and install dependencies"
