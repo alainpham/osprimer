@@ -1791,11 +1791,6 @@ ExecStart=-/sbin/getty --autologin ${TARGET_USERNAME} --noclear %I \$TERM
 EOF
 }
 
-istartx(){
-trap 'return 1' ERR
-lineinfile ${ROOTFS}/home/$TARGET_USERNAME/.bashrc .*startx.* '[ -z "$DISPLAY" ] && [ $(tty) = /dev/tty1 ] && startx'
-}
-
 icorporate(){
 trap 'return 1' ERR
 ## corporate apps
@@ -1987,7 +1982,6 @@ iworkstation
 ivirt
 iemulation
 iautologin
-istartx
 itimezone
 inetworking
 cleanupapt
@@ -2102,7 +2096,6 @@ iworkstation $force_reinstall
 ivirt $force_reinstall
 iemulation $force_reinstall
 iautologin $force_reinstall
-istartx $force_reinstall
 itimezone $force_reinstall
 inetworking $force_reinstall
 }
@@ -2278,7 +2271,6 @@ itheming $force_reinstall
 iworkstation $force_reinstall
 ivirt $force_reinstall
 iemulation $force_reinstall
-istartx $force_reinstall
 itimezone $force_reinstall
 inetworking $force_reinstall
 reboot
