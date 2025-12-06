@@ -486,6 +486,7 @@ cat << EOF | chroot ${ROOTFS}
     sudo -u $TARGET_USERNAME stow --no-folding --target=/home/$TARGET_USERNAME --adopt home
     sudo -u $TARGET_USERNAME git restore .
 EOF
+cd -
 }
 
 allowsshpwd() {
