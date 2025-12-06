@@ -8,11 +8,11 @@ inputversions() {
     echo "export CORE_VERSION=${CORE_VERSION}"
 
     # https://kubernetes.io/releases/  https://cloud.google.com/kubernetes-engine/docs/release-notes
-    export MAJOR_KUBE_VERSION=v1.33
+    export MAJOR_KUBE_VERSION=v1.34
     echo "export MAJOR_KUBE_VERSION=${MAJOR_KUBE_VERSION}"
     
     # https://github.com/k3s-io/k3s/releases
-    export K3S_VERSION="v1.33.6+k3s1"
+    export K3S_VERSION="v1.34.2+k3s1"
     echo "export K3S_VERSION=${MAJOR_KUBE_VERSION}"
 
     # https://github.com/derailed/k9s/releases
@@ -1065,7 +1065,7 @@ EOF
 cat <<EOF | chroot ${ROOTFS}
 mkdir -p /home/$TARGET_USERNAME/virt/runtime
 touch /home/$TARGET_USERNAME/virt/runtime/vms
-ln -s /home/$TARGET_USERNAME/virt/runtime/vms /etc/NetworkManager/dnsmasq.d/vms
+ln -sf /home/$TARGET_USERNAME/virt/runtime/vms /etc/NetworkManager/dnsmasq.d/vms
 chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/virt/runtime
 EOF
 
