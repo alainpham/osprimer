@@ -4,7 +4,7 @@
 inputversions() {
     trap 'return 1' ERR
 
-    export CORE_VERSION=20251203
+    export CORE_VERSION=20251207
     echo "export CORE_VERSION=${CORE_VERSION}"
 
     # https://kubernetes.io/releases/  https://cloud.google.com/kubernetes-engine/docs/release-notes
@@ -49,7 +49,7 @@ inputversions() {
     echo "export FREAC_VERSION=${FREAC_VERSION}"
 
     # https://github.com/jgraph/drawio-desktop/releases
-    export DRAWIO_VERSION=28.2.5
+    export DRAWIO_VERSION=29.0.3
     echo "export DRAWIO_VERSION=${DRAWIO_VERSION}"
 
     # https://www.onlyoffice.com/download-desktop.aspx
@@ -115,6 +115,10 @@ inputversions() {
     # https://github.com/cemu-project/Cemu/releases/latest
     export CEMU_VERSION=2.6
     echo "export CEMU_VERSION=${CEMU_VERSION}" 
+
+    # https://github.com/godotengine/godot/releases https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_linux.x86_64.zip
+    export GODOT_VERSION=4.5.1-stable
+    echo "export GODOT_VERSION=${GODOT_VERSION}" 
 
 
     export OSNAME=$(awk -F= '/^ID=/ {gsub(/"/, "", $2); print $2}' /etc/os-release)
@@ -219,6 +223,8 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*MOONLIGHT_VERSION.*=.*" "export MOONLIG
 lineinfile ${ROOTFS}${BASHRC} ".*export.*SUNSHINE_VERSION.*=.*" "export SUNSHINE_VERSION=${SUNSHINE_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*PCSX2_VERSION.*=.*" "export PCSX2_VERSION=${PCSX2_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*CEMU_VERSION.*=.*" "export CEMU_VERSION=${CEMU_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*GODOT_VERSION.*=.*" "export GODOT_VERSION=${GODOT_VERSION}"
+
 lineinfile ${ROOTFS}${BASHRC} ".*export.*SDL_GAMECONTROLLERCONFIG.*=.*" "export SDL_GAMECONTROLLERCONFIG='${SDL_GAMECONTROLLERCONFIG}'"
 
 
@@ -1355,6 +1361,26 @@ EOF
 rm -f /tmp/postman.tar.gz
 echo "postman installed"
 }
+
+igodot(){
+trap "return 1" ERR
+
+force_reinstall=${1:-0}
+
+if [ -f "${ROOTFS}/usr/local/bin/godot" ] && [ "$force_reinstall" = "0" ]; then
+    echo "godot already installed, skipping"
+    return 0
+fi
+
+curl -L -o /tmp/godot.zip https://github.com/godotengine/godot/releases/download/${GODOT_VERSION}/Godot_v${GODOT_VERSION}_linux.x86_64.zip
+cd /tmp
+unzip godot.zip
+mv Godot_v${GODOT_VERSION}_linux.x86_64 ${ROOTFS}/usr/local/bin
+rm -f /tmp/godot.zip
+echo "godot installed"
+cd -
+}
+
 
 iemulation(){
 trap 'return 1' ERR
