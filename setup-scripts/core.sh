@@ -120,6 +120,14 @@ inputversions() {
     export GODOT_VERSION=4.5.1-stable
     echo "export GODOT_VERSION=${GODOT_VERSION}" 
 
+    # https://github.com/pythops/bluetui/releases
+    export BLUETUI_VERSION=0.8.0
+    echo "export BLUETUI_VERSION=${BLUETUI_VERSION}" 
+
+    # https://github.com/pythops/impala/releases
+    export IMPALA_VERSION=0.6.0
+    echo "export IMPALA_VERSION=${IMPALA_VERSION}" 
+
 
     export OSNAME=$(awk -F= '/^ID=/ {gsub(/"/, "", $2); print $2}' /etc/os-release)
     echo "export OSNAME=${OSNAME}"
@@ -224,6 +232,8 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*SUNSHINE_VERSION.*=.*" "export SUNSHINE
 lineinfile ${ROOTFS}${BASHRC} ".*export.*PCSX2_VERSION.*=.*" "export PCSX2_VERSION=${PCSX2_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*CEMU_VERSION.*=.*" "export CEMU_VERSION=${CEMU_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*GODOT_VERSION.*=.*" "export GODOT_VERSION=${GODOT_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*BLUETUI_VERSION.*=.*" "export BLUETUI_VERSION=${BLUETUI_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*IMPALA_VERSION.*=.*" "export IMPALA_VERSION=${IMPALA_VERSION}"
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*SDL_GAMECONTROLLERCONFIG.*=.*" "export SDL_GAMECONTROLLERCONFIG='${SDL_GAMECONTROLLERCONFIG}'"
 
@@ -823,6 +833,7 @@ chmod 755 ${ROOTFS}/usr/local/bin/yt-dlp
 ffmpegscripts="
 vconv-archive-lossless-h264-vaapi
 vconv-audiosync
+vconv-audiostretch-pal-to-ntsc
 vconv-extract-audio
 vconv-h264-vaapi-qp
 vconv-h264-vaapi-vbr
@@ -1150,6 +1161,9 @@ iavidemux $force_reinstall
 ipostman $force_reinstall
 imoonlight $force_reinstall
 isunshine $force_reinstall
+ibluetui $force_reinstall
+iimpala $force_reinstall
+igodot $force_reinstall
 }
 
 iwebapps(){
@@ -1381,6 +1395,33 @@ echo "godot installed"
 cd -
 }
 
+ibluetui(){
+trap "return 1" ERR
+
+force_reinstall=${1:-0}
+
+if [ -f "${ROOTFS}/usr/local/bin/bluetui" ] && [ "$force_reinstall" = "0" ]; then
+    echo "bluetui already installed, skipping"
+    return 0
+fi
+
+curl -L -o $ROOTFS/usr/local/bin/bluetui https://github.com/pythops/bluetui/releases/download/v${BLUETUI_VERSION}/bluetui-x86_64-linux-gnu
+chmod 755 $ROOTFS/usr/local/bin/bluetui
+}
+
+iimpala(){
+trap "return 1" ERR
+
+force_reinstall=${1:-0}
+
+if [ -f "${ROOTFS}/usr/local/bin/impala" ] && [ "$force_reinstall" = "0" ]; then
+    echo "impala already installed, skipping"
+    return 0
+fi
+
+curl -L -o $ROOTFS/usr/local/bin/impala https://github.com/pythops/impala/releases/download/v${IMPALA_VERSION}/impala-x86_64-unknown-linux-gnu
+chmod 755 $ROOTFS/usr/local/bin/impala
+}
 
 iemulation(){
 trap 'return 1' ERR
