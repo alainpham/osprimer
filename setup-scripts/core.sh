@@ -465,7 +465,7 @@ cat << EOF | chroot ${ROOTFS}
     apt -y update 
     apt install -y ncurses-term
     apt -y upgrade
-    apt install -y sudo git tmux vim micro curl wget rsync ncdu dnsutils bmon htop btop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq jc sshfs iotop wakeonlan stow
+    apt install -y sudo git tmux vim micro curl wget rsync ncdu dnsutils bmon htop btop nvtop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq jc sshfs iotop wakeonlan stow
     apt install -y systemd-timesyncd
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup iperf3
 EOF
