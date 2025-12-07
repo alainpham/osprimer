@@ -129,26 +129,12 @@ winget install -e --id Microsoft.WindowsTerminal
 # win 10/11
 winget install --id=Google.Chrome  -e
 winget install --id=Git.Git  -e
-winget install --id=Neovim.Neovim  -e
-winget install --id=OBSProject.OBSStudio  -e
-winget install --id=KDE.Kdenlive  -e
-winget install --id=Microsoft.OpenJDK.17  -e
-winget install --id=Zoom.Zoom  -e
 winget install --id=7zip.7zip  -e
-winget install --id=GIMP.GIMP.3  -e
-winget install --id=VideoLAN.VLC  -e
-winget install --id=Avidemux.Avidemux  -e
-winget install --id=Iterate.Cyberduck  -e
-winget install --id=yt-dlp.yt-dlp  -e
-winget install --id=LibreHardwareMonitor.LibreHardwareMonitor  -e
-winget install --id=Microsoft.WSL  -e
-winget install --id=Canonical.Ubuntu.2404  -e
-winget install --id=ONLYOFFICE.DesktopEditors  -e
-winget install --id=Inkscape.Inkscape  -e
-winget install --id=MoonlightGameStreamingProject.Moonlight  -e
-winget install --id=Postman.Postman  -e
+
+winget install --id=Microsoft.OpenJDK.17  -e
+winget install --id=Neovim.Neovim  -e
+
 winget install --id AutoHotkey.AutoHotkey -e
-wsl --install --no-distribution
 
 winget install --force Microsoft.VisualStudioCode --override '/VERYSILENT /SP- /MERGETASKS="runcode,desktopicon,addcontextmenufiles,addcontextmenufolders,associatewithfiles,addtopath"'
 
@@ -160,6 +146,7 @@ curl.exe -L https://dlcdn.apache.org/maven/maven-3/3.9.11/binaries/apache-maven-
 cd c:\temp
 & "C:\Program Files\7-Zip\7z.exe" x maven.zip
 mv .\apache-maven* C:\apps\maven
+
 
 $newPath = "C:\apps\maven\bin"
 $currentPath = [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine)
@@ -174,6 +161,25 @@ if ($currentPath -notlike "*$newPath*") {
 winget install -e --id MSYS2.MSYS2
 
 pacman -S mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-pkg-config mingw-w64-ucrt-x86_64-SDL2 git vim
+
+
+# advanced workstation
+winget install --id=VideoLAN.VLC  -e
+winget install --id=OBSProject.OBSStudio  -e
+winget install --id=KDE.Kdenlive  -e
+winget install --id=Zoom.Zoom  -e
+winget install --id=GIMP.GIMP.3  -e
+winget install --id=Avidemux.Avidemux  -e
+winget install --id=Iterate.Cyberduck  -e
+winget install --id=yt-dlp.yt-dlp  -e
+winget install --id=LibreHardwareMonitor.LibreHardwareMonitor  -e
+winget install --id=Microsoft.WSL  -e
+winget install --id=Canonical.Ubuntu.2404  -e
+winget install --id=ONLYOFFICE.DesktopEditors  -e
+winget install --id=Inkscape.Inkscape  -e
+winget install --id=MoonlightGameStreamingProject.Moonlight  -e
+winget install --id=Postman.Postman  -e
+wsl --install --no-distribution
 
 
 ```
