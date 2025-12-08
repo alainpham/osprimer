@@ -30,7 +30,19 @@ Stop-Process -ProcessName explorer -Force
 Start-Process explorer
 ```
 
-6. Install winget
+Also set manually time
+- Keyboard and date formats a currency formats, number format digit grouping, metric
+- Dark Theme
+- Align task bar to the left, never combine icons
+- Deactivate azure launcher & server manager
+
+Taskbar pins
+- file explorer
+- chrome
+- terminal
+- moonlight
+
+1. Install winget for windows 10
 
 ```PS1
 Invoke-WebRequest https://raw.githubusercontent.com/asheroto/winget-install/master/winget-install.ps1 -UseBasicParsing | iex
@@ -124,19 +136,18 @@ Write-Host "Winget installed successfully."
 
 ```PS1
 # win 10 only
-winget install -e --id Microsoft.WindowsTerminal
+winget install --id Microsoft.WindowsTerminal -e
 
 # win 10/11
-winget install --id=Google.Chrome  -e
-winget install --id=Git.Git  -e
-winget install --id=7zip.7zip  -e
+cwinget install --id=Git.Git -e --accept-source-agreements --accept-package-agreements --silent
+winget install --id=7zip.7zip  -e --accept-source-agreements --accept-package-agreements --silent
 
-winget install --id=Microsoft.OpenJDK.17  -e
-winget install --id=Neovim.Neovim  -e
+winget install --id=Microsoft.OpenJDK.17  -e --accept-source-agreements --accept-package-agreements --silent
+winget install --id=Neovim.Neovim  -e --accept-source-agreements --accept-package-agreements --silent
 
-winget install --id AutoHotkey.AutoHotkey -e
+winget install --id AutoHotkey.AutoHotkey -e --accept-source-agreements --accept-package-agreements --silent
 
-winget install --force Microsoft.VisualStudioCode --override '/VERYSILENT /SP- /MERGETASKS="runcode,desktopicon,addcontextmenufiles,addcontextmenufolders,associatewithfiles,addtopath"'
+winget install --force Microsoft.VisualStudioCode --accept-source-agreements --accept-package-agreements --override '/VERYSILENT /SP- /MERGETASKS="runcode,desktopicon,addcontextmenufiles,addcontextmenufolders,associatewithfiles,addtopath"'
 
 mkdir -p c:\temp
 mkdir -p c:\apps
@@ -158,27 +169,28 @@ if ($currentPath -notlike "*$newPath*") {
 }
 
 # with MSYS
-winget install -e --id MSYS2.MSYS2
+winget install --id MSYS2.MSYS2 -e --accept-source-agreements --accept-package-agreements --silent
 
 pacman -S mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-pkg-config mingw-w64-ucrt-x86_64-SDL2 git vim
 
+winget install --id=MoonlightGameStreamingProject.Moonlight -e --accept-source-agreements --accept-package-agreements --silent
+winget install --id=Postman.Postman  -e --accept-source-agreements --accept-package-agreements --silent
+winget install --id=VideoLAN.VLC  -e --accept-source-agreements --accept-package-agreements --silent
+
 
 # advanced workstation
-winget install --id=VideoLAN.VLC  -e
-winget install --id=OBSProject.OBSStudio  -e
-winget install --id=KDE.Kdenlive  -e
-winget install --id=Zoom.Zoom  -e
-winget install --id=GIMP.GIMP.3  -e
-winget install --id=Avidemux.Avidemux  -e
-winget install --id=Iterate.Cyberduck  -e
-winget install --id=yt-dlp.yt-dlp  -e
-winget install --id=LibreHardwareMonitor.LibreHardwareMonitor  -e
-winget install --id=Microsoft.WSL  -e
-winget install --id=Canonical.Ubuntu.2404  -e
-winget install --id=ONLYOFFICE.DesktopEditors  -e
-winget install --id=Inkscape.Inkscape  -e
-winget install --id=MoonlightGameStreamingProject.Moonlight  -e
-winget install --id=Postman.Postman  -e
+winget install --id=OBSProject.OBSStudio  -e --accept-source-agreements --accept-package-agreements --silent
+winget install --id=KDE.Kdenlive  -e --accept-source-agreements --accept-package-agreements --silent
+winget install --id=Zoom.Zoom  -e --accept-source-agreements --accept-package-agreements --silent
+winget install --id=GIMP.GIMP.3  -e --accept-source-agreements --accept-package-agreements --silent
+winget install --id=Avidemux.Avidemux  -e --accept-source-agreements --accept-package-agreements --silent
+winget install --id=Iterate.Cyberduck  -e --accept-source-agreements --accept-package-agreements --silent
+winget install --id=yt-dlp.yt-dlp  -e --accept-source-agreements --accept-package-agreements --silent
+winget install --id=LibreHardwareMonitor.LibreHardwareMonitor  -e --accept-source-agreements --accept-package-agreements --silent
+winget install --id=Microsoft.WSL  -e --accept-source-agreements --accept-package-agreements --silent
+winget install --id=Canonical.Ubuntu.2404  -e --accept-source-agreements --accept-package-agreements --silent
+winget install --id=ONLYOFFICE.DesktopEditors  -e --accept-source-agreements --accept-package-agreements --silent
+winget install --id=Inkscape.Inkscape  -e --accept-source-agreements --accept-package-agreements --silent
 wsl --install --no-distribution
 
 
