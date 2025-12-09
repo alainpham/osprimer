@@ -141,11 +141,33 @@ wsl --install --no-distribution
 
 
 
-8. win 11 old context menu
+8. some setup
 
 ```PS1
 reg.exe add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
 ```
+
+Show seconds in clock windows 10
+
+```PS1
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowSecondsInSystemClock" -Type DWord -Value 1
+
+Set-ItemProperty -Path "HKCU:\Control Panel\International" `
+    -Name "sShortDate" -Value "yyyy-MM-dd"
+
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" `
+    -Name "SearchboxTaskbarMode" -Value 0
+
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" `
+    -Name "ShowTaskViewButton" -Value 0 -Type DWord
+
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" `
+    -Name "TaskbarAl" -Value 0 -Type DWord
+
+Stop-Process -Name explorer -Force
+
+```
+
 
 Also set manually time
 - Keyboard and date formats a currency formats, number format digit grouping, metric
@@ -159,6 +181,15 @@ Taskbar pins
 - terminal
 - moonlight
 - vscode
+
+configure moonlight
+- Optimize Mouse FOr remote desktop
+- Display mode windowed
+- REsolution 1080@60fps
+- turn off vsync
+- Switch off mute host PC speakers
+
+
 
 Msys in terminal
 ```json 
@@ -179,7 +210,7 @@ Msys in terminal
 }
 ```
 
-9. PS3 controller
+1. PS3 controller
 
 https://github.com/nefarius/DsHidMini/releases/latest
 
@@ -200,11 +231,6 @@ reg add HKCR\ms-gamebarservices /f /v "NoOpenWith" /d "" 2>&1 >''
 reg add HKCR\ms-gamebarservices\shell\open\command /f /ve /d "\`"$env:SystemRoot\System32\systray.exe\`"" 2>&1 >''
 ```
 
-Show seconds in clock windows 10
-
-```PS1
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowSecondsInSystemClock" -Type DWord -Value 1
-```
 
 
 Emulation
