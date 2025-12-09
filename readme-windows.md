@@ -4,6 +4,38 @@
 
 2. Check device manager and insall missing drivers 
 
+3. Activate Admin user optional
+
+```PS1
+net user administrator /active:yes
+net user administrator Password1!
+```
+
+autologin
+
+```ps1
+Get-ExecutionPolicy
+ 
+Set-ExecutionPolicy RemoteSigned -Force
+$Username = "apham"
+$Pass = "Password1!"
+$RegistryPath = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
+Set-ItemProperty $RegistryPath 'AutoAdminLogon' -Value "1" -Type String 
+Set-ItemProperty $RegistryPath 'DefaultUsername' -Value "$Username" -type String 
+Set-ItemProperty $RegistryPath 'DefaultPassword' -Value "$Pass" -type String
+ 
+Write-Warning "Auto-Login for $username configured. Please restart computer."
+ 
+$restart = Read-Host 'Do you want to restart your computer now for testing auto-logon? (Y/N)'
+ 
+If ($restart -eq 'Y') {
+ 
+    Restart-Computer -Force
+ 
+}
+
+```
+
 3. Activation
 
 ```PS1
@@ -16,7 +48,7 @@ irm https://get.activated.win | iex
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" `
     -Name TaskbarGlomLevel -Value 2
 
-Rename-Computer -NewName "winx" -Force -Restart
+Rename-Computer -NewName "wind" -Force -Restart
 
 ```
 
@@ -30,17 +62,6 @@ Stop-Process -ProcessName explorer -Force
 Start-Process explorer
 ```
 
-Also set manually time
-- Keyboard and date formats a currency formats, number format digit grouping, metric
-- Dark Theme
-- Align task bar to the left, never combine icons
-- Deactivate azure launcher & server manager
-
-Taskbar pins
-- file explorer
-- chrome
-- terminal
-- moonlight
 
 1. Install winget for windows 10
 
@@ -48,102 +69,23 @@ Taskbar pins
 Invoke-WebRequest https://raw.githubusercontent.com/asheroto/winget-install/master/winget-install.ps1 -UseBasicParsing | iex
 ```
 
-```PS1
-Set-ExecutionPolicy Unrestricted
 
-Write-Host "Attempting to download and install dependencies"
-
-# check xaml dependency first in winget repo: src/PowerShell/Microsoft.WinGet.Client.Engine/Helpers/AppxModuleHelper.cs
-# Download and install VCLibs package
-
-try 
-{
-  Add-AppxPackage "https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx" -Verbose
-}
-catch
-{
-  Write-Host "Failed to install VCLibs package. Error: $_" -ForegroundColor Red
-  exit 1
-}
-
-# Download XAML package
-try 
-{
-  $ProgressPreference = 'SilentlyContinue'
-  Invoke-WebRequest -Uri "https://www.nuget.org/api/v2/package/Microsoft.UI.Xaml/2.8.6" -OutFile "microsoft.ui.xaml.2.8.6.zip" -ErrorAction Stop
-}
-catch
-{
-  Write-Host "Failed to download XAML package. Error: $_" -ForegroundColor Red
-  exit 1
-}
-
-# Extract XAML package
-try 
-{
-  Expand-Archive .\microsoft.ui.xaml.2.8.6.zip -Force -ErrorAction Stop
-} 
-catch
-{
-  Write-Host "Failed to extract XAML package. Error: $_" -ForegroundColor Red
-  exit 1
-}
-
-# Install XAML package
-try
-{
-  Add-AppPackage .\microsoft.ui.xaml.2.8.6\tools\AppX\x64\Release\Microsoft.UI.Xaml.2.8.appx -Verbose
-}
-catch 
-{
-  Write-Host "Failed to install XAML package. Error: $_" -ForegroundColor Red
-  exit 1
-}
-
-Write-Host "Dependencies installed successfully."
-
-Write-Host "Attempting to download and install Winget"
-
-# Download Winget package
-# https://github.com/microsoft/winget-cli/releases/latest
-try 
-{  
-  $ProgressPreference = 'SilentlyContinue'
-  Invoke-WebRequest -Uri "https://github.com/microsoft/winget-cli/releases/download/v1.11.430/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle" -OutFile ".\winget.msixbundle" -ErrorAction Stop
-  Invoke-WebRequest -Uri "https://github.com/microsoft/winget-cli/releases/download/v1.11.430/e53e159d00e04f729cc2180cffd1c02e_License1.xml" -OutFile ".\winget_license.xml" -ErrorAction Stop
-} 
-catch 
-{
-  Write-Host "Failed to download Winget package. Error: $_" -ForegroundColor Red
-  exit 1
-}
-
-# Install Winget package
-try 
-{
-  Add-AppxProvisionedPackage -Online -PackagePath "winget.msixbundle" -LicensePath "winget_license.xml" -Verbose
-} 
-catch 
-{
-  Write-Host "Failed to install Winget package. Error: $_" -ForegroundColor Red
-  exit 1
-}
-
-Write-Host "Winget installed successfully."
-```
-
-7. Install apps
+1. Install apps
 
 ```PS1
-# win 10 only
-winget install --id Microsoft.WindowsTerminal -e
+# win 10 only & ltsc
+winget install --id Microsoft.WindowsTerminal -e --accept-source-agreements --accept-package-agreements --silent
 
 # win 10/11
-cwinget install --id=Git.Git -e --accept-source-agreements --accept-package-agreements --silent
+
+winget install --id=Google.Chrome -e --accept-source-agreements --accept-package-agreements --silent
+
+winget install --id=Git.Git -e --accept-source-agreements --accept-package-agreements --silent
 winget install --id=7zip.7zip  -e --accept-source-agreements --accept-package-agreements --silent
 
 winget install --id=Microsoft.OpenJDK.17  -e --accept-source-agreements --accept-package-agreements --silent
 winget install --id=Neovim.Neovim  -e --accept-source-agreements --accept-package-agreements --silent
+winget install -e --id zyedidia.micro -e --accept-source-agreements --accept-package-agreements --silent
 
 winget install --id AutoHotkey.AutoHotkey -e --accept-source-agreements --accept-package-agreements --silent
 
@@ -168,38 +110,73 @@ if ($currentPath -notlike "*$newPath*") {
     [Environment]::SetEnvironmentVariable("Path", $updatedPath, [EnvironmentVariableTarget]::Machine)
 }
 
-# with MSYS
-winget install --id MSYS2.MSYS2 -e --accept-source-agreements --accept-package-agreements --silent
-
-pacman -S mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-pkg-config mingw-w64-ucrt-x86_64-SDL2 git vim
 
 winget install --id=MoonlightGameStreamingProject.Moonlight -e --accept-source-agreements --accept-package-agreements --silent
 winget install --id=Postman.Postman  -e --accept-source-agreements --accept-package-agreements --silent
 winget install --id=VideoLAN.VLC  -e --accept-source-agreements --accept-package-agreements --silent
+winget install --id=GIMP.GIMP.3  -e --accept-source-agreements --accept-package-agreements --silent
+winget install --id WinSCP.WinSCP -e --accept-source-agreements --accept-package-agreements --silent
+winget install --id=yt-dlp.yt-dlp  -e --accept-source-agreements --accept-package-agreements --silent
+winget install --id=Inkscape.Inkscape  -e --accept-source-agreements --accept-package-agreements --silent
+winget install --id=LibreHardwareMonitor.LibreHardwareMonitor  -e --accept-source-agreements --accept-package-agreements --silent
+
+# with MSYS
+winget install --id MSYS2.MSYS2 -e --accept-source-agreements --accept-package-agreements --silent
+
+pacman -S mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-pkg-config mingw-w64-ucrt-x86_64-SDL2 git vim
 
 
 # advanced workstation
 winget install --id=OBSProject.OBSStudio  -e --accept-source-agreements --accept-package-agreements --silent
 winget install --id=KDE.Kdenlive  -e --accept-source-agreements --accept-package-agreements --silent
 winget install --id=Zoom.Zoom  -e --accept-source-agreements --accept-package-agreements --silent
-winget install --id=GIMP.GIMP.3  -e --accept-source-agreements --accept-package-agreements --silent
 winget install --id=Avidemux.Avidemux  -e --accept-source-agreements --accept-package-agreements --silent
-winget install --id=Iterate.Cyberduck  -e --accept-source-agreements --accept-package-agreements --silent
-winget install --id=yt-dlp.yt-dlp  -e --accept-source-agreements --accept-package-agreements --silent
-winget install --id=LibreHardwareMonitor.LibreHardwareMonitor  -e --accept-source-agreements --accept-package-agreements --silent
 winget install --id=Microsoft.WSL  -e --accept-source-agreements --accept-package-agreements --silent
 winget install --id=Canonical.Ubuntu.2404  -e --accept-source-agreements --accept-package-agreements --silent
 winget install --id=ONLYOFFICE.DesktopEditors  -e --accept-source-agreements --accept-package-agreements --silent
-winget install --id=Inkscape.Inkscape  -e --accept-source-agreements --accept-package-agreements --silent
 wsl --install --no-distribution
 
 
 ```
 
+
+
 8. win 11 old context menu
 
 ```PS1
 reg.exe add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
+```
+
+Also set manually time
+- Keyboard and date formats a currency formats, number format digit grouping, metric
+- Dark Theme
+- Align task bar to the left, never combine icons
+- Deactivate azure launcher & server manager
+
+Taskbar pins
+- file explorer
+- chrome
+- terminal
+- moonlight
+- vscode
+
+Msys in terminal
+```json 
+"defaultProfile": "{17da3cac-b318-431e-8a3e-7fcdefe6d114}",
+"profiles": {
+  "list":
+  [
+    // ...
+    {
+        "guid": "{17da3cac-b318-431e-8a3e-7fcdefe6d114}",
+        "name": "UCRT64 / MSYS2",
+        "commandline": "C:/msys64/msys2_shell.cmd -defterm -here -no-start -ucrt64",
+        "startingDirectory": "C:/msys64/home/%USERNAME%",
+        "icon": "C:/msys64/ucrt64.ico"
+    }
+    // ...
+  ]
+}
 ```
 
 9. PS3 controller
@@ -227,31 +204,6 @@ Show seconds in clock windows 10
 
 ```PS1
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowSecondsInSystemClock" -Type DWord -Value 1
-```
-
-autologin
-
-```ps1
-Get-ExecutionPolicy
- 
-Set-ExecutionPolicy RemoteSigned -Force
-$Username = "apham"
-$Pass = "password"
-$RegistryPath = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
-Set-ItemProperty $RegistryPath 'AutoAdminLogon' -Value "1" -Type String 
-Set-ItemProperty $RegistryPath 'DefaultUsername' -Value "$Username" -type String 
-Set-ItemProperty $RegistryPath 'DefaultPassword' -Value "$Pass" -type String
- 
-Write-Warning "Auto-Login for $username configured. Please restart computer."
- 
-$restart = Read-Host 'Do you want to restart your computer now for testing auto-logon? (Y/N)'
- 
-If ($restart -eq 'Y') {
- 
-    Restart-Computer -Force
- 
-}
-
 ```
 
 
