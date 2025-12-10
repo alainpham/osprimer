@@ -87,6 +87,7 @@ Set-ItemProperty -Path "HKCU:\Control Panel\International" -Name iMeasure -Value
 Set-ItemProperty -Path "HKCU:\Control Panel\International" -Name sCurrency -Value "€"
 Set-ItemProperty -Path "HKCU:\Control Panel\International" -Name sMonThousandSep -Value " "
 
+Set-TimeZone -Name "Romance Standard Time"
 
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" `
     -Name "SearchboxTaskbarMode" -Value 0
