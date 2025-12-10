@@ -47,6 +47,7 @@ irm https://get.activated.win | iex
 
 Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" `
     -Name TaskbarGlomLevel -Value 2
+Stop-Process -ProcessName explorer -Force
 
 Rename-Computer -NewName "wind" -Force -Restart
 
@@ -62,17 +63,76 @@ Stop-Process -ProcessName explorer -Force
 Start-Process explorer
 ```
 
+classic context menu
+```PS1
+reg.exe add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
+```
 
-1. Install winget for windows 10
+Show seconds in clock windows 10
 
 ```PS1
-Invoke-WebRequest https://raw.githubusercontent.com/asheroto/winget-install/master/winget-install.ps1 -UseBasicParsing | iex
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowSecondsInSystemClock" -Type DWord -Value 1
+
+Set-ItemProperty -Path "HKCU:\Control Panel\International" `
+    -Name "sShortDate" -Value "yyyy-MM-dd"
+
+Set-ItemProperty -Path "HKCU:\Control Panel\International" -Name sThousand -Value " "
+
+Set-ItemProperty -Path "HKCU:\Control Panel\International" -Name sShortTime -Value "hh:mm tt"
+Set-ItemProperty -Path "HKCU:\Control Panel\International" -Name sTimeFormat -Value "hh:mm:ss tt"
+Set-ItemProperty -Path "HKCU:\Control Panel\International" -Name iFirstDayOfWeek -Value "0"
+
+Set-ItemProperty -Path "HKCU:\Control Panel\International" -Name iMeasure -Value "0"
+
+Set-ItemProperty -Path "HKCU:\Control Panel\International" -Name sCurrency -Value "€"
+Set-ItemProperty -Path "HKCU:\Control Panel\International" -Name sMonThousandSep -Value " "
+
+
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" `
+    -Name "SearchboxTaskbarMode" -Value 0
+
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" `
+    -Name "ShowTaskViewButton" -Value 0 -Type DWord
+
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" `
+    -Name "TaskbarAl" -Value 0 -Type DWord
+
+
+Stop-Process -Name explorer -Force
+
 ```
+
+dark theme
+
+```PS1
+# Enable Dark theme for both system and apps
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name SystemUsesLightTheme -Value 0
+Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name AppsUseLightTheme -Value 0
+
+# Broadcast settings change so UI updates
+$code = @'
+using System;
+using System.Runtime.InteropServices;
+public class NativeMethods {
+  [DllImport("user32.dll")]
+  public static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg, UIntPtr wParam, string lParam, uint flags, uint timeout, out UIntPtr result);
+}
+'@
+Add-Type -TypeDefinition $code
+[UIntPtr]$result = [UIntPtr]::Zero
+[NativeMethods]::SendMessageTimeout([IntPtr]0xffff, 0x1A, [UIntPtr]::Zero, "ImmersiveColorSet", 2, 5000, [ref]$result) | Out-Null
+```
+
 
 
 1. Install apps
 
 ```PS1
+
+# winget
+Invoke-WebRequest https://raw.githubusercontent.com/asheroto/winget-install/master/winget-install.ps1 -UseBasicParsing | iex
+
+
 # win 10 only & ltsc
 winget install --id Microsoft.WindowsTerminal -e --accept-source-agreements --accept-package-agreements --silent
 
@@ -143,37 +203,6 @@ wsl --install --no-distribution
 
 8. some setup
 
-```PS1
-reg.exe add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
-```
-
-Show seconds in clock windows 10
-
-```PS1
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowSecondsInSystemClock" -Type DWord -Value 1
-
-Set-ItemProperty -Path "HKCU:\Control Panel\International" `
-    -Name "sShortDate" -Value "yyyy-MM-dd"
-
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" `
-    -Name "SearchboxTaskbarMode" -Value 0
-
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" `
-    -Name "ShowTaskViewButton" -Value 0 -Type DWord
-
-Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" `
-    -Name "TaskbarAl" -Value 0 -Type DWord
-
-Stop-Process -Name explorer -Force
-
-```
-
-
-Also set manually time
-- Keyboard and date formats a currency formats, number format digit grouping, metric
-- Dark Theme
-- Align task bar to the left, never combine icons
-- Deactivate azure launcher & server manager
 
 Taskbar pins
 - file explorer
