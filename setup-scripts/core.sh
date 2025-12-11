@@ -182,7 +182,7 @@ inputtasks() {
     export KEYBOARD_MODEL=${8:-pc105} 
     echo "export KEYBOARD_MODEL=${KEYBOARD_MODEL}"
 
-    export CHROOT_BASH="/usr/bin/env -i HOME=/root TERM=$TERM PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin /bin/bash --login"
+    export CHROOT_BASH=""
 }
 
 
