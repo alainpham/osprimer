@@ -181,6 +181,8 @@ inputtasks() {
     # for macbook use value "macbook79"
     export KEYBOARD_MODEL=${8:-pc105} 
     echo "export KEYBOARD_MODEL=${KEYBOARD_MODEL}"
+
+    export CHROOT_BASH="/usr/bin/env -i HOME=/root TERM=$TERM PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin /bin/bash --login"
 }
 
 
@@ -306,7 +308,7 @@ trap 'return 1' ERR
 
 echo "setup users"
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     /usr/sbin/useradd -m -s /bin/bash $TARGET_USERNAME
     mkdir -p /home/${TARGET_USERNAME}/.ssh
     chown -R ${TARGET_USERNAME}:${TARGET_USERNAME} /home/${TARGET_USERNAME}/.ssh
@@ -316,7 +318,7 @@ EOF
 isshkey(){
 trap 'return 1' ERR
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     if [ ! -f /home/${TARGET_USERNAME}/.ssh/id_rsa ]; then
         ssh-keygen -N "" -f /home/${TARGET_USERNAME}/.ssh/id_rsa
     fi
@@ -328,7 +330,7 @@ trap 'return 1' ERR
 
 export TARGET_ENCRYPTED_PASSWD=$(openssl passwd -6 -salt xyz $TARGET_PASSWD)
 echo "setup users"
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     echo '${TARGET_USERNAME}:${TARGET_ENCRYPTED_PASSWD}' | /usr/sbin/chpasswd -e
     echo 'root:${TARGET_ENCRYPTED_PASSWD}' | /usr/sbin/chpasswd -e
 EOF
@@ -341,7 +343,7 @@ trap 'return 1' ERR
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.ssh/
 echo "Copy authorized_keys $AUTHSSHFILE"
 cp $AUTHSSHFILE ${ROOTFS}/home/$TARGET_USERNAME/.ssh/authorized_keys
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chown $TARGET_USERNAME:$TARGET_USERNAME -R /home/$TARGET_USERNAME/.ssh
 EOF
 
@@ -399,7 +401,7 @@ RemainAfterExit=yes
 WantedBy=sysinit.target
 EOF
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     systemctl enable disable-intel-turboboost.service
 EOF
 }
@@ -429,7 +431,7 @@ RemainAfterExit=yes
 WantedBy=multi-user.target
 EOF
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     systemctl enable firstboot.service
 EOF
 
@@ -461,7 +463,7 @@ trap 'return 1' ERR
 # Essentials packages
 echo "install essentials"
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt -y update 
     apt install -y ncurses-term
     apt -y upgrade
@@ -484,7 +486,7 @@ echo "essentials installed"
 isudo() {
 trap 'return 1' ERR
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     echo '${TARGET_USERNAME} ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee' visudo -f /etc/sudoers.d/nopwd
 EOF
 
@@ -494,7 +496,7 @@ echo "sudo setup finished"
 istowdotfiles() {
 cd ${ROOTFS}/home/${TARGET_USERNAME}
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     cd /home/$TARGET_USERNAME
     rm -rf dotfiles
     sudo -u $TARGET_USERNAME git clone http://github.com/alainpham/dotfiles.git
@@ -545,7 +547,7 @@ cd libinput-gestures
 ./libinput-gestures-setup install
 cd $previousfld
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt -y install libinput-tools wmctrl
     adduser $TARGET_USERNAME input
 EOF
@@ -556,7 +558,7 @@ trap 'return 1' ERR
 
 force_reinstall=${1:-0}
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt install -y ansible openjdk-17-jdk-headless npm golang-go
 EOF
 
@@ -583,7 +585,7 @@ mkdir -p ${ROOTFS}/opt/appimages/
 rm -rf ${ROOTFS}/opt/appimages/apache-maven-*
 curl -Lo /tmp/maven.tar.gz https://dlcdn.apache.org/maven/maven-3/${MVN_VERSION}/binaries/apache-maven-${MVN_VERSION}-bin.tar.gz
 tar xzvf /tmp/maven.tar.gz  -C ${ROOTFS}/opt/appimages/
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     ln -sf /opt/appimages/apache-maven-${MVN_VERSION}/bin/mvn /usr/local/bin/mvn
 EOF
 rm -f /tmp/maven.tar.gz
@@ -597,7 +599,7 @@ force_reinstall=${1:-0}
 
 echo "install docker"
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt install -y docker.io python3-docker docker-compose skopeo docker-buildx
 EOF
 
@@ -613,7 +615,7 @@ cat <<EOF | tee ${ROOTFS}/etc/docker/daemon.json
 EOF
 echo "docker logs configured"
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     adduser $TARGET_USERNAME docker
 EOF
 
@@ -655,7 +657,7 @@ RemainAfterExit=yes
 WantedBy=multi-user.target
 EOF
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     systemctl enable firstboot-dockernet.service
     systemctl enable firstboot-dockerbuildx.service
 EOF
@@ -676,24 +678,24 @@ fi
 echo "install kube"
 
 curl -Lo ${ROOTFS}/usr/local/bin/k3s https://github.com/k3s-io/k3s/releases/download/${K3S_VERSION}/k3s
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /usr/local/bin/k3s
     ln -sf /usr/local/bin/k3s /usr/local/bin/kubectl
     ln -sf /usr/local/bin/k3s /usr/local/bin/crictl
     ln -sf /usr/local/bin/k3s /usr/local/bin/ctr
 EOF
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     curl -sfL https://get.k3s.io | INSTALL_K3S_SKIP_ENABLE="true" INSTALL_K3S_SKIP_START="true" INSTALL_K3S_VERSION="${K3S_VERSION}" K3S_KUBECONFIG_MODE="644" INSTALL_K3S_EXEC="server --disable=servicelb,traefik" sh -
 EOF
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     curl -fsSL -o /tmp/get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
     chmod 755 /tmp/get_helm.sh
     /tmp/get_helm.sh
 EOF
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     kubectl completion bash | tee /etc/bash_completion.d/kubectl > /dev/null
     helm completion bash | tee /etc/bash_completion.d/helm > /dev/null
 EOF
@@ -703,7 +705,7 @@ ik9s
 kubescript="kubecr kubemon kubeotel kubeexpose"
 for script in $kubescript ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/dotfiles/master/scripts/kube/$script
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /usr/local/bin/$script
 EOF
 done
@@ -714,7 +716,7 @@ ik9s() {
 curl -fsSL -o /tmp/k9s.tar.gz https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/k9s_Linux_amd64.tar.gz
 tar -xzvf /tmp/k9s.tar.gz  -C ${ROOTFS}/usr/local/bin/ k9s
 rm /tmp/k9s.tar.gz
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chown root:root /usr/local/bin/k9s
 EOF
 }
@@ -724,13 +726,13 @@ trap 'return 1' ERR
 
 echo "install nvidia drivers"
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt install -y nvidia-detect
 EOF
 
-export NV_VERSION=$(echo "nvidia-detect  | grep nvidia.*driver | xargs" | chroot ${ROOTFS})
+export NV_VERSION=$(echo "nvidia-detect  | grep nvidia.*driver | xargs" | chroot ${ROOTFS} ${CHROOT_BASH})
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt install -y $NV_VERSION
 EOF
 
@@ -745,11 +747,11 @@ EOF
 
 echo 'GRUB_CMDLINE_LINUX="$GRUB_CMDLINE_LINUX nvidia-drm.modeset=1"' > ${ROOTFS}/etc/default/grub.d/nvidia-modeset.cfg
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     update-grub
 EOF
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     systemctl enable nvidia-suspend.service
     systemctl enable nvidia-hibernate.service
     systemctl enable nvidia-resume.service
@@ -780,7 +782,7 @@ RemainAfterExit=yes
 WantedBy=multi-user.target
 EOF
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     systemctl enable nlock
 EOF
 
@@ -799,7 +801,7 @@ echo "install gui"
 # if pulse replace by this apt install -y pulseaudio
     # apt install -y  pipewire-audio wireplumber pipewire-pulse pipewire-alsa libspa-0.2-bluetooth pulseaudio-utils qpwgraph pavucontrol
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt install -y make gcc libx11-dev libxft-dev libxrandr-dev libimlib2-dev libfreetype-dev libxinerama-dev xorg numlockx usbutils libsdl2-dev
     apt install -y pulseaudio pulseaudio-module-bluetooth pulseaudio-utils pavucontrol alsa-utils
     apt remove -y xserver-xorg-video-intel
@@ -820,7 +822,7 @@ done
 fi
 
 echo "additional gui packages"
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt install -y ntfs-3g ifuse mousepad mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv nomacs kimageformat-plugins  acpitool lm-sensors fonts-noto libnotify-bin dunst mkvtoolnix-gui python3-mutagen imagemagick mediainfo-gui mediainfo arandr picom jgmenu brightnessctl cups xsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze-gtk-theme breeze-icon-theme joystick gparted vulkan-tools flatpak
     apt install -y ffmpeg libfdk-aac2 libnppig12 libnppicc12 libnppidei12 libnppif12
 EOF
@@ -856,7 +858,7 @@ vconv-x264-vbr-2pass
 "
 for script in $ffmpegscripts ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/dotfiles/master/scripts/av/$script
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /usr/local/bin/$script
 EOF
 done
@@ -919,7 +921,7 @@ if [ -f "${ROOTFS}/usr/bin/google-chrome" ] && [ "$force_reinstall" = "0" ]; the
 else
     mkdir -p ${ROOTFS}/opt/debs/
     wget -O ${ROOTFS}/opt/debs/google-chrome-stable_current_amd64.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt install -y /opt/debs/google-chrome-stable_current_amd64.deb
 EOF
 fi
@@ -932,7 +934,7 @@ EOF
 
 #begin dwm
 echo "The does not exist, installing dwm"
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     rm -rf /home/$TARGET_USERNAME/wm
     mkdir -p /home/$TARGET_USERNAME/wm
     cd /home/$TARGET_USERNAME/wm
@@ -959,11 +961,11 @@ fi
 
 
 # BEGIN check if inside virtual machine
-export hypervisor=$(echo "virt-what" | chroot ${ROOTFS})
+export hypervisor=$(echo "virt-what" | chroot ${ROOTFS} ${CHROOT_BASH})
 
 if [ "$hypervisor" = "hyperv" ] || [ "$hypervisor" = "kvm" ]; then
 
-cat << 'EOF' | chroot ${ROOTFS}
+cat << 'EOF' | chroot ${ROOTFS} ${CHROOT_BASH}
     apt install -y spice-vdagent
 EOF
 
@@ -991,7 +993,7 @@ Icon=vscode
 Terminal=false
 EOF
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt install -y v4l2loopback-utils flameshot maim xclip xdotool thunar thunar-archive-plugin
 EOF
 
@@ -999,7 +1001,7 @@ EOF
 if [ ! -f "${ROOTFS}/usr/bin/code" ] || [ "$force_reinstall" = "1" ]; then
 mkdir -p ${ROOTFS}/opt/debs/
 wget -O ${ROOTFS}/opt/debs/vscode.deb "https://code.visualstudio.com/sha/download?build=stable&os=linux-deb-x64"
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     DEBIAN_FRONTEND=noninteractive apt install -y /opt/debs/vscode.deb
 EOF
 fi
@@ -1010,7 +1012,7 @@ if [ -f "${ROOTFS}/etc/xdg/tumbler/tumbler.rc" ]; then
 fi
 
 # video and audio group
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     adduser $TARGET_USERNAME audio
     adduser $TARGET_USERNAME video
 EOF
@@ -1037,15 +1039,15 @@ iffmpeg(){
 inetworking(){
 trap 'return 1' ERR
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt install -y network-manager dnsmasq
 EOF
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     systemctl disable dnsmasq
 EOF
 
-cat <<EOF | chroot ${ROOTFS}
+cat <<EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     systemctl enable NetworkManager
     rm -f ${ROOTFS}/etc/resolv.conf
     systemctl disable systemd-networkd
@@ -1079,7 +1081,7 @@ polkit.addRule(function(action, subject) {
 });
 EOF
 
-cat <<EOF | chroot ${ROOTFS}
+cat <<EOF | chroot ${ROOTFS} ${CHROOT_BASH}
 mkdir -p /home/$TARGET_USERNAME/virt/runtime
 touch /home/$TARGET_USERNAME/virt/runtime/vms
 ln -sf /home/$TARGET_USERNAME/virt/runtime/vms /etc/NetworkManager/dnsmasq.d/vms
@@ -1109,16 +1111,16 @@ trap 'return 1' ERR
 echo "additional workstation tools"
 force_reinstall=${1:-0}
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt install -y handbrake gimp rawtherapee krita mypaint inkscape blender obs-studio mgba-qt easytag audacity mixxx
 EOF
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     DEBIAN_FRONTEND=noninteractive apt install -y libdvd-pkg
 EOF
 
 echo "dpkg libdvd-pkg"
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     DEBIAN_FRONTEND=noninteractive dpkg-reconfigure libdvd-pkg
 EOF
 
@@ -1126,14 +1128,14 @@ EOF
 if [ ! -f "${ROOTFS}/usr/bin/dbeaver" ] || [ "$force_reinstall" = "1" ]; then
 mkdir -p ${ROOTFS}/opt/debs/
 wget -O ${ROOTFS}/opt/debs/dbeaver.deb https://dbeaver.io/files/dbeaver-ce_latest_amd64.deb
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt install -y /opt/debs/dbeaver.deb
 EOF
 fi
 
 # configure OBS
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/recordings
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/recordings
 EOF
 
@@ -1188,7 +1190,7 @@ force_reinstall=${1:-0}
 
 if [ ! -f ${ROOTFS}/opt/appimages/sunshine.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/sunshine.AppImage https://github.com/LizardByte/Sunshine/releases/download/v$SUNSHINE_VERSION/sunshine.AppImage
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /opt/appimages/sunshine.AppImage
     ln -sf /opt/appimages/sunshine.AppImage /usr/local/bin/sunshine
 EOF
@@ -1203,7 +1205,7 @@ force_reinstall=${1:-0}
 
 if [ ! -f ${ROOTFS}/opt/appimages/moonlight.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/moonlight.AppImage https://github.com/moonlight-stream/moonlight-qt/releases/download/v$MOONLIGHT_VERSION/Moonlight-$MOONLIGHT_VERSION-x86_64.AppImage
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /opt/appimages/moonlight.AppImage
     ln -sf /opt/appimages/moonlight.AppImage /usr/local/bin/moonlight
 EOF
@@ -1220,7 +1222,7 @@ force_reinstall=${1:-0}
 if [ ! -f ${ROOTFS}/opt/appimages/kdenlive.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/kdenlive.AppImage \
 https://download.kde.org/stable/kdenlive/${KDENLIVE_MAIN_VERSION}/linux/kdenlive-${KDENLIVE_FULL_VERSION}-x86_64.AppImage
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /opt/appimages/kdenlive.AppImage
     ln -sf /opt/appimages/kdenlive.AppImage /usr/local/bin/kdenlive
 EOF
@@ -1235,7 +1237,7 @@ force_reinstall=${1:-0}
 # Only Office
 if [ ! -f ${ROOTFS}/opt/appimages/onlyoffice.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/onlyoffice.AppImage https://github.com/ONLYOFFICE/appimage-desktopeditors/releases/download/${ONLYOFFICE_VERSION}/DesktopEditors-x86_64.AppImage
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /opt/appimages/onlyoffice.AppImage
     ln -sf /opt/appimages/onlyoffice.AppImage /usr/local/bin/onlyoffice
 EOF
@@ -1250,7 +1252,7 @@ force_reinstall=${1:-0}
 # MLVP APP
 if [ ! -f ${ROOTFS}/opt/appimages/mlvapp.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/mlvapp.AppImage https://github.com/ilia3101/MLV-App/releases/download/QTv${MLVAPP_VERSION}/MLV.App.v${MLVAPP_VERSION}.Linux.x86_64.AppImage
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /opt/appimages/mlvapp.AppImage
     ln -sf /opt/appimages/mlvapp.AppImage /usr/local/bin/mlvapp
 EOF
@@ -1268,7 +1270,7 @@ wget -O ${ROOTFS}/opt/appimages/drawio.AppImage https://github.com/jgraph/drawio
 cat << EOF | tee ${ROOTFS}/usr/local/bin/drawio
 /opt/appimages/drawio.AppImage --no-sandbox
 EOF
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /opt/appimages/drawio.AppImage
     chmod 755 /usr/local/bin/drawio
 EOF
@@ -1283,7 +1285,7 @@ force_reinstall=${1:-0}
 #viber
 if [ ! -f ${ROOTFS}/opt/appimages/viber.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/viber.AppImage https://download.cdn.viber.com/desktop/Linux/viber.AppImage
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /opt/appimages/viber.AppImage
     ln -sf /opt/appimages/viber.AppImage /usr/local/bin/viber
 EOF
@@ -1298,7 +1300,7 @@ force_reinstall=${1:-0}
 # beeref
 if [ ! -f ${ROOTFS}/opt/appimages/beeref.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/beeref.AppImage https://github.com/rbreu/beeref/releases/download/v${BEEREF_VERSION}/BeeRef-${BEEREF_VERSION}.appimage
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /opt/appimages/beeref.AppImage
     ln -sf /opt/appimages/beeref.AppImage /usr/local/bin/beeref
 EOF
@@ -1313,7 +1315,7 @@ force_reinstall=${1:-0}
 #freac
 if [ ! -f ${ROOTFS}/opt/appimages/freac.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/freac.AppImage https://github.com/enzo1982/freac/releases/download/v${FREAC_VERSION}/freac-${FREAC_VERSION}-linux-x86_64.AppImage
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /opt/appimages/freac.AppImage
     ln -sf /opt/appimages/freac.AppImage /usr/local/bin/freac
 EOF
@@ -1329,7 +1331,7 @@ force_reinstall=${1:-0}
 # localsend
 if [ ! -f ${ROOTFS}/opt/appimages/localsend.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/localsend.AppImage https://github.com/localsend/localsend/releases/download/v${LOCALSEND_VERSION}/LocalSend-${LOCALSEND_VERSION}-linux-x86-64.AppImage
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /opt/appimages/localsend.AppImage
     ln -sf /opt/appimages/localsend.AppImage /usr/local/bin/localsend
 EOF
@@ -1344,7 +1346,7 @@ force_reinstall=${1:-0}
 # avidemux
 if [ ! -f ${ROOTFS}/opt/appimages/avidemux.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/avidemux.AppImage https://altushost-swe.dl.sourceforge.net/project/avidemux/avidemux/${AVIDEMUX_VERSION}/avidemux_${AVIDEMUX_VERSION}.appImage?viasf=1
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /opt/appimages/avidemux.AppImage
     ln -sf /opt/appimages/avidemux.AppImage /usr/local/bin/avidemux
 EOF
@@ -1369,7 +1371,7 @@ rm -rf ${ROOTFS}/opt/appimages/postman/*
 
 curl -L -o /tmp/postman.tar.gz https://dl.pstmn.io/download/latest/linux_64
 tar --strip-components=1 -xzvf /tmp/postman.tar.gz -C ${ROOTFS}/opt/appimages/postman
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     ln -sf /opt/appimages/postman/Postman /usr/local/bin/postman
 EOF
 rm -f /tmp/postman.tar.gz
@@ -1467,7 +1469,7 @@ ps4connect
 "
 for fname in $dlfiles ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$fname https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/emulation/ds4/$fname
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /usr/local/bin/$fname
 EOF
 done
@@ -1486,7 +1488,7 @@ fi
 dlfiles="gshorts"
 for fname in $dlfiles ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$fname https://raw.githubusercontent.com/alainpham/gshorts/refs/heads/master/$fname
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /usr/local/bin/$fname
 EOF
 done
@@ -1494,7 +1496,7 @@ done
 dlfiles="inhibit-gpad-kbd"
 for fname in $dlfiles ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$fname https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/gaming/$fname
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /usr/local/bin/$fname
 EOF
 done
@@ -1514,7 +1516,7 @@ trap 'return 1' ERR
 if [ ! -f ${ROOTFS}/opt/appimages/emustation.AppImage ] || [ "$force_reinstall" = "1" ]; then
 echo "emulation tools"
 wget -O ${ROOTFS}/opt/appimages/emustation.AppImage https://gitlab.com/es-de/emulationstation-de/-/package_files/${ESDE_VERSION_ID}/download
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /opt/appimages/emustation.AppImage
     ln -sf /opt/appimages/emustation.AppImage /usr/local/bin/estation
 EOF
@@ -1546,7 +1548,7 @@ EOF
 
 chmod 755 ${ROOTFS}/usr/local/bin/retroarch
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     mkdir -p /opt/appimages/
     mv /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage /opt/appimages/RetroArch-Linux-x86_64.AppImage
     chmod 755 /opt/appimages/RetroArch-Linux-x86_64.AppImage
@@ -1578,7 +1580,7 @@ force_reinstall=${1:-0}
 
 if [ ! -f ${ROOTFS}/opt/appimages/pcsx2.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/pcsx2.AppImage https://github.com/PCSX2/pcsx2/releases/download/v${PCSX2_VERSION}/pcsx2-v${PCSX2_VERSION}-linux-appimage-x64-Qt.AppImage
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /opt/appimages/pcsx2.AppImage
     ln -sf /opt/appimages/pcsx2.AppImage /usr/local/bin/pcsx2
 EOF
@@ -1588,7 +1590,7 @@ fi
 
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/bios
 wget -O ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/bios/ps2-0230a-20080220.bin https://github.com/archtaurus/RetroPieBIOS/raw/master/BIOS/pcsx2/bios/ps2-0230a-20080220.bin 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/PCSX2
 EOF
 }
@@ -1600,7 +1602,7 @@ force_reinstall=${1:-0}
 
 if [ ! -f ${ROOTFS}/opt/appimages/emu.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/cemu.AppImage https://github.com/cemu-project/Cemu/releases/download/v$CEMU_VERSION/Cemu-$CEMU_VERSION-x86_64.AppImage
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /opt/appimages/cemu.AppImage
     ln -sf /opt/appimages/cemu.AppImage /usr/local/bin/cemu
 EOF
@@ -1614,13 +1616,13 @@ fi
 ibottles(){
 trap 'return 1' ERR
 # flatpaks
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
 flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
 flatpak install -y flathub com.usebottles.bottles
 EOF
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
 flatpak install -y flathub com.github.tchx84.Flatseal
 EOF
 
@@ -1628,14 +1630,14 @@ cat <<EOF | tee ${ROOTFS}/usr/local/bin/bottles
 flatpak run com.usebottles.bottles
 EOF
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
    chmod 755 /usr/local/bin/bottles
 EOF
 
 cat <<EOF | tee ${ROOTFS}/usr/local/bin/flatseal
 flatpak run com.github.tchx84.Flatseal
 EOF
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
    chmod 755 /usr/local/bin/flatseal
 EOF
 
@@ -1647,7 +1649,7 @@ EOF
 
 idolphin(){
 trap 'return 1' ERR
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
     flatpak install -y flathub org.DolphinEmu.dolphin-emu
@@ -1656,7 +1658,7 @@ EOF
 cat <<EOF | tee ${ROOTFS}/usr/local/bin/dolphin
 flatpak run org.DolphinEmu.dolphin-emu
 EOF
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
    chmod 755 /usr/local/bin/dolphin
 EOF
 }
@@ -1669,14 +1671,14 @@ cat <<EOF | tee ${ROOTFS}/usr/local/bin/jellyfin-media-player
 flatpak run com.github.iwalton3.jellyfin-media-player
 EOF
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
    chmod 755 /usr/local/bin/jellyfin-media-player
 EOF
 }
 
 iemucfg(){
 trap 'return 1' ERR
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     sudo -u $TARGET_USERNAME mkdir -p /home/${TARGET_USERNAME}/ROMs
     sudo -u $TARGET_USERNAME mkdir -p /home/${TARGET_USERNAME}/ES-DE/downloaded_media
     sudo -u $TARGET_USERNAME mkdir -p /home/${TARGET_USERNAME}/.config/retroarch/states
@@ -1689,7 +1691,7 @@ EOF
 mkdir -p "${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/config/PCSX-ReARMed/"
 wget -O "${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/config/PCSX-ReARMed/PCSX-ReARMed.opt" "https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/emulation/PCSX-ReARMed/PCSX-ReARMed.opt"
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch
 EOF
 
@@ -1702,20 +1704,20 @@ mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/memcards
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/sstates
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/covers
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/PCSX2
 EOF
 
 # configure dolphin emulator
 
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     sudo -u $TARGET_USERNAME mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/GC
     sudo -u $TARGET_USERNAME mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/Wii
 EOF
 
 #configure cemu wiiu emulator
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     sudo -u $TARGET_USERNAME mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/GC
     sudo -u $TARGET_USERNAME mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.local/share/Cemu/mlc01
 EOF
@@ -1866,7 +1868,7 @@ trap 'return 1' ERR
 # install zoom
 mkdir -p ${ROOTFS}/opt/debs/
 wget -O ${ROOTFS}/opt/debs/zoom_amd64.deb https://zoom.us/client/${ZOOM_VERSION}/zoom_amd64.deb
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt install -y /opt/debs/zoom_amd64.deb
 EOF
 
@@ -1876,7 +1878,7 @@ ivirt() {
 trap 'return 1' ERR
 echo "virtualization tools"
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt install -y qemu-system qemu-utils virtinst libvirt-clients libvirt-daemon-system libguestfs-tools bridge-utils libosinfo-bin virt-manager genisoimage
     adduser $TARGET_USERNAME libvirt
 EOF
@@ -1888,7 +1890,7 @@ for file in $files ; do
     chmod 755 ${ROOTFS}/usr/local/bin/$file
 done
 
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     mkdir -p /home/${TARGET_USERNAME}/ssh
     if [ ! -f /home/${TARGET_USERNAME}/ssh/vm ]; then
         ssh-keygen -f /home/${TARGET_USERNAME}/ssh/vm -N ""
@@ -1913,13 +1915,13 @@ Type=oneshot
 User=root
 ExecStart=/usr/local/bin/firstboot-virt
 RemainAfterExit=yes
-
+vir
 [Install]
 WantedBy=multi-user.target
 EOF
 
-cat << EOF | chroot ${ROOTFS}
-    systemctl enable firstboot-virt.service
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
+    systemctl enable firstboot-t.service
 EOF
 
 }
@@ -1936,7 +1938,7 @@ isecret(){
 
 itimezone(){
 trap 'return 1' ERR
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     ln -sf /usr/share/zoneinfo/$TIMEZONE /etc/localtime
     echo $TIMEZONE > /etc/timezone
 EOF
@@ -1945,7 +1947,7 @@ EOF
 cleanupapt() {
 trap 'return 1' ERR
 echo "cleaning up"
-cat << EOF | chroot ${ROOTFS}
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt-get clean && rm -rf /var/lib/apt/lists/*
 EOF
 }
