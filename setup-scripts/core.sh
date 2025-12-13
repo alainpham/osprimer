@@ -185,6 +185,11 @@ inputtasks() {
     export CHROOT_BASH=""
 }
 
+bastion(){
+    trap 'return 1' ERR
+    apt update && apt -y upgrade
+    apt install -y curl git qemu-utils parted cloud-guest-utils
+}
 
 bashaliases() {
 trap 'return 1' ERR
@@ -2098,6 +2103,7 @@ trap 'return 1' ERR
 # imageurl=https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw
 
 imageurl=https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
+mkdir -p /home/apham/virt/images
 curl -Lo /home/apham/virt/images/lnsvr-orig.qcow2 $imageurl
 qemu-img convert -f qcow2 -O raw /home/apham/virt/images/lnsvr-orig.qcow2 /home/apham/virt/images/lnsvr-orig.raw
 }
