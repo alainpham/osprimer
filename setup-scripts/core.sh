@@ -189,16 +189,23 @@ bastion(){
     trap 'return 1' ERR
     apt update 
     apt install -y curl git qemu-utils parted cloud-guest-utils
+    ilineinfile
+}
+
+ilineinfile(){
+scripts="lineinfile"
+
+for script in $scripts ; do
+wget -O ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/dotfiles/master/scripts/utils/$script
+chmod 755 ${ROOTFS}/usr/local/bin/$script
+done
+
 }
 
 bashaliases() {
 trap 'return 1' ERR
 
-scripts="lineinfile"
-for script in $scripts ; do
-wget -O ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/dotfiles/master/scripts/utils/$script
-chmod 755 ${ROOTFS}/usr/local/bin/$script
-done
+ilineinfile
 
 export BASHRC="/etc/bash.bashrc"
 
