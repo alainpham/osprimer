@@ -320,7 +320,7 @@ trap 'return 1' ERR
 
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     if [ ! -f /home/${TARGET_USERNAME}/.ssh/id_rsa ]; then
-        ssh-keygen -N "" -f /home/${TARGET_USERNAME}/.ssh/id_rsa
+        ssh-keygen -N "" -t ed25519 -f /home/${TARGET_USERNAME}/.ssh/id_ed25519
     fi
 EOF
 }
@@ -1884,7 +1884,7 @@ cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
 EOF
 
 gitroot=https://raw.githubusercontent.com/alainpham/dotfiles/master/scripts/vm
-files="vmcr vmcrs vmcrm vmcrl vmdl vmls vmsh vmip firstboot-virt"
+files="vmcr vmcrb vmcrs vmcrm vmcrl vmdl vmls vmsh vmip firstboot-virt"
 for file in $files ; do
     curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
     chmod 755 ${ROOTFS}/usr/local/bin/$file
@@ -2041,6 +2041,13 @@ unmountraw
 reboot
 }
 
+dockervm_builder(){
+trap 'return 1' ERR
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
+createuser
+iessentials
+}
+
 cloudvm_common(){
 trap 'return 1' ERR
 bashaliases
@@ -2091,8 +2098,8 @@ trap 'return 1' ERR
 # imageurl=https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw
 
 imageurl=https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
-curl -Lo /home/apham/virt/images/lnsvr-orig.img $imageurl
-qemu-img convert -f qcow2 -O raw /home/apham/virt/images/lnsvr-orig.img /home/apham/virt/images/lnsvr-orig.raw
+curl -Lo /home/apham/virt/images/lnsvr-orig.qcow2 $imageurl
+qemu-img convert -f qcow2 -O raw /home/apham/virt/images/lnsvr-orig.qcow2 /home/apham/virt/images/lnsvr-orig.raw
 }
 
 rawkube(){
@@ -2349,8 +2356,6 @@ trap 'return 1' ERR
     sudo chmod 755 /usr/local/bin/scp
     echo '/usr/bin/sshfs -o ssh_command=/usr/local/bin/ssh $@' | sudo tee /usr/local/bin/sshfs
     sudo chmod 755 /usr/local/bin/sshfs
-
-
 
     #install gcp
     sudo apt-get update
