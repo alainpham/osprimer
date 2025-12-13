@@ -187,7 +187,7 @@ inputtasks() {
 
 bastion(){
     trap 'return 1' ERR
-    apt update && apt -y upgrade
+    apt update 
     apt install -y curl git qemu-utils parted cloud-guest-utils
 }
 
