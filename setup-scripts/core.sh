@@ -1933,7 +1933,7 @@ WantedBy=multi-user.target
 EOF
 
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    systemctl enable firstboot-t.service
+    systemctl enable firstboot-virt.service
 EOF
 
 }
