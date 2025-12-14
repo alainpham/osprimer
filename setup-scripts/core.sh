@@ -4,7 +4,7 @@
 inputversions() {
     trap 'return 1' ERR
 
-    export CORE_VERSION=20251207
+    export CORE_VERSION=20251214
     echo "export CORE_VERSION=${CORE_VERSION}"
 
     # https://kubernetes.io/releases/  https://cloud.google.com/kubernetes-engine/docs/release-notes
@@ -1185,13 +1185,20 @@ export SHORTCUTDIR=${ROOTFS}/usr/local/share/applications
 
 curl -L https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/webapps/genapps | bash
 
-
+# icons
 cd ${ROOTFS}/tmp
-rm -rf coloured-icons
-git clone https://github.com/alainpham/coloured-icons.git
-cp -r ${ROOTFS}/tmp/coloured-icons/public/logos ${ROOTFS}/usr/local/share/icons/hicolor/scalable
+rm -rf dotfiles
+git clone https://github.com/alainpham/dotfiles.git
+mkdir -p $ROOTFS/usr/local/share/icons/Adwaita/scalable/apps
+mkdir -p $ROOTFS/usr/local/share/icons/breeze-dark/scalable/apps
+cp -r ${ROOTFS}/tmp/dotfiles/icons/* ${ROOTFS}/usr/local/share/icons/Adwaita/scalable/apps
+cp -r ${ROOTFS}/tmp/dotfiles/icons/* ${ROOTFS}/usr/local/share/icons/breeze-dark/scalable/apps
 cd -
+
+
+
 }
+
 
 isunshine(){
 trap 'return 1' ERR
@@ -1343,6 +1350,7 @@ wget -O ${ROOTFS}/opt/appimages/localsend.AppImage https://github.com/localsend/
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /opt/appimages/localsend.AppImage
     ln -sf /opt/appimages/localsend.AppImage /usr/local/bin/localsend
+    ln -sf /opt/appimages/localsend.AppImage /usr/local/bin/localsend_app
 EOF
 else
 echo "localsend already installed, skipping"
