@@ -996,14 +996,11 @@ curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
 chmod 755 ${ROOTFS}/usr/local/bin/$file
 done
 
-cat << EOF | tee ${ROOTFS}/usr/share/applications/ctext.desktop
-[Desktop Entry]
-Type=Application
-Name=ctext
-Exec=code --disable-workspace-trust /home/$TARGET_USERNAME/codefld %f
-Icon=vscode
-Terminal=false
-EOF
+gitroot=https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/shortcuts
+files="bluetui.desktop  ctext.desktop  nmtui.desktop"
+for file in $files ; do
+curl -Lo ${ROOTFS}/usr/share/applications/$file $gitroot/$file
+done
 
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt install -y v4l2loopback-utils flameshot maim xclip xdotool thunar thunar-archive-plugin
