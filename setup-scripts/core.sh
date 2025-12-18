@@ -1753,7 +1753,7 @@ curl http://192.168.8.100:28000/secret.sh > /tmp/secret.sh
 source /tmp/secret.sh
 rm /tmp/secret.sh
 
-export BASHRC="/etc/bash.bashrc"
+# export BASHRC="/etc/bash.bashrc"
 
 # # secret should set the following env vars
 # sudo lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_ADDR*=.*" "export SYNCTHING_HUB_ADDR=$SYNCTHING_HUB_ADDR"
