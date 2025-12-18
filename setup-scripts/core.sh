@@ -4,7 +4,7 @@
 inputversions() {
     trap 'return 1' ERR
 
-    export CORE_VERSION=20251214
+    export CORE_VERSION=20251218
     echo "export CORE_VERSION=${CORE_VERSION}"
 
     # https://kubernetes.io/releases/  https://cloud.google.com/kubernetes-engine/docs/release-notes
@@ -836,7 +836,7 @@ fi
 echo "additional gui packages"
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt install -y ntfs-3g ifuse rofi mousepad mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv nomacs kimageformat-plugins  acpitool lm-sensors fonts-noto libnotify-bin dunst mkvtoolnix-gui python3-mutagen imagemagick mediainfo-gui mediainfo arandr picom jgmenu brightnessctl cups xsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze-gtk-theme breeze-icon-theme joystick gparted vulkan-tools flatpak
-    apt install -y ffmpeg libfdk-aac2 libnppig12 libnppicc12 libnppidei12 libnppif12
+    apt install -y ffmpeg libfdk-aac2 libnppig12 libnppicc12 libnppidei12 libnppif12 libminiupnpc17
 EOF
 
 #YT-DLP latest
@@ -1191,11 +1191,8 @@ rm -rf dotfiles
 git clone https://github.com/alainpham/dotfiles.git
 mkdir -p $ROOTFS/usr/local/share/icons/Adwaita/scalable/apps
 mkdir -p $ROOTFS/usr/local/share/icons/breeze-dark/scalable/apps
-cp -r ${ROOTFS}/tmp/dotfiles/icons/* ${ROOTFS}/usr/local/share/icons/Adwaita/scalable/apps
-cp -r ${ROOTFS}/tmp/dotfiles/icons/* ${ROOTFS}/usr/local/share/icons/breeze-dark/scalable/apps
+cp -r ${ROOTFS}/tmp/dotfiles/icons/* ${ROOTFS}/usr/local/share/icons
 cd -
-
-
 
 }
 
