@@ -1822,8 +1822,6 @@ entries=(
     "pcsx2-memcards|/var/syncthing/PCSX2/memcards"
     "pcsx2-sstates|/var/syncthing/PCSX2/sstates"
     "pcsx2-covers|/var/syncthing/PCSX2/covers"
-    "gc-saves|/var/syncthing/GC"
-    "wii-saves|/var/syncthing/Wii"
     "cemu-saves|/var/syncthing/cemu"
 )
 
