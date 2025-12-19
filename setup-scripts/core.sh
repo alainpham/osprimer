@@ -1455,7 +1455,7 @@ iretroarch $force_reinstall
 ipcsx2 $force_reinstall
 
 #dolphin GC wii
-idolphin $force_reinstall
+idolphinbin $force_reinstall
 
 #jellyfin
 ijfin $force_reinstall
@@ -1676,6 +1676,29 @@ cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
    chmod 755 /usr/local/bin/dolphin
 EOF
 }
+
+idolphinbin(){
+trap "return 1" ERR
+
+force_reinstall=${1:-0}
+
+if [ -f "${ROOTFS}/opt/appimages/dolphin-emu/" ] && [ "$force_reinstall" = "0" ]; then
+    echo "postman already installed, skipping"
+    return 0
+fi
+
+mkdir -p ${ROOTFS}/opt/appimages/dolphin-emu
+rm -rf ${ROOTFS}/opt/appimages/dolphin-emu/*
+
+curl -L -o /tmp/dolphin.tar.gz http://192.168.8.100:28000/dolphin-emu/dolphin.tar.gz
+tar --strip-components=1 -xzvf /tmp/dolphin.tar.gz -C ${ROOTFS}/opt/appimages/dolphin-emu
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
+    ln -sf /opt/appimages/dolphin-emu/dolphin-emu /usr/local/bin/dolphin-emu
+EOF
+rm -f /tmp/dolphin.tar.gz
+echo "dolphin installed"
+}
+
 
 ijfin(){
 trap 'return 1' ERR
