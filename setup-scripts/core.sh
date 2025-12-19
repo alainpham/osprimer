@@ -1723,20 +1723,7 @@ cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     sudo -u $TARGET_USERNAME mkdir -p /home/${TARGET_USERNAME}/.config/retroarch/{playlists,cheats,config,logs}
 EOF
 
-
-# configure cores options
-mkdir -p "${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/config/PCSX-ReARMed/"
-wget -O "${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch/config/PCSX-ReARMed/PCSX-ReARMed.opt" "https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/emulation/PCSX-ReARMed/PCSX-ReARMed.opt"
-
-cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/$TARGET_USERNAME/.config/retroarch
-EOF
-
 # configure PCSX2
-
-mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/inis
-wget -O ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/inis/PCSX2.ini https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/emulation//pcsx2/PCSX2.ini
-
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/memcards
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/sstates
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/covers
@@ -1745,17 +1732,14 @@ cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/PCSX2
 EOF
 
-# configure dolphin emulator
-
-
+# configure dolphin emulator wii and gamecube
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    sudo -u $TARGET_USERNAME mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/GC
-    sudo -u $TARGET_USERNAME mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/Wii
+    sudo -u $TARGET_USERNAME mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dolphin-emu/GC
+    sudo -u $TARGET_USERNAME mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dolphin-emu/Wii
 EOF
 
 #configure cemu wiiu emulator
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    sudo -u $TARGET_USERNAME mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.var/app/org.DolphinEmu.dolphin-emu/data/dolphin-emu/GC
     sudo -u $TARGET_USERNAME mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.local/share/Cemu/mlc01
 EOF
 }
