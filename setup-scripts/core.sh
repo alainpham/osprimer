@@ -1753,7 +1753,6 @@ lineinfile $ROOTFS/etc/systemd/logind.conf ".*ReserveVT.*" "ReserveVT=2"
 mkdir -p $ROOTFS/etc/systemd/system/getty@tty1.service.d/
 cat << EOF | tee ${ROOTFS}/etc/systemd/system/getty@tty1.service.d/override.conf
 [Service]
-ExecStart=
 ExecStart=-/sbin/getty --autologin ${TARGET_USERNAME} --noclear %I \$TERM
 EOF
 }
