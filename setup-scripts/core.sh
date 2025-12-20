@@ -814,7 +814,7 @@ echo "install gui"
     # apt install -y  pipewire-audio wireplumber pipewire-pulse pipewire-alsa libspa-0.2-bluetooth pulseaudio-utils qpwgraph pavucontrol
 
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    apt install -y make gcc libx11-dev libxft-dev libxrandr-dev libimlib2-dev libfreetype-dev libxinerama-dev xorg numlockx usbutils libsdl2-dev libncurses5-dev
+    apt install -y make gcc libx11-dev libxft-dev libxrandr-dev libimlib2-dev libfreetype-dev libxinerama-dev xorg numlockx usbutils libsdl1.2-dev libsdl2-dev libncurses5-dev
     apt install -y pulseaudio pulseaudio-module-bluetooth pulseaudio-utils pavucontrol alsa-utils
     apt remove -y xserver-xorg-video-intel
 EOF
