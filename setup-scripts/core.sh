@@ -143,9 +143,6 @@ inputversions() {
 
     export APT_PROXY="http://192.168.8.100:3142"
     echo "export APT_PROXY=${APT_PROXY}"
-
-    export SDL_GAMECONTROLLERCONFIG="0300d859bc2000000055000010010000,ShanWanWireless,a:b0,b:b1,back:b10,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,guide:b12,leftshoulder:b6,leftstick:b13,lefttrigger:a5,leftx:a0,lefty:a1,rightshoulder:b7,rightstick:b14,righttrigger:a4,rightx:a2,righty:a3,start:b11,x:b3,y:b4"
-    echo "export SDL_GAMECONTROLLERCONFIG=${SDL_GAMECONTROLLERCONFIG}"
 }
 
 
@@ -248,9 +245,6 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*CEMU_VERSION.*=.*" "export CEMU_VERSION
 lineinfile ${ROOTFS}${BASHRC} ".*export.*GODOT_VERSION.*=.*" "export GODOT_VERSION=${GODOT_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*BLUETUI_VERSION.*=.*" "export BLUETUI_VERSION=${BLUETUI_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*IMPALA_VERSION.*=.*" "export IMPALA_VERSION=${IMPALA_VERSION}"
-
-lineinfile ${ROOTFS}${BASHRC} ".*export.*SDL_GAMECONTROLLERCONFIG.*=.*" "export SDL_GAMECONTROLLERCONFIG='${SDL_GAMECONTROLLERCONFIG}'"
-
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*OSNAME.*=.*" "export OSNAME=${OSNAME}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*OSVERSION.*=.*" "export OSVERSION=${OSVERSION}"
