@@ -950,11 +950,16 @@ cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     git clone https://github.com/alainpham/dwmblocks.git
     git clone https://github.com/alainpham/slock-flexipatch.git
 
+    git clone https://github.com/Grumbel/sdl-jstest.git
+
     cd /home/$TARGET_USERNAME/wm/dwm-flexipatch && make clean install
     cd /home/$TARGET_USERNAME/wm/st-flexipatch && make clean install
     cd /home/$TARGET_USERNAME/wm/dmenu-flexipatch && make clean install
     cd /home/$TARGET_USERNAME/wm/dwmblocks && make clean install
     cd /home/$TARGET_USERNAME/wm/slock-flexipatch && make clean install
+    
+    mkdir -p build /home/$TARGET_USERNAME/wm/sdl-jstest/build
+    cd /home/$TARGET_USERNAME/wm/sdl-jstest/build && cmake .. && make install
 
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/wm
 EOF
