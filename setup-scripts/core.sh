@@ -179,6 +179,12 @@ inputtasks() {
     export KEYBOARD_MODEL=${8:-pc105} 
     echo "export KEYBOARD_MODEL=${KEYBOARD_MODEL}"
 
+    # for macbook use value "mac"
+    export KEYBOARD_VARIANT=${9} 
+    echo "export KEYBOARD_VARIANT=${KEYBOARD_VARIANT}"
+
+
+
     export CHROOT_BASH=""
 }
 
@@ -255,6 +261,7 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*PRODUCT_NAME.*=.*" "export PRODUCT_NAME
 lineinfile ${ROOTFS}${BASHRC} ".*export.*TIMEZONE.*=.*" "export TIMEZONE=${TIMEZONE}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*KEYBOARD_LAYOUT.*=.*" "export KEYBOARD_LAYOUT=${KEYBOARD_LAYOUT}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*KEYBOARD_MODEL.*=.*" "export KEYBOARD_MODEL=${KEYBOARD_MODEL}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*KEYBOARD_VARIANT.*=.*" "export KEYBOARD_VARIANT=${KEYBOARD_VARIANT}"
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_ADDR.*=.*" "export SYNCTHING_HUB_ADDR=tcp://192.168.8.100:22000"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_APIURL.*=.*" "export SYNCTHING_HUB_APIURL=http://192.168.8.100:8384"
