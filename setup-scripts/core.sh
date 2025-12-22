@@ -1898,7 +1898,7 @@ iupdate(){
 # Model to run all the script
 all(){
 trap 'return 1' ERR
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" ""
 mountraw
 bashaliases
 createuser
@@ -1940,7 +1940,7 @@ reboot
 
 dockervm_builder(){
 trap 'return 1' ERR
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" ""
 createuser
 iessentials
 }
@@ -1956,14 +1956,14 @@ ikube
 
 gcpvm(){
 trap 'return 1' ERR
-init alain_pham_grafana_com "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
+init alain_pham_grafana_com "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" ""
 cloudvm_common
 reboot
 }
 
 ovm(){
 trap 'return 1' ERR
-init apham "NA" "/home/ubuntu/.ssh/authorized_keys" "NA" "NA" "NA" "fr" "pc105"
+init apham "NA" "/home/ubuntu/.ssh/authorized_keys" "NA" "NA" "NA" "fr" "pc105" ""
 createuser
 authkeys
 isshkey
@@ -1981,7 +1981,7 @@ EOF
 apk update
 apk add curl git dmidecode bash bash-completion sudo
 sed -i 's|/bin/sh|/bin/bash|' /etc/passwd
-init apham "p" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
+init apham "p" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" ""
 createuser
 setpasswd
 isshkey
@@ -2003,7 +2003,7 @@ qemu-img convert -f qcow2 -O raw /home/apham/virt/images/lnsvr-orig.qcow2 /home/
 rawkube(){
 trap 'return 1' ERR
 
-init apham p /home/apham/.ssh/authorized_keys /home/apham/virt/images/lnsvr-orig.raw /home/apham/virt/images/lnsvr.raw 8G  "fr" "pc105"
+init apham p /home/apham/.ssh/authorized_keys /home/apham/virt/images/lnsvr-orig.raw /home/apham/virt/images/lnsvr.raw 8G  "fr" "pc105" ""
 export OSNAME=ubuntu
 mountraw
 bashaliases
@@ -2074,7 +2074,7 @@ rmbroadcom $force_reinstall
 ubvm(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" ""
 desktop_common $force_reinstall
 reboot
 }
@@ -2082,7 +2082,7 @@ reboot
 ubsvr(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" ""
 cloudvm_common
 reboot
 }
@@ -2091,7 +2091,7 @@ macus(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
 modprobe -r b43 brcmsmac
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "us" "macbook79"
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "us" "macbook79" "mac"
 macs_common $force_reinstall
 reboot
 }
@@ -2100,7 +2100,7 @@ macfr(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
 modprobe -r b43 brcmsmac
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "macbook79"
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "macbook79" "mac"
 macs_common $force_reinstall
 reboot
 }
@@ -2108,7 +2108,7 @@ reboot
 aaon(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" ""
 laptop_common $force_reinstall
 reboot
 }
@@ -2141,7 +2141,7 @@ cp -r /media/m03/apps/retroarch/states  /home/$TARGET_USERNAME/.config/retroarch
 fujb(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" ""
 desktop_common $force_reinstall
 reboot
 }
@@ -2166,7 +2166,7 @@ sudo dkms autoinstall -k $(uname -r)
 hped(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" ""
 desktop_common $force_reinstall
 reboot
 }
@@ -2175,7 +2175,7 @@ reboot
 ombp(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "us" "pc105"
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "us" "pc105" ""
 desktop_common $force_reinstall
 reboot
 }
@@ -2185,7 +2185,7 @@ reboot
 lg15(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" ""
 laptop_common $force_reinstall
 reboot
 }
@@ -2200,7 +2200,7 @@ reboot
 leol(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" ""
 laptop_common $force_reinstall
 rmnouveau
 reboot
@@ -2210,7 +2210,7 @@ reboot
 lpro(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105"
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" ""
 bashaliases $force_reinstall
 fastboot $force_reinstall
 smalllogs $force_reinstall
