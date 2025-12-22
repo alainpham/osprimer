@@ -532,6 +532,7 @@ trap 'return 1' ERR
 cat <<EOF | tee ${ROOTFS}/etc/default/keyboard
 XKBMODEL="${KEYBOARD_MODEL}"
 XKBLAYOUT="${KEYBOARD_LAYOUT}"
+XKBVARIANT="${KEYBOARD_VARIANT}"
 EOF
 echo "keyboard setup finished"
 
