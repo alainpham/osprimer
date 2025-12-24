@@ -2175,7 +2175,7 @@ reboot
 ombp(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "us" "pc105" ""
+init apham "NA" "authorized_keys" "NA" "NA" "NA" "us" "pc105" "mac"
 desktop_common $force_reinstall
 reboot
 }
