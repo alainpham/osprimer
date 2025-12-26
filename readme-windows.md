@@ -138,7 +138,7 @@ Invoke-WebRequest https://raw.githubusercontent.com/asheroto/winget-install/mast
 winget install --id Microsoft.WindowsTerminal -e --accept-source-agreements --accept-package-agreements --silent
 
 # win 10/11
-
+winget install -e --id jurplel.qView
 winget install --id=Google.Chrome -e --accept-source-agreements --accept-package-agreements --silent
 
 winget install --id=Git.Git -e --accept-source-agreements --accept-package-agreements --silent
