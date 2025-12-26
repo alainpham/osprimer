@@ -36,6 +36,11 @@ If ($restart -eq 'Y') {
 
 ```
 
+numlock active
+```
+ Set-ItemProperty -Path 'Registry::HKU\.DEFAULT\Control Panel\Keyboard' -Name "InitialKeyboardIndicators" -Value "2"
+```
+
 3. Activation
 
 ```PS1
