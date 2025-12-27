@@ -1757,6 +1757,7 @@ echo "dolphin installed"
 
 ijfin(){
 trap 'return 1' ERR
+flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 flatpak install -y flathub com.github.iwalton3.jellyfin-media-player
 
 cat <<EOF | tee ${ROOTFS}/usr/local/bin/jellyfin-media-player
