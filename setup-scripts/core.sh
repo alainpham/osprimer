@@ -126,7 +126,10 @@ inputversions() {
     # https://github.com/pythops/impala/releases
     export IMPALA_VERSION=0.6.0
     echo "export IMPALA_VERSION=${IMPALA_VERSION}" 
-
+    
+    # https://github.com/AntiMicroX/antimicrox/releases
+    export ANTIMICROX_VERSION=3.5.1
+    echo "export ANTIMICROX_VERSION=${ANTIMICROX_VERSION}" 
 
     export OSNAME=$(awk -F= '/^ID=/ {gsub(/"/, "", $2); print $2}' /etc/os-release)
     echo "export OSNAME=${OSNAME}"
@@ -251,6 +254,7 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*CEMU_VERSION.*=.*" "export CEMU_VERSION
 lineinfile ${ROOTFS}${BASHRC} ".*export.*GODOT_VERSION.*=.*" "export GODOT_VERSION=${GODOT_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*BLUETUI_VERSION.*=.*" "export BLUETUI_VERSION=${BLUETUI_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*IMPALA_VERSION.*=.*" "export IMPALA_VERSION=${IMPALA_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*ANTIMICROX_VERSION.*=.*" "export ANTIMICROX_VERSION=${ANTIMICROX_VERSION}"
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*OSNAME.*=.*" "export OSNAME=${OSNAME}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*OSVERSION.*=.*" "export OSVERSION=${OSVERSION}"
@@ -1213,6 +1217,7 @@ isunshine $force_reinstall
 ibluetui $force_reinstall
 iimpala $force_reinstall
 igodot $force_reinstall
+iantimicrox $force_reinstall
 }
 
 iwebapps(){
@@ -1307,6 +1312,20 @@ cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
 EOF
 else
 echo "mlvapp already installed, skipping"
+fi
+}
+
+iantimicrox(){
+trap 'return 1' ERR
+force_reinstall=${1:-0}
+if [ ! -f ${ROOTFS}/opt/appimages/antimicrox.AppImage ] || [ "$force_reinstall" = "1" ]; then
+wget -O ${ROOTFS}/opt/appimages/antimicrox.AppImage https://github.com/AntiMicroX/antimicrox/releases/download/${ANTIMICROX_VERSION}/AntiMicroX-x86_64.AppImage
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
+    chmod 755 /opt/appimages/antimicrox.AppImage
+    ln -sf /opt/appimages/antimicrox.AppImage /usr/local/bin/antimicrox
+EOF
+else
+echo "antimicrox already installed, skipping"
 fi
 }
 
