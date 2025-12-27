@@ -18,9 +18,8 @@ inputversions() {
     # https://github.com/derailed/k9s/releases
     export K9S_VERSION=v0.50.16
     echo "export K9S_VERSION=${K9S_VERSION}"
-    
     # https://maven.apache.org/download.cgi
-    export MVN_VERSION=3.9.11
+    export MVN_VERSION=3.9.12
     echo "export MVN_VERSION=${MVN_VERSION}"
 
     export NERDFONTS="Noto "
@@ -97,7 +96,7 @@ inputversions() {
     echo "export ESDE_VERSION_ID=${ESDE_VERSION_ID}"
 
     # https://buildbot.libretro.com/stable/
-    export RETROARCH_VERSION=1.21.0
+    export RETROARCH_VERSION=1.22.2
     echo "export RETROARCH_VERSION=${RETROARCH_VERSION}"
 
     # https://github.com/moonlight-stream/moonlight-qt/releases/
@@ -182,8 +181,9 @@ inputtasks() {
     # for macbook use value "mac"
     export KEYBOARD_VARIANT=${9} 
     echo "export KEYBOARD_VARIANT=${KEYBOARD_VARIANT}"
-
-
+    
+    export NUMLOCK_ON_BOOT=${10:-1}
+    echo "export NUMLOCK_ON_BOOT=${NUMLOCK_ON_BOOT}"
 
     export CHROOT_BASH=""
 }
@@ -262,6 +262,7 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*TIMEZONE.*=.*" "export TIMEZONE=${TIMEZ
 lineinfile ${ROOTFS}${BASHRC} ".*export.*KEYBOARD_LAYOUT.*=.*" "export KEYBOARD_LAYOUT=${KEYBOARD_LAYOUT}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*KEYBOARD_MODEL.*=.*" "export KEYBOARD_MODEL=${KEYBOARD_MODEL}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*KEYBOARD_VARIANT.*=.*" "export KEYBOARD_VARIANT=${KEYBOARD_VARIANT}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*NUMLOCK_ON_BOOT.*=.*" "export NUMLOCK_ON_BOOT=${NUMLOCK_ON_BOOT}"
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_ADDR.*=.*" "export SYNCTHING_HUB_ADDR=tcp://192.168.8.100:22000"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_APIURL.*=.*" "export SYNCTHING_HUB_APIURL=http://192.168.8.100:8384"
@@ -597,7 +598,7 @@ fi
 
 mkdir -p ${ROOTFS}/opt/appimages/
 rm -rf ${ROOTFS}/opt/appimages/apache-maven-*
-curl -Lo /tmp/maven.tar.gz https://dlcdn.apache.org/maven/maven-3/${MVN_VERSION}/binaries/apache-maven-${MVN_VERSION}-bin.tar.gz
+curl -Lo /tmp/maven.tar.gz https://archive.apache.org/dist/maven/maven-3/${MVN_VERSION}/binaries/apache-maven-${MVN_VERSION}-bin.tar.gz
 tar xzvf /tmp/maven.tar.gz  -C ${ROOTFS}/opt/appimages/
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     ln -sf /opt/appimages/apache-maven-${MVN_VERSION}/bin/mvn /usr/local/bin/mvn
@@ -796,9 +797,17 @@ RemainAfterExit=yes
 WantedBy=multi-user.target
 EOF
 
+if [ "$NUMLOCK_ON_BOOT" ]; then
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     systemctl enable nlock
 EOF
+else
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
+    systemctl disable nlock
+    touch ${ROOTFS}/home/${TARGET_USERNAME}/.nonumlock
+    chown ${TARGET_USERNAME}:${TARGET_USERNAME} ${ROOTFS}/home/${TARGET_USERNAME}/.nonumlock
+EOF
+fi
 
 }
 
@@ -817,7 +826,7 @@ echo "install gui"
 
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt install -y make gcc libx11-dev libxft-dev libxrandr-dev libimlib2-dev libfreetype-dev libxinerama-dev xorg numlockx usbutils libsdl1.2-dev libsdl2-dev libncurses5-dev
-    apt install -y pulseaudio pulseaudio-module-bluetooth pulseaudio-utils pavucontrol alsa-utils
+    apt install -y pulseaudio pulseaudio-module-bluetooth pulseaudio-utils pavucontrol-qt alsa-utils
     apt remove -y xserver-xorg-video-intel
 EOF
  
@@ -940,10 +949,38 @@ cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
 EOF
 fi
 
-mkdir -p ${ROOTFS}/usr/share/google-chrome/extensions
+mkdir -p ${ROOTFS}/etc/opt/chrome/policies/managed/
 # ublock origin lite
-cat << EOF | tee ${ROOTFS}/usr/share/google-chrome/extensions/ddkjiahejlhfcafbddmgiahcphecmpfh.json
-{ "external_update_url": "https://clients2.google.com/service/update2/crx" }
+cat << EOF | tee ${ROOTFS}/etc/opt/chrome/policies/managed/chrome-policies.json
+    {
+      "ExtensionInstallForcelist": [
+        "ddkjiahejlhfcafbddmgiahcphecmpfh",
+        "nngceckbapebfimnlniiiahkandclblb"
+      ],
+      "BookmarkBarEnabled": true,
+      "MetricsReportingEnabled": false,
+      "ManagedBookmarks": [
+        {
+          "toplevel_name": "MKS"
+        },
+        {
+          "name": "sunshine",
+          "url": "https://localhost:47990/"
+        },
+        {
+          "name": "local-syncthing",
+          "url": "http://localhost:8384/"
+        },
+        {
+          "name": "hub-syncthing",
+          "url": "http://192.168.8.100:8384/"
+        },
+        {
+          "name": "jellyfin",
+          "url": "http://192.168.8.100:8096/"
+        }
+      ]
+    }
 EOF
 
 #begin dwm
@@ -1109,7 +1146,7 @@ ipicomgit(){
 apt install -y cmake meson libepoxy-dev uthash-dev libxcb-present-dev libxcb-glx0-dev libxcb-damage0-dev libxcb-composite0-dev libxcb-util-dev libxcb-render-util0-dev libxcb-image0-dev libx11-xcb-dev libev-dev  
 cd /tmp/
 wget -O picom.zip "https://github.com/yshui/picom/archive/refs/tags/v${PICOM_VERSION}.zip"
-unzip picom.zip
+unzip -o picom.zip
 cd picom-${PICOM_VERSION}
 meson setup --buildtype=release build
 ninja -C build install
@@ -1190,8 +1227,6 @@ curl -L https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/w
 cd ${ROOTFS}/tmp
 rm -rf dotfiles
 git clone https://github.com/alainpham/dotfiles.git
-mkdir -p $ROOTFS/usr/local/share/icons/Adwaita/scalable/apps
-mkdir -p $ROOTFS/usr/local/share/icons/breeze-dark/scalable/apps
 cp -r ${ROOTFS}/tmp/dotfiles/icons/* ${ROOTFS}/usr/local/share/icons
 cd -
 
@@ -1717,31 +1752,7 @@ EOF
 iemucfg(){
 trap 'return 1' ERR
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    sudo -u $TARGET_USERNAME mkdir -p /home/${TARGET_USERNAME}/ROMs
-    sudo -u $TARGET_USERNAME mkdir -p /home/${TARGET_USERNAME}/ES-DE/downloaded_media
-    sudo -u $TARGET_USERNAME mkdir -p /home/${TARGET_USERNAME}/.config/retroarch/states
-    sudo -u $TARGET_USERNAME mkdir -p /home/${TARGET_USERNAME}/.config/retroarch/saves
     sudo -u $TARGET_USERNAME mkdir -p /home/${TARGET_USERNAME}/.config/retroarch/{playlists,cheats,config,logs}
-EOF
-
-# configure PCSX2
-mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/memcards
-mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/sstates
-mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.config/PCSX2/covers
-
-cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.config/PCSX2
-EOF
-
-# configure dolphin emulator wii and gamecube
-cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    sudo -u $TARGET_USERNAME mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dolphin-emu/GC
-    sudo -u $TARGET_USERNAME mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dolphin-emu/Wii
-EOF
-
-#configure cemu wiiu emulator
-cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    sudo -u $TARGET_USERNAME mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/.local/share/Cemu/mlc01
 EOF
 }
 
