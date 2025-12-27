@@ -1823,7 +1823,6 @@ Type=oneshot
 User=root
 ExecStart=/usr/local/bin/firstboot-virt
 RemainAfterExit=yes
-vir
 [Install]
 WantedBy=multi-user.target
 EOF
