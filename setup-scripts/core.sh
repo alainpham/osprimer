@@ -202,7 +202,7 @@ ilineinfile(){
 scripts="lineinfile"
 
 for script in $scripts ; do
-wget -O ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/dotfiles/master/scripts/utils/$script
+wget -O ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/dotfiles/master/scripts/os/$script
 chmod 755 ${ROOTFS}/usr/local/bin/$script
 done
 
@@ -1037,7 +1037,7 @@ fi
 ipicomgit
 
 # convert pdf to png with whitebackground
-gitroot=https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/utils
+gitroot=https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/desktop
 files="pdf2png ctext"
 for file in $files ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
