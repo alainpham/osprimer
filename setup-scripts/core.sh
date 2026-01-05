@@ -1500,6 +1500,10 @@ force_reinstall=${1:-0}
 
 lineinfile ${ROOTFS}/etc/bluetooth/input.conf ".*ClassicBondedOnly.*" "ClassicBondedOnly=false"
 
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
+    apt install -y wine winetricks lutris
+EOF
+
 #esde
 iesde $force_reinstall
 
