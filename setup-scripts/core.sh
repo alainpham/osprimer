@@ -4,7 +4,7 @@
 inputversions() {
     trap 'return 1' ERR
 
-    export CORE_VERSION=20251228
+    export CORE_VERSION=20260205
     echo "export CORE_VERSION=${CORE_VERSION}"
 
     # https://kubernetes.io/releases/  https://cloud.google.com/kubernetes-engine/docs/release-notes
@@ -12,11 +12,11 @@ inputversions() {
     echo "export MAJOR_KUBE_VERSION=${MAJOR_KUBE_VERSION}"
     
     # https://github.com/k3s-io/k3s/releases
-    export K3S_VERSION="v1.34.2+k3s1"
+    export K3S_VERSION="v1.34.3+k3s3"
     echo "export K3S_VERSION=${MAJOR_KUBE_VERSION}"
 
     # https://github.com/derailed/k9s/releases
-    export K9S_VERSION=v0.50.16
+    export K9S_VERSION=v0.50.18
     echo "export K9S_VERSION=${K9S_VERSION}"
     # https://maven.apache.org/download.cgi
     export MVN_VERSION=3.9.12
@@ -31,7 +31,7 @@ inputversions() {
     echo "export ZOOM_VERSION=${ZOOM_VERSION}"
 
     # https://hub.docker.com/r/infinityofspace/certbot_dns_duckdns/tags
-    export CERTBOT_DUCKDNS_VERSION=v1.6
+    export CERTBOT_DUCKDNS_VERSION=v1.8.0
     echo "export CERTBOT_DUCKDNS_VERSION=${CERTBOT_DUCKDNS_VERSION}"
 
     ### appimages
@@ -48,17 +48,17 @@ inputversions() {
     echo "export FREAC_VERSION=${FREAC_VERSION}"
 
     # https://github.com/jgraph/drawio-desktop/releases
-    export DRAWIO_VERSION=29.0.3
+    export DRAWIO_VERSION=29.3.6
     echo "export DRAWIO_VERSION=${DRAWIO_VERSION}"
 
     # https://www.onlyoffice.com/download-desktop.aspx
-    export ONLYOFFICE_VERSION=v9.0.4
+    export ONLYOFFICE_VERSION=v9.2.1
     echo "export ONLYOFFICE_VERSION=${ONLYOFFICE_VERSION}"
 
     # https://kdenlive.org/download/ 
-    export KDENLIVE_MAIN_VERSION=25.08
+    export KDENLIVE_MAIN_VERSION=25.12
     echo "export KDENLIVE_MAIN_VERSION=${KDENLIVE_MAIN_VERSION}"
-    export KDENLIVE_FULL_VERSION=25.08.2
+    export KDENLIVE_FULL_VERSION=25.12.1
     echo "export KDENLIVE_FULL_VERSION=${KDENLIVE_FULL_VERSION}"
     # https://heldercorreia.bitbucket.io/speedcrunch/download.html
     export SPEEDCRUNCH_VERSION=0.12
@@ -108,7 +108,7 @@ inputversions() {
     echo "export SUNSHINE_VERSION=${SUNSHINE_VERSION}" 
 
     #  https://github.com/PCSX2/pcsx2/releases/latest
-    export PCSX2_VERSION=2.4.0
+    export PCSX2_VERSION=2.6.3
     echo "export PCSX2_VERSION=${PCSX2_VERSION}" 
 
     # https://github.com/cemu-project/Cemu/releases/latest
@@ -116,15 +116,15 @@ inputversions() {
     echo "export CEMU_VERSION=${CEMU_VERSION}" 
 
     # https://github.com/godotengine/godot/releases https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_linux.x86_64.zip
-    export GODOT_VERSION=4.5.1-stable
+    export GODOT_VERSION=4.6-stable
     echo "export GODOT_VERSION=${GODOT_VERSION}" 
 
     # https://github.com/pythops/bluetui/releases
-    export BLUETUI_VERSION=0.8.0
+    export BLUETUI_VERSION=0.8.1
     echo "export BLUETUI_VERSION=${BLUETUI_VERSION}" 
 
     # https://github.com/pythops/impala/releases
-    export IMPALA_VERSION=0.6.0
+    export IMPALA_VERSION=0.7.3
     echo "export IMPALA_VERSION=${IMPALA_VERSION}" 
     
     # https://github.com/AntiMicroX/antimicrox/releases
