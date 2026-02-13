@@ -721,7 +721,7 @@ EOF
 
 ik9s
 
-kubescript="kubecr kubemon kubeotel kubeexpose"
+kubescript="kubecr kubedel kubemon kubeotel kubeexpose"
 for script in $kubescript ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/dotfiles/master/scripts/kube/$script
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
