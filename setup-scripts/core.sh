@@ -1543,7 +1543,7 @@ dlfiles="
 ps4connect
 "
 for fname in $dlfiles ; do
-curl -Lo ${ROOTFS}/usr/local/bin/$fname https://raw.githubusercontent.com/alainpham/osprimer/master/scripts/emulation/ds4/$fname
+curl -Lo ${ROOTFS}/usr/local/bin/$fname https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/gaming/$fname
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /usr/local/bin/$fname
 EOF
