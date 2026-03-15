@@ -925,7 +925,7 @@ chmod 755 ${ROOTFS}/usr/local/bin/$file
 done
 
 gitroot=https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/desktop
-files="bestmode mon sbg snotifs winshot sthinginit"
+files="bestmode mon sbg snotifs winshot sthinginit "
 for file in $files ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
 chmod 755 ${ROOTFS}/usr/local/bin/$file
@@ -933,6 +933,12 @@ done
 
 # link st as default terminal on x
 ln -sf /usr/local/bin/st /usr/bin/x-terminal-emulator
+gitroot=https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/desktop
+files="xdg-terminal-exec"
+for file in $files ; do
+curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
+chmod 755 ${ROOTFS}/usr/local/bin/$file
+done
 
 # install scripts for webcam
 gitroot=https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/webcam
