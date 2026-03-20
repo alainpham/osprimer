@@ -722,7 +722,7 @@ EOF
 
 ik9s
 
-kubescript="kubecr kubedel kubeingress kubemon kubeotel kubeexpose"
+kubescript="kubecr kubedel kubetraefik kubehaproxy kubemon kubeotel kubeexpose"
 for script in $kubescript ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/dotfiles/master/scripts/kube/$script
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
@@ -1618,7 +1618,7 @@ cd ${ROOTFS}/tmp/
 7z x RetroArch.7z -aoa
 7z x RetroArch_cores.7z -aoa
 cd -
-wget -O ${ROOTFS}/tmp/bios.zip https://github.com/Abdess/retroarch_system/releases/download/v20220308/RetroArch_v1.10.1.zip
+wget -O ${ROOTFS}/tmp/bios.zip https://github.com/Abdess/retrobios/releases/download/v2026.03.17.2/Lakka_RetroArch_BIOS_Pack.zip
 unzip ${ROOTFS}/tmp/bios.zip 'system/*' -d /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/
 
 rm -f /usr/local/bin/retroarch
