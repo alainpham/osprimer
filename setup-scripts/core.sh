@@ -4,7 +4,7 @@
 inputversions() {
     trap 'return 1' ERR
 
-    export CORE_VERSION=20260205
+    export CORE_VERSION=20260320
     echo "export CORE_VERSION=${CORE_VERSION}"
 
     # https://kubernetes.io/releases/  https://cloud.google.com/kubernetes-engine/docs/release-notes
@@ -12,12 +12,13 @@ inputversions() {
     echo "export MAJOR_KUBE_VERSION=${MAJOR_KUBE_VERSION}"
     
     # https://github.com/k3s-io/k3s/releases
-    export K3S_VERSION="v1.34.4+k3s1"
-    echo "export K3S_VERSION=${MAJOR_KUBE_VERSION}"
+    export K3S_VERSION="v1.34.5+k3s1"
+    echo "export K3S_VERSION=${K3S_VERSION}"
 
     # https://github.com/derailed/k9s/releases
     export K9S_VERSION=v0.50.18
     echo "export K9S_VERSION=${K9S_VERSION}"
+
     # https://maven.apache.org/download.cgi
     export MVN_VERSION=3.9.12
     echo "export MVN_VERSION=${MVN_VERSION}"
@@ -116,7 +117,7 @@ inputversions() {
     echo "export CEMU_VERSION=${CEMU_VERSION}" 
 
     # https://github.com/godotengine/godot/releases https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_linux.x86_64.zip
-    export GODOT_VERSION=4.6-stable
+    export GODOT_VERSION=4.6.1-stable
     echo "export GODOT_VERSION=${GODOT_VERSION}" 
 
     # https://github.com/pythops/bluetui/releases
