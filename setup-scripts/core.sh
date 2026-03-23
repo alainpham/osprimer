@@ -36,6 +36,11 @@ inputversions() {
     echo "export CERTBOT_DUCKDNS_VERSION=${CERTBOT_DUCKDNS_VERSION}"
 
     ### appimages
+
+    # Speedtest ookla
+    export SPEEDTEST_VERSION=1.2.0
+    echo "export SPEEDTEST_VERSION=${SPEEDTEST_VERSION}" 
+
     # https://mlv.app/
     export MLVAPP_VERSION=1.15
     echo "export MLVAPP_VERSION=${MLVAPP_VERSION}"
@@ -256,6 +261,7 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*GODOT_VERSION=.*" "export GODOT_VERSION
 lineinfile ${ROOTFS}${BASHRC} ".*export.*BLUETUI_VERSION=.*" "export BLUETUI_VERSION=${BLUETUI_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*IMPALA_VERSION=.*" "export IMPALA_VERSION=${IMPALA_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*ANTIMICROX_VERSION=.*" "export ANTIMICROX_VERSION=${ANTIMICROX_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*SPEEDTEST_VERSION=.*" "export SPEEDTEST_VERSION=${SPEEDTEST_VERSION}"
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*OSNAME=.*" "export OSNAME=${OSNAME}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*OSVERSION=.*" "export OSVERSION=${OSVERSION}"
@@ -489,7 +495,21 @@ cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt install -y sudo git tmux vim micro curl wget rsync ncdu dnsutils bmon htop btop nvtop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq jc sshfs iotop wakeonlan stow
     apt install -y systemd-timesyncd
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup iperf3
+
+    mkdir /tmp/sptest
+    curl -L -o /tmp/sptest/speedtest.tgz https://install.speedtest.net/app/cli/ookla-speedtest-$SPEEDTEST_VERSION-linux-x86_64.tgz
+    cd /tmp/sptest
+    tar -xzf speedtest.tgz
+    cp speedtest /usr/local/bin/speedtest
+    chmod 755 /usr/local/bin/speedtest
+    rm -rf /tmp/sptest
+    tar -xzf /tmp/sptest/speedtest.tgz -C /tmp/sptest
+    cp /tmp/sptest/speedtest /usr/local/bin/speedtest
+    chmod 755 /usr/local/bin/speedtest
+    rm -f /tmp/sptest.tgz
 EOF
+
+
 
 # No unattended upgrade
 cat << EOF | tee ${ROOTFS}/etc/apt/apt.conf.d/20auto-upgrades
