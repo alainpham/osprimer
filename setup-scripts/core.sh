@@ -117,6 +117,10 @@ inputversions() {
     export PCSX2_VERSION=2.6.3
     echo "export PCSX2_VERSION=${PCSX2_VERSION}" 
 
+    #  https://github.com/hrydgard/ppsspp/releases/latest
+    export PPSSPP_VERSION=1.20.3
+    echo "export PPSSPP_VERSION=${PPSSPP_VERSION}" 
+
     # https://github.com/cemu-project/Cemu/releases/latest
     export CEMU_VERSION=2.6
     echo "export CEMU_VERSION=${CEMU_VERSION}" 
@@ -126,7 +130,7 @@ inputversions() {
     echo "export GODOT_VERSION=${GODOT_VERSION}" 
 
     # https://github.com/pythops/bluetui/releases
-    export BLUETUI_VERSION=0.8.1
+    export BLUETUI_VERSION=0.8.0
     echo "export BLUETUI_VERSION=${BLUETUI_VERSION}" 
 
     # https://github.com/pythops/impala/releases
@@ -256,6 +260,7 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*RETROARCH_VERSION=.*" "export RETROARCH
 lineinfile ${ROOTFS}${BASHRC} ".*export.*MOONLIGHT_VERSION=.*" "export MOONLIGHT_VERSION=${MOONLIGHT_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*SUNSHINE_VERSION=.*" "export SUNSHINE_VERSION=${SUNSHINE_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*PCSX2_VERSION=.*" "export PCSX2_VERSION=${PCSX2_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*PPSSPP_VERSION=.*" "export PPSSPP_VERSION=${PPSSPP_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*CEMU_VERSION=.*" "export CEMU_VERSION=${CEMU_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*GODOT_VERSION=.*" "export GODOT_VERSION=${GODOT_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*BLUETUI_VERSION=.*" "export BLUETUI_VERSION=${BLUETUI_VERSION}"
@@ -498,11 +503,7 @@ cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
 
     mkdir /tmp/sptest
     curl -L -o /tmp/sptest/speedtest.tgz https://install.speedtest.net/app/cli/ookla-speedtest-$SPEEDTEST_VERSION-linux-x86_64.tgz
-    cd /tmp/sptest
-    tar -xzf speedtest.tgz
-    cp speedtest /usr/local/bin/speedtest
-    chmod 755 /usr/local/bin/speedtest
-    rm -rf /tmp/sptest
+    
     tar -xzf /tmp/sptest/speedtest.tgz -C /tmp/sptest
     cp /tmp/sptest/speedtest /usr/local/bin/speedtest
     chmod 755 /usr/local/bin/speedtest
@@ -1641,6 +1642,13 @@ cd -
 wget -O ${ROOTFS}/tmp/bios.zip https://github.com/Abdess/retrobios/releases/download/v2026.03.17.2/Lakka_RetroArch_BIOS_Pack.zip
 unzip ${ROOTFS}/tmp/bios.zip 'system/*' -d /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/
 
+mkdir -p /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/system/PPSSPP
+rm -rf /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/system/PPSSPP/*
+wget -O ${ROOTFS}/tmp/ppsspp.zip https://github.com/hrydgard/ppsspp/archive/refs/tags/v{$PPSSPP_VERSION}.zip
+7z x ${ROOTFS}/tmp/ppsspp.zip 'ppsspp*/assets' -o/tmp
+mv ${ROOTFS}/tmp/ppsspp-*/assets/* /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/system/PPSSPP
+rm -rf ${ROOTFS}/tmp/ppsspp*
+
 rm -f /usr/local/bin/retroarch
 
 cat > ${ROOTFS}/usr/local/bin/retroarch << 'EOF'
@@ -1702,7 +1710,7 @@ trap 'return 1' ERR
 force_reinstall=${1:-0}
 #TODO put in env vars https://github.com/cemu-project/Cemu/releases 
 
-if [ ! -f ${ROOTFS}/opt/appimages/emu.AppImage ] || [ "$force_reinstall" = "1" ]; then
+if [ ! -f ${ROOTFS}/opt/appimages/cemu.AppImage ] || [ "$force_reinstall" = "1" ]; then
 wget -O ${ROOTFS}/opt/appimages/cemu.AppImage https://github.com/cemu-project/Cemu/releases/download/v$CEMU_VERSION/Cemu-$CEMU_VERSION-x86_64.AppImage
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /opt/appimages/cemu.AppImage
@@ -1711,9 +1719,23 @@ EOF
 else
 echo "cemu already installed, skipping"
 fi
-
-
 }
+
+ippsspp(){
+trap 'return 1' ERR
+force_reinstall=${1:-0}
+
+if [ ! -f ${ROOTFS}/opt/appimages/ppsspp.AppImage ] || [ "$force_reinstall" = "1" ]; then
+wget -O ${ROOTFS}/opt/appimages/ppsspp.AppImage https://github.com/hrydgard/ppsspp/releases/download/v${PPSSPP_VERSION}/PPSSPP-v${PPSSPP_VERSION}-anylinux-x86_64.AppImage
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
+    chmod 755 /opt/appimages/ppsspp.AppImage
+    ln -sf /opt/appimages/ppsspp.AppImage /usr/local/bin/ppsspp
+EOF
+else
+echo "cemu already installed, skipping"
+fi
+}
+
 
 ibottles(){
 trap 'return 1' ERR
