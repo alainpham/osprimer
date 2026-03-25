@@ -160,7 +160,7 @@ winget install --force Microsoft.VisualStudioCode --accept-source-agreements --a
 mkdir -p c:\temp
 mkdir -p c:\apps
 
-curl.exe -L https://dlcdn.apache.org/maven/maven-3/3.9.11/binaries/apache-maven-3.9.11-bin.zip -o c:\temp\maven.zip
+curl.exe -L https://dlcdn.apache.org/maven/maven-3/3.9.14/binaries/apache-maven-3.9.14-bin.zip -o c:\temp\maven.zip
 
 cd c:\temp
 & "C:\Program Files\7-Zip\7z.exe" x maven.zip
