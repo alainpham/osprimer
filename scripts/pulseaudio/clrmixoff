@@ -1,5 +1,0 @@
-#!/bin/bash
-
-killall parec
-
-kill -44 $(pidof dwmblocks)

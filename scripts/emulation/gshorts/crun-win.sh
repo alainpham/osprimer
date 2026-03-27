@@ -1,1 +1,0 @@
-rm gshorts.exe ; gcc gshorts.c -o gshorts.exe $(pkg-config --cflags --libs sdl2) -mconsole && ./gshorts.exe

@@ -1,2 +1,0 @@
-#!/bin/bash
-ssh ${USER}@"$1"

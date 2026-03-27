@@ -1,9 +1,0 @@
-#!/bin/bash
-source /usr/local/bin/asndenv
-
-speakers=$h6speakerid
-mic=$h6micid
-speakervolume=$h6speakervolume
-micvolume=$h6micvolume
-
-asnd $speakers $mic $speakervolume $micvolume

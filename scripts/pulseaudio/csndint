@@ -1,9 +1,0 @@
-#!/bin/bash
-source /usr/local/bin/asndenv
-
-speakers=$internalspeakerid
-mic=$internalmicid
-speakervolume=$internalspeakervolume
-micvolume=$internalmicvolume
-
-asnd $speakers $mic $speakervolume $micvolume

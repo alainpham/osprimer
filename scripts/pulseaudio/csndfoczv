@@ -1,9 +1,0 @@
-#!/bin/bash
-source /usr/local/bin/asndenv
-
-speakers=$zvspeakerid
-mic=$focmicid
-speakervolume=$zvspeakervolume
-micvolume=$focmicvolume
-
-asnd $speakers $mic $speakervolume $micvolume

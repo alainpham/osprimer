@@ -1,2 +1,0 @@
-#!/bin/bash
-dunstctl history>/tmp/notifs && code --new-window --disable-workspace-trust /tmp/notifs
