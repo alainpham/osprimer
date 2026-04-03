@@ -9,20 +9,20 @@ COPY ./setup-scripts/core.sh /usr/local/bin/core.sh
 RUN chmod +x /usr/local/bin/core.sh && bash -c "source /usr/local/bin/core.sh && sandbox"
 RUN echo 'PS1='"'"'${debian_chroot:+($debian_chroot)}\[\033[01;33m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '"'"'' >> /home/user/.bashrc
 
-# claude code
-RUN curl -fsSL https://claude.ai/install.sh | bash
+# # claude code
+# RUN curl -fsSL https://claude.ai/install.sh | bash
 
-# codex code
-RUN npm install -g @openai/codex
+# # codex code
+# RUN npm install -g @openai/codex
 
-# copilot
-RUN curl -fsSL https://gh.io/copilot-install | bash
+# # copilot
+# RUN curl -fsSL https://gh.io/copilot-install | bash
 
-# open code
-RUN curl -fsSL https://opencode.ai/install | bash
+# # open code
+# RUN curl -fsSL https://opencode.ai/install | bash
 
-# hermes agent
-RUN curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash
+# # hermes agent
+# RUN curl -fsSL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/scripts/install.sh | bash
 
 USER 1000:1000
 
