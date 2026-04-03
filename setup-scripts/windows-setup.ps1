@@ -209,11 +209,11 @@ public class NativeMethods {
         curl.exe -LO "https://buildbot.libretro.com/stable/${RETROARCH_VERSION}/windows/x86_64/RetroArch_cores.7z"
         & "C:\Program Files\7-Zip\7z.exe" x RetroArch.7z
         & "C:\Program Files\7-Zip\7z.exe" x RetroArch_cores.7z
-        curl.exe -L https://github.com/Abdess/retroarch_system/releases/download/v20220308/RetroArch_v1.10.1.zip -o bios.zip
+        curl.exe -L https://github.com/Abdess/retrobios/releases/download/v2026.03.17.2/Lakka_RetroArch_BIOS_Pack.zip -o bios.zip
         & "C:\Program Files\7-Zip\7z.exe" x "bios.zip" "system\*" -o".\RetroArch-Win64\"
         mkdir -Force c:\apps | Out-Null
         Move-Item RetroArch-Win64 c:\apps\ -Force
-        curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/retroarch/retroarch.win.cfg -o C:\apps\RetroArch-Win64\retroarch.cfg
+        curl.exe -L https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/home/.config/retroarch/retroarch.override.cfg -o C:\apps\RetroArch-Win64\retroarch.cfg
         curl.exe -L "https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/retroarch/autoconfig/xinput/Xbox%20360%20Wired%20Controller.cfg" `
             -o "C:\apps\RetroArch-Win64\autoconfig\xinput\Xbox 360 Wired Controller.cfg"
         $WshShell = New-Object -ComObject WScript.Shell
