@@ -2045,6 +2045,13 @@ idocker
 ikube
 }
 
+wsl(){
+trap 'return 1' ERR
+init user "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "0"
+cloudvm_common
+reboot
+}
+
 gcpvm(){
 trap 'return 1' ERR
 init alain_pham_grafana_com "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "0"
