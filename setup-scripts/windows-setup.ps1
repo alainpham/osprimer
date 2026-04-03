@@ -1,4 +1,4 @@
-# Windows Standard Setup - Step by Step
+﻿# Windows Standard Setup - Step by Step
 # Run as Administrator
 #
 # If you get "not authorized to run scripts", launch it with:
