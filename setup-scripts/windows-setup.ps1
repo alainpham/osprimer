@@ -120,6 +120,7 @@ public class NativeMethods {
         winget install --id yt-dlp.yt-dlp                             -e --accept-source-agreements --accept-package-agreements --silent
         winget install --id Inkscape.Inkscape                         -e --accept-source-agreements --accept-package-agreements --silent
         winget install --id LibreHardwareMonitor.LibreHardwareMonitor  -e --accept-source-agreements --accept-package-agreements --silent
+        winget install --id LocalSend.LocalSend  -e --accept-source-agreements --accept-package-agreements --silent
     }},
     @{ Title = "Install MSYS2"; Action = {
         winget install --id MSYS2.MSYS2 -e --accept-source-agreements --accept-package-agreements --silent
@@ -225,7 +226,7 @@ public class NativeMethods {
     }},
     @{ Title = "Install EmulationStation DE"; Action = {
         Push-Location c:\temp
-        curl.exe -L https://gitlab.com/es-de/emulationstation-de/-/package_files/210673039/download -o estation.zip
+        curl.exe -L https://gitlab.com/es-de/emulationstation-de/-/package_files/243196975/download -o estation.zip
         & "C:\Program Files\7-Zip\7z.exe" x estation.zip
         Move-Item ES-DE c:\apps -Force
         $WshShell = New-Object -ComObject WScript.Shell
