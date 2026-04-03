@@ -277,9 +277,9 @@ function Show-Menu {
 }
 
 function Parse-Selection {
-    param([string]$Input)
+    param([string]$Raw)
     $selected = @()
-    foreach ($part in $Input -split ',') {
+    foreach ($part in $Raw -split ',') {
         $part = $part.Trim()
         if ($part -match '^(\d+)-(\d+)$') {
             $selected += [int]$Matches[1]..[int]$Matches[2]
