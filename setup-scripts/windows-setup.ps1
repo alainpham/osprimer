@@ -126,15 +126,19 @@ public class NativeMethods {
         Write-Host "MSYS2 installed. Open MSYS2 shell and run:" -ForegroundColor Yellow
         Write-Host "  pacman -S mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-pkg-config mingw-w64-ucrt-x86_64-SDL2 git vim" -ForegroundColor Yellow
     }},
-    @{ Title = "Install advanced workstation apps (OBS, Kdenlive, Zoom, Avidemux, WSL, Ubuntu, OnlyOffice)"; Action = {
+    @{ Title = "Install advanced workstation apps (OBS, Kdenlive, Zoom, Avidemux)"; Action = {
         winget install --id OBSProject.OBSStudio       -e --accept-source-agreements --accept-package-agreements --silent
         winget install --id KDE.Kdenlive               -e --accept-source-agreements --accept-package-agreements --silent
         winget install --id Zoom.Zoom                  -e --accept-source-agreements --accept-package-agreements --silent
         winget install --id Avidemux.Avidemux          -e --accept-source-agreements --accept-package-agreements --silent
+    }},
+    @{ Title = "Install WSL + Ubuntu 24.04"; Action = {
         winget install --id Microsoft.WSL              -e --accept-source-agreements --accept-package-agreements --silent
         winget install --id Canonical.Ubuntu.2404      -e --accept-source-agreements --accept-package-agreements --silent
-        winget install --id ONLYOFFICE.DesktopEditors  -e --accept-source-agreements --accept-package-agreements --silent
         wsl --install --no-distribution
+    }},
+    @{ Title = "Install OnlyOffice Desktop Editors"; Action = {
+        winget install --id ONLYOFFICE.DesktopEditors  -e --accept-source-agreements --accept-package-agreements --silent
     }},
     @{ Title = "Disable Xbox Game Bar"; Action = {
         reg add HKCR\ms-gamebar /f /ve /d URL:ms-gamebar 2>&1 | Out-Null
