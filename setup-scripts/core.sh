@@ -2049,7 +2049,7 @@ wsl(){
 trap 'return 1' ERR
 init user "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "0"
 cloudvm_common
-reboot
+isudo
 }
 
 gcpvm(){
