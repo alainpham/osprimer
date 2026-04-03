@@ -1,0 +1,329 @@
+# Windows Standard Setup - Step by Step
+# Run as Administrator
+
+# ── Step definitions ─────────────────────────────────────────────────────────
+$Steps = @(
+    @{ Title = "Activate Administrator account"; Action = {
+        net user administrator /active:yes
+        net user administrator Password1!
+    }},
+    @{ Title = "Configure auto-login"; Action = {
+        $Username = Read-Host "Username for auto-login (default: user)"
+        if ([string]::IsNullOrWhiteSpace($Username)) { $Username = "user" }
+        $Pass = Read-Host "Password for auto-login (default: Password1!)"
+        if ([string]::IsNullOrWhiteSpace($Pass)) { $Pass = "Password1!" }
+
+        Set-ExecutionPolicy RemoteSigned -Force
+        $RegistryPath = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
+        Set-ItemProperty $RegistryPath 'AutoAdminLogon' -Value "1" -Type String
+        Set-ItemProperty $RegistryPath 'DefaultUsername' -Value "$Username" -Type String
+        Set-ItemProperty $RegistryPath 'DefaultPassword' -Value "$Pass" -Type String
+        Write-Warning "Auto-Login for $Username configured. Restart to apply."
+    }},
+    @{ Title = "Enable NumLock on startup"; Action = {
+        Set-ItemProperty -Path 'Registry::HKU\.DEFAULT\Control Panel\Keyboard' -Name "InitialKeyboardIndicators" -Value "2"
+    }},
+    @{ Title = "Activate Windows (get.activated.win)"; Action = {
+        irm https://get.activated.win | iex
+    }},
+    @{ Title = "Rename computer and fix taskbar (never combine)"; Action = {
+        $NewName = Read-Host "New computer name (default: wind)"
+        if ([string]::IsNullOrWhiteSpace($NewName)) { $NewName = "wind" }
+        Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" `
+            -Name TaskbarGlomLevel -Value 2
+        Stop-Process -ProcessName explorer -Force -ErrorAction SilentlyContinue
+        Rename-Computer -NewName $NewName -Force
+        Write-Host "Computer will be renamed to '$NewName' on next restart." -ForegroundColor Yellow
+    }},
+    @{ Title = "Show file extensions in Explorer"; Action = {
+        Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" `
+            -Name HideFileExt -Value 0
+        Stop-Process -ProcessName explorer -Force -ErrorAction SilentlyContinue
+        Start-Process explorer
+    }},
+    @{ Title = "Restore classic right-click context menu"; Action = {
+        reg.exe add "HKCU\Software\Classes\CLSID\{86ca1aa0-34aa-4e8b-a509-50c905bae2a2}\InprocServer32" /f /ve
+    }},
+    @{ Title = "Show seconds in clock, set date/locale format, taskbar tweaks"; Action = {
+        Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowSecondsInSystemClock" -Type DWord -Value 1
+        Set-ItemProperty -Path "HKCU:\Control Panel\International" -Name "sShortDate"      -Value "yyyy-MM-dd"
+        Set-ItemProperty -Path "HKCU:\Control Panel\International" -Name "sThousand"       -Value " "
+        Set-ItemProperty -Path "HKCU:\Control Panel\International" -Name "sShortTime"      -Value "HH:mm"
+        Set-ItemProperty -Path "HKCU:\Control Panel\International" -Name "sTimeFormat"     -Value "HH:mm:ss"
+        Set-ItemProperty -Path "HKCU:\Control Panel\International" -Name "iFirstDayOfWeek" -Value "0"
+        Set-ItemProperty -Path "HKCU:\Control Panel\International" -Name "iMeasure"        -Value "0"
+        Set-ItemProperty -Path "HKCU:\Control Panel\International" -Name "sCurrency"       -Value "€"
+        Set-ItemProperty -Path "HKCU:\Control Panel\International" -Name "sMonThousandSep" -Value " "
+        Set-TimeZone -Name "Romance Standard Time"
+        Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" `
+            -Name "SearchboxTaskbarMode" -Value 0
+        Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" `
+            -Name "ShowTaskViewButton" -Value 0 -Type DWord
+        Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced" `
+            -Name "TaskbarAl" -Value 0 -Type DWord
+        Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
+    }},
+    @{ Title = "Enable dark theme"; Action = {
+        Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name SystemUsesLightTheme -Value 0
+        Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name AppsUseLightTheme   -Value 0
+        $code = @'
+using System;
+using System.Runtime.InteropServices;
+public class NativeMethods {
+  [DllImport("user32.dll")]
+  public static extern IntPtr SendMessageTimeout(IntPtr hWnd, uint Msg, UIntPtr wParam, string lParam, uint flags, uint timeout, out UIntPtr result);
+}
+'@
+        Add-Type -TypeDefinition $code
+        [UIntPtr]$result = [UIntPtr]::Zero
+        [NativeMethods]::SendMessageTimeout([IntPtr]0xffff, 0x1A, [UIntPtr]::Zero, "ImmersiveColorSet", 2, 5000, [ref]$result) | Out-Null
+    }},
+    @{ Title = "Install winget (needed on Win10 / LTSC)"; Action = {
+        Invoke-WebRequest https://raw.githubusercontent.com/asheroto/winget-install/master/winget-install.ps1 -UseBasicParsing | iex
+    }},
+    @{ Title = "Install core apps (Terminal, Chrome, Git, 7zip, Java, Neovim, micro, AHK, VSCode)"; Action = {
+        winget install --id Microsoft.WindowsTerminal          -e --accept-source-agreements --accept-package-agreements --silent
+        winget install --id jurplel.qView                      -e --accept-source-agreements --accept-package-agreements --silent
+        winget install --id Google.Chrome                      -e --accept-source-agreements --accept-package-agreements --silent
+        winget install --id Git.Git                            -e --accept-source-agreements --accept-package-agreements --silent
+        winget install --id 7zip.7zip                          -e --accept-source-agreements --accept-package-agreements --silent
+        winget install --id Microsoft.OpenJDK.17               -e --accept-source-agreements --accept-package-agreements --silent
+        winget install --id Neovim.Neovim                      -e --accept-source-agreements --accept-package-agreements --silent
+        winget install -e --id zyedidia.micro                  -e --accept-source-agreements --accept-package-agreements --silent
+        winget install --id AutoHotkey.AutoHotkey              -e --accept-source-agreements --accept-package-agreements --silent
+        winget install --force Microsoft.VisualStudioCode --accept-source-agreements --accept-package-agreements `
+            --override '/VERYSILENT /SP- /MERGETASKS="runcode,desktopicon,addcontextmenufiles,addcontextmenufolders,associatewithfiles,addtopath"'
+    }},
+    @{ Title = "Install Apache Maven 3.9.14 to C:\apps\maven"; Action = {
+        mkdir -Force c:\temp | Out-Null
+        mkdir -Force c:\apps | Out-Null
+        curl.exe -L https://dlcdn.apache.org/maven/maven-3/3.9.14/binaries/apache-maven-3.9.14-bin.zip -o c:\temp\maven.zip
+        Push-Location c:\temp
+        & "C:\Program Files\7-Zip\7z.exe" x maven.zip
+        Move-Item .\apache-maven* C:\apps\maven -Force
+        Pop-Location
+        $newPath = "C:\apps\maven\bin"
+        $currentPath = [Environment]::GetEnvironmentVariable("Path", [EnvironmentVariableTarget]::Machine)
+        if ($currentPath -notlike "*$newPath*") {
+            [Environment]::SetEnvironmentVariable("Path", $currentPath + ";" + $newPath, [EnvironmentVariableTarget]::Machine)
+        }
+    }},
+    @{ Title = "Install extra apps (Moonlight, Postman, VLC, GIMP, WinSCP, yt-dlp, Inkscape, LibreHardwareMonitor)"; Action = {
+        winget install --id MoonlightGameStreamingProject.Moonlight   -e --accept-source-agreements --accept-package-agreements --silent
+        winget install --id Postman.Postman                           -e --accept-source-agreements --accept-package-agreements --silent
+        winget install --id VideoLAN.VLC                              -e --accept-source-agreements --accept-package-agreements --silent
+        winget install --id GIMP.GIMP.3                               -e --accept-source-agreements --accept-package-agreements --silent
+        winget install --id WinSCP.WinSCP                             -e --accept-source-agreements --accept-package-agreements --silent
+        winget install --id yt-dlp.yt-dlp                             -e --accept-source-agreements --accept-package-agreements --silent
+        winget install --id Inkscape.Inkscape                         -e --accept-source-agreements --accept-package-agreements --silent
+        winget install --id LibreHardwareMonitor.LibreHardwareMonitor  -e --accept-source-agreements --accept-package-agreements --silent
+    }},
+    @{ Title = "Install MSYS2"; Action = {
+        winget install --id MSYS2.MSYS2 -e --accept-source-agreements --accept-package-agreements --silent
+        Write-Host "MSYS2 installed. Open MSYS2 shell and run:" -ForegroundColor Yellow
+        Write-Host "  pacman -S mingw-w64-ucrt-x86_64-gcc mingw-w64-ucrt-x86_64-pkg-config mingw-w64-ucrt-x86_64-SDL2 git vim" -ForegroundColor Yellow
+    }},
+    @{ Title = "Install advanced workstation apps (OBS, Kdenlive, Zoom, Avidemux, WSL, Ubuntu, OnlyOffice)"; Action = {
+        winget install --id OBSProject.OBSStudio       -e --accept-source-agreements --accept-package-agreements --silent
+        winget install --id KDE.Kdenlive               -e --accept-source-agreements --accept-package-agreements --silent
+        winget install --id Zoom.Zoom                  -e --accept-source-agreements --accept-package-agreements --silent
+        winget install --id Avidemux.Avidemux          -e --accept-source-agreements --accept-package-agreements --silent
+        winget install --id Microsoft.WSL              -e --accept-source-agreements --accept-package-agreements --silent
+        winget install --id Canonical.Ubuntu.2404      -e --accept-source-agreements --accept-package-agreements --silent
+        winget install --id ONLYOFFICE.DesktopEditors  -e --accept-source-agreements --accept-package-agreements --silent
+        wsl --install --no-distribution
+    }},
+    @{ Title = "Disable Xbox Game Bar"; Action = {
+        reg add HKCR\ms-gamebar /f /ve /d URL:ms-gamebar 2>&1 | Out-Null
+        reg add HKCR\ms-gamebar /f /v "URL Protocol" /d "" 2>&1 | Out-Null
+        reg add HKCR\ms-gamebar /f /v "NoOpenWith" /d "" 2>&1 | Out-Null
+        reg add HKCR\ms-gamebar\shell\open\command /f /ve /d "`"$env:SystemRoot\System32\systray.exe`"" 2>&1 | Out-Null
+        reg add HKCR\ms-gamebarservices /f /ve /d URL:ms-gamebarservices 2>&1 | Out-Null
+        reg add HKCR\ms-gamebarservices /f /v "URL Protocol" /d "" 2>&1 | Out-Null
+        reg add HKCR\ms-gamebarservices /f /v "NoOpenWith" /d "" 2>&1 | Out-Null
+        reg add HKCR\ms-gamebarservices\shell\open\command /f /ve /d "`"$env:SystemRoot\System32\systray.exe`"" 2>&1 | Out-Null
+    }},
+    @{ Title = "Disable AutoPlay for USB devices"; Action = {
+        Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers" `
+            -Name "DisableAutoplay" -Value 1 -Type DWord
+        $policyPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer"
+        if (!(Test-Path $policyPath)) { New-Item -Path $policyPath -Force | Out-Null }
+        Set-ItemProperty -Path $policyPath -Name "NoDriveTypeAutoRun" -Value 0xFF -Type DWord
+    }},
+    @{ Title = "Install RetroArch 1.22.2 + cores + BIOS"; Action = {
+        $RETROARCH_VERSION = "1.22.2"
+        Push-Location c:\temp
+        curl.exe -LO "https://buildbot.libretro.com/stable/${RETROARCH_VERSION}/windows/x86_64/RetroArch.7z"
+        curl.exe -LO "https://buildbot.libretro.com/stable/${RETROARCH_VERSION}/windows/x86_64/RetroArch_cores.7z"
+        & "C:\Program Files\7-Zip\7z.exe" x RetroArch.7z
+        & "C:\Program Files\7-Zip\7z.exe" x RetroArch_cores.7z
+        curl.exe -L https://github.com/Abdess/retroarch_system/releases/download/v20220308/RetroArch_v1.10.1.zip -o bios.zip
+        & "C:\Program Files\7-Zip\7z.exe" x "bios.zip" "system\*" -o".\RetroArch-Win64\"
+        mkdir -Force c:\apps | Out-Null
+        Move-Item RetroArch-Win64 c:\apps\ -Force
+        curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/retroarch/retroarch.win.cfg -o C:\apps\RetroArch-Win64\retroarch.cfg
+        curl.exe -L "https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/retroarch/autoconfig/xinput/Xbox%20360%20Wired%20Controller.cfg" `
+            -o "C:\apps\RetroArch-Win64\autoconfig\xinput\Xbox 360 Wired Controller.cfg"
+        $WshShell = New-Object -ComObject WScript.Shell
+        $Shortcut = $WshShell.CreateShortcut("C:\ProgramData\Microsoft\Windows\Start Menu\Programs\retroarch.lnk")
+        $Shortcut.TargetPath = "C:\apps\RetroArch-Win64\retroarch.exe"
+        $Shortcut.WorkingDirectory = "C:\apps\RetroArch-Win64\"
+        $Shortcut.Save()
+        Pop-Location
+    }},
+    @{ Title = "Install EmulationStation DE"; Action = {
+        Push-Location c:\temp
+        curl.exe -L https://gitlab.com/es-de/emulationstation-de/-/package_files/210673039/download -o estation.zip
+        & "C:\Program Files\7-Zip\7z.exe" x estation.zip
+        Move-Item ES-DE c:\apps -Force
+        $WshShell = New-Object -ComObject WScript.Shell
+        $Shortcut = $WshShell.CreateShortcut("C:\ProgramData\Microsoft\Windows\Start Menu\Programs\estation.lnk")
+        $Shortcut.TargetPath = "C:\apps\ES-DE\ES-DE.exe"
+        $Shortcut.WorkingDirectory = "C:\"
+        $Shortcut.Save()
+        Pop-Location
+    }},
+    @{ Title = "Install PCSX2 v2.6.3"; Action = {
+        Push-Location c:\temp
+        curl.exe -L https://github.com/PCSX2/pcsx2/releases/download/v2.6.3/pcsx2-v2.6.3-windows-x64-Qt.7z -o pcsx2.7z
+        & "C:\Program Files\7-Zip\7z.exe" x pcsx2.7z -opcsx2
+        Move-Item pcsx2 c:\apps -Force
+        $WshShell = New-Object -ComObject WScript.Shell
+        $Shortcut = $WshShell.CreateShortcut("C:\ProgramData\Microsoft\Windows\Start Menu\Programs\pcsx2.lnk")
+        $Shortcut.TargetPath = "C:\apps\pcsx2\pcsx2-qt.exe"
+        $Shortcut.WorkingDirectory = "C:\apps\pcsx2\"
+        $Shortcut.Save()
+        $username = $env:USERNAME
+        mkdir -Force "C:\Users\$username\Documents\PCSX2\bios" | Out-Null
+        mkdir -Force "C:\Users\$username\Documents\PCSX2\inis" | Out-Null
+        curl.exe -L https://github.com/archtaurus/RetroPieBIOS/raw/master/BIOS/pcsx2/bios/ps2-0230a-20080220.bin `
+            -o "C:\Users\$username\Documents\PCSX2\bios\ps2-0230a-20080220.bin"
+        curl.exe -L https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/pcsx2/PCSX2-win.ini `
+            -o "C:\Users\$username\Documents\PCSX2\inis\PCSX2.ini"
+        Pop-Location
+    }},
+    @{ Title = "Install Dolphin 2509"; Action = {
+        Push-Location c:\temp
+        curl.exe -L https://dl.dolphin-emu.org/releases/2509/dolphin-2509-x64.7z -o dolphin.7z
+        & "C:\Program Files\7-Zip\7z.exe" x dolphin.7z
+        Move-Item Dolphin-x64 c:\apps -Force
+        $WshShell = New-Object -ComObject WScript.Shell
+        $Shortcut = $WshShell.CreateShortcut("C:\ProgramData\Microsoft\Windows\Start Menu\Programs\dolphin.lnk")
+        $Shortcut.TargetPath = "C:\apps\Dolphin-x64\Dolphin.exe"
+        $Shortcut.WorkingDirectory = "C:\apps\Dolphin-x64\"
+        $Shortcut.Save()
+        $username = $env:USERNAME
+        $cfg = "C:\Users\$username\AppData\Roaming\Dolphin Emulator\Config"
+        mkdir -Force $cfg | Out-Null
+        $base = "https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/dolphin-emu"
+        curl.exe -L "$base/win/Dolphin.ini"   -o "$cfg\Dolphin.ini"
+        curl.exe -L "$base/GCPadNew.ini"      -o "$cfg\GCPadNew.ini"
+        curl.exe -L "$base/WiimoteNew.ini"    -o "$cfg\WiimoteNew.ini"
+        curl.exe -L "$base/GFX.ini"           -o "$cfg\GFX.ini"
+        curl.exe -L "$base/Hotkeys.ini"       -o "$cfg\Hotkeys.ini"
+        Pop-Location
+    }},
+    @{ Title = "Install Cemu v2.6"; Action = {
+        Push-Location c:\temp
+        curl.exe -L https://github.com/cemu-project/Cemu/releases/download/v2.6/cemu-2.6-windows-x64.zip -o cmu.zip
+        & "C:\Program Files\7-Zip\7z.exe" x cmu.zip
+        Move-Item Cemu* c:\apps\cemu -Force
+        $WshShell = New-Object -ComObject WScript.Shell
+        $Shortcut = $WshShell.CreateShortcut("C:\ProgramData\Microsoft\Windows\Start Menu\Programs\cemu.lnk")
+        $Shortcut.TargetPath = "C:\apps\cemu\Cemu.exe"
+        $Shortcut.WorkingDirectory = "C:\apps\cemu"
+        $Shortcut.Save()
+        $username = $env:USERNAME
+        $cfg = "C:\Users\$username\AppData\Roaming\Cemu"
+        mkdir -Force "$cfg\controllerProfiles" | Out-Null
+        $base = "https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/cemu"
+        curl.exe -L "$base/settings-win.xml"                   -o "$cfg\settings.xml"
+        curl.exe -L "$base/controllerProfiles/controller0.xml" -o "$cfg\controllerProfiles\controller0.xml"
+        Pop-Location
+    }},
+    @{ Title = "Install gshorts + scheduled task at logon"; Action = {
+        mkdir -Force "C:\apps\gshorts" | Out-Null
+        $base = "https://raw.githubusercontent.com/alainpham/debian-os-image/master/scripts/emulation/gshorts"
+        curl.exe -L "$base/gshorts.c"   -o "C:\apps\gshorts\gshorts.c"
+        curl.exe -L "$base/gshorts.ahk" -o "C:\apps\gshorts\gshorts.ahk"
+        Write-Host "Compile gshorts in MSYS2 UCRT64 shell with:" -ForegroundColor Yellow
+        Write-Host '  cd "C:\apps\gshorts"' -ForegroundColor Yellow
+        Write-Host '  rm gshorts.exe; gcc gshorts.c -o gshorts.exe $(pkg-config --cflags --libs sdl2) -mconsole' -ForegroundColor Yellow
+        Write-Host '  cp "C:\msys64\ucrt64\bin\SDL2.dll" "C:\apps\gshorts\SDL2.dll"' -ForegroundColor Yellow
+        $choice2 = Read-Host "Register scheduled task now (requires .exe to exist)? (y/N)"
+        if ($choice2 -eq 'y') {
+            $TaskAction  = New-ScheduledTaskAction -Execute "C:\apps\gshorts\gshorts.ahk"
+            $TaskTrigger = New-ScheduledTaskTrigger -AtLogOn
+            Register-ScheduledTask -TaskName "gshorts" -Action $TaskAction -Trigger $TaskTrigger -Force
+        }
+    }}
+)
+
+# ── Menu ─────────────────────────────────────────────────────────────────────
+function Show-Menu {
+    Write-Host "`n╔══════════════════════════════════════════╗" -ForegroundColor Cyan
+    Write-Host "║     Windows Standard Setup               ║" -ForegroundColor Cyan
+    Write-Host "╚══════════════════════════════════════════╝" -ForegroundColor Cyan
+    Write-Host ""
+    for ($i = 0; $i -lt $Steps.Count; $i++) {
+        Write-Host ("  {0,2}. {1}" -f ($i + 1), $Steps[$i].Title)
+    }
+    Write-Host ""
+    Write-Host "  Enter step numbers to run (e.g. 1,3,5 or 1-5 or 'all')"
+    Write-Host "  Press Enter with no input to exit"
+}
+
+function Parse-Selection {
+    param([string]$Input)
+    $selected = @()
+    foreach ($part in $Input -split ',') {
+        $part = $part.Trim()
+        if ($part -match '^(\d+)-(\d+)$') {
+            $selected += [int]$Matches[1]..[int]$Matches[2]
+        } elseif ($part -match '^\d+$') {
+            $selected += [int]$part
+        }
+    }
+    return $selected | Sort-Object -Unique
+}
+
+function Run-Step {
+    param($Step, [int]$Number)
+    Write-Host "`n──────────────────────────────────────────" -ForegroundColor Cyan
+    Write-Host " Step $Number : $($Step.Title)" -ForegroundColor Cyan
+    Write-Host "──────────────────────────────────────────" -ForegroundColor Cyan
+    $confirm = Read-Host "Run? (Y/n/q to quit)"
+    if ($confirm -eq 'q') { Write-Host "Exiting." -ForegroundColor Yellow; exit }
+    if ($confirm -eq 'n') { Write-Host "Skipped." -ForegroundColor DarkGray; return }
+    try {
+        & $Step.Action
+        Write-Host "Done." -ForegroundColor Green
+    } catch {
+        Write-Host "Error: $_" -ForegroundColor Red
+    }
+}
+
+# ── Main loop ─────────────────────────────────────────────────────────────────
+while ($true) {
+    Show-Menu
+    $raw = Read-Host "Selection"
+    if ([string]::IsNullOrWhiteSpace($raw)) { Write-Host "Exiting." -ForegroundColor Yellow; break }
+
+    if ($raw.Trim().ToLower() -eq 'all') {
+        $indices = 1..$Steps.Count
+    } else {
+        $indices = Parse-Selection $raw
+    }
+
+    $invalid = $indices | Where-Object { $_ -lt 1 -or $_ -gt $Steps.Count }
+    if ($invalid) {
+        Write-Host "Invalid step(s): $($invalid -join ', '). Valid range: 1-$($Steps.Count)" -ForegroundColor Red
+        continue
+    }
+
+    foreach ($i in $indices) {
+        Run-Step $Steps[$i - 1] $i
+    }
+
+    Write-Host "`nDone with selection. Returning to menu..." -ForegroundColor Green
+}
