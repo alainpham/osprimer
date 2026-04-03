@@ -339,7 +339,8 @@ trap 'return 1' ERR
 echo "setup users"
 
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    /usr/sbin/useradd -m -s /bin/bash $TARGET_USERNAME
+    /usr/sbin/groupadd -g 1000 $TARGET_USERNAME
+    /usr/sbin/useradd -m -u 1000 -g 1000 -s /bin/bash $TARGET_USERNAME
     mkdir -p /home/${TARGET_USERNAME}/.ssh
     chown -R ${TARGET_USERNAME}:${TARGET_USERNAME} /home/${TARGET_USERNAME}/.ssh
 EOF
@@ -497,7 +498,7 @@ cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt -y update 
     apt install -y ncurses-term
     apt -y upgrade
-    apt install -y sudo git tmux vim micro curl wget rsync ncdu dnsutils bmon htop btop nvtop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq jc sshfs iotop wakeonlan stow
+    apt install -y sudo git tmux vim micro curl wget rsync ncdu dnsutils bmon htop btop nvtop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq jc sshfs iotop wakeonlan stow tini
     apt install -y systemd-timesyncd
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup iperf3
 
@@ -2025,11 +2026,14 @@ unmountraw
 reboot
 }
 
-dockervm_builder(){
+sandbox(){
 trap 'return 1' ERR
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "0"
+init user "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "0"
+bashaliases
 createuser
 iessentials
+isudo
+idev
 }
 
 cloudvm_common(){
