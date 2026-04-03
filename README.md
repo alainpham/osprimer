@@ -25,3 +25,9 @@ docker run -d \
 
 docker exec -it aisandbox bash
 ```
+
+## Install windows
+
+```PS1
+powershell -ExecutionPolicy Bypass -File setup-scripts\windows-setup.ps1
+```
