@@ -166,7 +166,7 @@ inputtasks() {
     echo "export ROOTFS=${ROOTFS}"
 
     # Map input parameters
-    export TARGET_USERNAME=${1:-apham}
+    export TARGET_USERNAME=${1:-user}
     echo "export TARGET_USERNAME=${TARGET_USERNAME}"
     
     export TARGET_PASSWD=$2
@@ -1986,7 +1986,7 @@ iupdate(){
 # Model to run all the script
 all(){
 trap 'return 1' ERR
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "1"
+init user "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "1"
 mountraw
 bashaliases
 createuser
@@ -2054,7 +2054,7 @@ reboot
 
 ovm(){
 trap 'return 1' ERR
-init apham "NA" "/home/ubuntu/.ssh/authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "0"
+init user "NA" "/home/ubuntu/.ssh/authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "0"
 createuser
 authkeys
 isshkey
@@ -2072,7 +2072,7 @@ EOF
 apk update
 apk add curl git dmidecode bash bash-completion sudo
 sed -i 's|/bin/sh|/bin/bash|' /etc/passwd
-init apham "p" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "0"
+init user "p" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "0"
 createuser
 setpasswd
 isshkey
@@ -2086,15 +2086,15 @@ trap 'return 1' ERR
 # imageurl=https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw
 
 imageurl=https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
-mkdir -p /home/apham/virt/images
-curl -Lo /home/apham/virt/images/lnsvr-orig.qcow2 $imageurl
-qemu-img convert -f qcow2 -O raw /home/apham/virt/images/lnsvr-orig.qcow2 /home/apham/virt/images/lnsvr-orig.raw
+mkdir -p /home/user/virt/images
+curl -Lo /home/user/virt/images/lnsvr-orig.qcow2 $imageurl
+qemu-img convert -f qcow2 -O raw /home/user/virt/images/lnsvr-orig.qcow2 /home/user/virt/images/lnsvr-orig.raw
 }
 
 rawkube(){
 trap 'return 1' ERR
 
-init apham p /home/apham/.ssh/authorized_keys /home/apham/virt/images/lnsvr-orig.raw /home/apham/virt/images/lnsvr.raw 8G  "fr" "pc105" "" "1"
+init user p /home/user/.ssh/authorized_keys /home/user/virt/images/lnsvr-orig.raw /home/user/virt/images/lnsvr.raw 8G  "fr" "pc105" "" "1"
 export OSNAME=ubuntu
 mountraw
 bashaliases
@@ -2116,10 +2116,10 @@ ikube
 isecret
 cleanupapt
 unmountraw
-if [ -f /home/apham/virt/images/d12-kube.qcow2 ]; then
-    rm /home/apham/virt/images/d12-kube.qcow2
+if [ -f /home/user/virt/images/d12-kube.qcow2 ]; then
+    rm /home/user/virt/images/d12-kube.qcow2
 fi
-qemu-img convert -f raw -O qcow2 /home/apham/virt/images/lnsvr.raw /home/apham/virt/images/lnsvr.qcow2
+qemu-img convert -f raw -O qcow2 /home/user/virt/images/lnsvr.raw /home/user/virt/images/lnsvr.qcow2
 }
 
 desktop_common(){
@@ -2165,7 +2165,7 @@ rmbroadcom $force_reinstall
 ubvm(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "1"
+init user "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "1"
 desktop_common $force_reinstall
 reboot
 }
@@ -2173,7 +2173,7 @@ reboot
 ubsvr(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "1"
+init user "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "1"
 cloudvm_common
 reboot
 }
@@ -2182,7 +2182,7 @@ macus(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
 modprobe -r b43 brcmsmac
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "us" "macbook79" "mac" "1"
+init user "NA" "authorized_keys" "NA" "NA" "NA" "us" "macbook79" "mac" "1"
 macs_common $force_reinstall
 reboot
 }
@@ -2191,7 +2191,7 @@ macfr(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
 modprobe -r b43 brcmsmac
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "macbook79" "mac" "1"
+init user "NA" "authorized_keys" "NA" "NA" "NA" "fr" "macbook79" "mac" "1"
 macs_common $force_reinstall
 reboot
 }
@@ -2199,7 +2199,7 @@ reboot
 aaon(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "1"
+init user "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "1"
 laptop_common $force_reinstall
 reboot
 }
@@ -2232,7 +2232,7 @@ cp -r /media/m03/apps/retroarch/states  /home/$TARGET_USERNAME/.config/retroarch
 fujb(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "1"
+init user "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "1"
 desktop_common $force_reinstall
 reboot
 }
@@ -2257,7 +2257,7 @@ sudo dkms autoinstall -k $(uname -r)
 hped(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "1"
+init user "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "1"
 desktop_common $force_reinstall
 reboot
 }
@@ -2266,7 +2266,7 @@ reboot
 ombp(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "us" "pc105" "mac" "0"
+init user "NA" "authorized_keys" "NA" "NA" "NA" "us" "pc105" "mac" "0"
 desktop_common $force_reinstall
 reboot
 }
@@ -2276,7 +2276,7 @@ reboot
 lg15(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "1"
+init user "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "1"
 laptop_common $force_reinstall
 reboot
 }
@@ -2291,7 +2291,7 @@ reboot
 leol(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "1"
+init user "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "1"
 laptop_common $force_reinstall
 rmnouveau
 reboot
@@ -2301,7 +2301,7 @@ reboot
 lpro(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
-init apham "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "1"
+init user "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "1"
 bashaliases $force_reinstall
 fastboot $force_reinstall
 smalllogs $force_reinstall
@@ -2337,7 +2337,7 @@ trap 'return 1' ERR
     cp ~/.ssh/id_ed25519* ~/ssh/
     ssh-keygen -p ~/.ssh/id_ed25519
 
-    git config core.sshCommand 'ssh -i /home/apham/ssh/id_ed25519'
+    git config core.sshCommand 'ssh -i /home/user/ssh/id_ed25519'
 
     echo '/usr/bin/ssh -i ~/ssh/id_ed25519 $@' | sudo tee /usr/local/bin/ssh
     sudo chmod 755 /usr/local/bin/ssh
