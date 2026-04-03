@@ -1,5 +1,8 @@
 # Windows Standard Setup - Step by Step
 # Run as Administrator
+#
+# If you get "not authorized to run scripts", launch it with:
+#   powershell -ExecutionPolicy Bypass -File .\windows-setup.ps1
 
 # ── Step definitions ─────────────────────────────────────────────────────────
 $Steps = @(
