@@ -153,6 +153,10 @@ public class NativeMethods {
         reg add HKCR\ms-gamingoverlay /f /v "URL Protocol" /d "" 2>&1 | Out-Null
         reg add HKCR\ms-gamingoverlay /f /v "NoOpenWith" /d "" 2>&1 | Out-Null
         reg add HKCR\ms-gamingoverlay\shell\open\command /f /ve /d "`"$env:SystemRoot\System32\systray.exe`"" 2>&1 | Out-Null
+        reg add "HKCU\System\GameConfigStore" /v "GameDVR_Enabled" /t REG_DWORD /d 0 /f 2>&1 | Out-Null
+        reg add "HKCU\System\GameConfigStore" /v "GameDVR_FSEBehavior" /t REG_DWORD /d 2 /f 2>&1 | Out-Null
+        reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\GameDVR" /v "AllowGameDVR" /t REG_DWORD /d 0 /f 2>&1 | Out-Null
+        reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "AppCaptureEnabled" /t REG_DWORD /d 0 /f 2>&1 | Out-Null
     }},
     @{ Title = "Disable AutoPlay for USB devices"; Action = {
         Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers" `
