@@ -141,22 +141,59 @@ public class NativeMethods {
         winget install --id ONLYOFFICE.DesktopEditors  -e --accept-source-agreements --accept-package-agreements --silent
     }},
     @{ Title = "Disable Xbox Game Bar"; Action = {
-        reg add HKCR\ms-gamebar /f /ve /d URL:ms-gamebar 2>&1 | Out-Null
-        reg add HKCR\ms-gamebar /f /v "URL Protocol" /d "" 2>&1 | Out-Null
-        reg add HKCR\ms-gamebar /f /v "NoOpenWith" /d "" 2>&1 | Out-Null
-        reg add HKCR\ms-gamebar\shell\open\command /f /ve /d "`"$env:SystemRoot\System32\systray.exe`"" 2>&1 | Out-Null
-        reg add HKCR\ms-gamebarservices /f /ve /d URL:ms-gamebarservices 2>&1 | Out-Null
-        reg add HKCR\ms-gamebarservices /f /v "URL Protocol" /d "" 2>&1 | Out-Null
-        reg add HKCR\ms-gamebarservices /f /v "NoOpenWith" /d "" 2>&1 | Out-Null
-        reg add HKCR\ms-gamebarservices\shell\open\command /f /ve /d "`"$env:SystemRoot\System32\systray.exe`"" 2>&1 | Out-Null
-        reg add HKCR\ms-gamingoverlay /f /ve /d URL:ms-gamingoverlay 2>&1 | Out-Null
-        reg add HKCR\ms-gamingoverlay /f /v "URL Protocol" /d "" 2>&1 | Out-Null
-        reg add HKCR\ms-gamingoverlay /f /v "NoOpenWith" /d "" 2>&1 | Out-Null
-        reg add HKCR\ms-gamingoverlay\shell\open\command /f /ve /d "`"$env:SystemRoot\System32\systray.exe`"" 2>&1 | Out-Null
+        # Redirect protocol handlers to systray.exe (AveYo method - proven on LTSC)
+        "ms-gamebar","ms-gamebarservices","ms-gamingoverlay","ms-gamingdevice" | ForEach-Object {
+            $proto = $_
+            if (!(Test-Path "Registry::HKCR\$proto\shell")) { New-Item "Registry::HKCR\$proto\shell" -Force | Out-Null }
+            if (!(Test-Path "Registry::HKCR\$proto\shell\open")) { New-Item "Registry::HKCR\$proto\shell\open" -Force | Out-Null }
+            if (!(Test-Path "Registry::HKCR\$proto\shell\open\command")) { New-Item "Registry::HKCR\$proto\shell\open\command" -Force | Out-Null }
+            Set-ItemProperty "Registry::HKCR\$proto" "(Default)" "URL:$proto" -Force
+            Set-ItemProperty "Registry::HKCR\$proto" "URL Protocol" "" -Force
+            Set-ItemProperty "Registry::HKCR\$proto" "NoOpenWith" "" -Force
+            Set-ItemProperty "Registry::HKCR\$proto\shell\open\command" "(Default)" "`"$env:SystemRoot\System32\systray.exe`"" -Force
+        }
+
+        # Disable GameDVR / Game Bar
         reg add "HKCU\System\GameConfigStore" /v "GameDVR_Enabled" /t REG_DWORD /d 0 /f 2>&1 | Out-Null
         reg add "HKCU\System\GameConfigStore" /v "GameDVR_FSEBehavior" /t REG_DWORD /d 2 /f 2>&1 | Out-Null
+        reg add "HKCU\System\GameConfigStore" /v "GameDVR_FSEBehaviorMode" /t REG_DWORD /d 2 /f 2>&1 | Out-Null
+        reg add "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\GameDVR" /v "NoWinKeys" /t REG_DWORD /d 1 /f 2>&1 | Out-Null
         reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\GameDVR" /v "AllowGameDVR" /t REG_DWORD /d 0 /f 2>&1 | Out-Null
         reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "AppCaptureEnabled" /t REG_DWORD /d 0 /f 2>&1 | Out-Null
+
+        # Disable Game Bar tips and "open Game Bar when controller connected"
+        reg add "HKCU\Software\Microsoft\GameBar" /v "UseNexusForGameBarEnabled" /t REG_DWORD /d 0 /f 2>&1 | Out-Null
+        reg add "HKCU\Software\Microsoft\GameBar" /v "AutoGameModeEnabled" /t REG_DWORD /d 0 /f 2>&1 | Out-Null
+        reg add "HKCU\Software\Microsoft\GameBar" /v "ShowStartupPanel" /t REG_DWORD /d 0 /f 2>&1 | Out-Null
+        reg add "HKCU\Software\Microsoft\GameBar" /v "GamePanelStartupTipIndex" /t REG_DWORD /d 3 /f 2>&1 | Out-Null
+        reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "AppCaptureEnabled" /t REG_DWORD /d 0 /f 2>&1 | Out-Null
+        reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\GameDVR" /v "GamePanelStartupTipIndex" /t REG_DWORD /d 3 /f 2>&1 | Out-Null
+
+        # Group-policy level GameDVR block
+        reg add "HKLM\SOFTWARE\Microsoft\PolicyManager\default\GameDVR\AllowGameDVR" /v "value" /t REG_DWORD /d 0 /f 2>&1 | Out-Null
+
+        # Disable Game Bar scheduled tasks (prevent background triggers)
+        Get-ScheduledTask -TaskName "XboxGameBar*" -ErrorAction SilentlyContinue | Disable-ScheduledTask -ErrorAction SilentlyContinue
+
+        # Kill Game Bar Presence Writer (triggers on gamepad plug)
+        reg add "HKLM\SOFTWARE\Microsoft\WindowsRuntime\ActivatableClassId\Windows.Gaming.GameBar.PresenceServer.Internal.PresenceWriter" /v "ActivationType" /t REG_DWORD /d 0 /f 2>&1 | Out-Null
+
+        # Disable Xbox-related services
+        Get-Service -Name "XboxGipSvc" -ErrorAction SilentlyContinue | Stop-Service -Force -ErrorAction SilentlyContinue
+        Get-Service -Name "XblAuthManager" -ErrorAction SilentlyContinue | Stop-Service -Force -ErrorAction SilentlyContinue
+        Get-Service -Name "XblGameSave" -ErrorAction SilentlyContinue | Stop-Service -Force -ErrorAction SilentlyContinue
+        Get-Service -Name "XboxNetApiSvc" -ErrorAction SilentlyContinue | Stop-Service -Force -ErrorAction SilentlyContinue
+        Set-Service -Name "XboxGipSvc" -StartupType Disabled -ErrorAction SilentlyContinue
+        Set-Service -Name "XblAuthManager" -StartupType Disabled -ErrorAction SilentlyContinue
+        Set-Service -Name "XblGameSave" -StartupType Disabled -ErrorAction SilentlyContinue
+        Set-Service -Name "XboxNetApiSvc" -StartupType Disabled -ErrorAction SilentlyContinue
+
+        # Remove Game Bar appx package if present
+        Get-AppxPackage -Name "Microsoft.XboxGamingOverlay" -ErrorAction SilentlyContinue | Remove-AppxPackage -ErrorAction SilentlyContinue
+        Get-AppxPackage -Name "Microsoft.Xbox.TCUI" -ErrorAction SilentlyContinue | Remove-AppxPackage -ErrorAction SilentlyContinue
+        Get-AppxPackage -Name "Microsoft.XboxApp" -ErrorAction SilentlyContinue | Remove-AppxPackage -ErrorAction SilentlyContinue
+        Get-AppxPackage -Name "Microsoft.XboxIdentityProvider" -ErrorAction SilentlyContinue | Remove-AppxPackage -ErrorAction SilentlyContinue
+        Get-AppxPackage -Name "Microsoft.XboxSpeechToTextOverlay" -ErrorAction SilentlyContinue | Remove-AppxPackage -ErrorAction SilentlyContinue
     }},
     @{ Title = "Disable AutoPlay for USB devices"; Action = {
         Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\AutoplayHandlers" `
