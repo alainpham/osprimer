@@ -2227,7 +2227,7 @@ trap 'return 1' ERR
 
 ln -s /media/m01/apps/media-content /home/$TARGET_USERNAME/apps/media-content/m01
 ln -s /media/m02/apps/media-content /home/$TARGET_USERNAME/apps/media-content/m02
-ln -s /media/m02/apps/media-content /home/$TARGET_USERNAME/apps/media-content/m03
+ln -s /media/m03/apps/media-content /home/$TARGET_USERNAME/apps/media-content/m03
 
 rm -rf /home/$TARGET_USERNAME/.config/retroarch/saves
 cp -r /media/m03/apps/retroarch/saves  /home/$TARGET_USERNAME/.config/retroarch/saves
