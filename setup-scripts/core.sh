@@ -4,15 +4,21 @@
 inputversions() {
     trap 'return 1' ERR
 
-    export CORE_VERSION=20260320
+    export CORE_VERSION=20260404
     echo "export CORE_VERSION=${CORE_VERSION}"
 
+    ##############################
+    # TOOLING                    #
+    ##############################
+    export NERDFONTS="Noto "
+    echo "export NERDFONTS=${NERDFONTS}"
+    
     # https://kubernetes.io/releases/  https://cloud.google.com/kubernetes-engine/docs/release-notes
     export MAJOR_KUBE_VERSION=v1.34
     echo "export MAJOR_KUBE_VERSION=${MAJOR_KUBE_VERSION}"
     
     # https://github.com/k3s-io/k3s/releases
-    export K3S_VERSION="v1.34.5+k3s1"
+    export K3S_VERSION="v1.34.6+k3s1"
     echo "export K3S_VERSION=${K3S_VERSION}"
 
     # https://github.com/derailed/k9s/releases
@@ -23,65 +29,24 @@ inputversions() {
     export MVN_VERSION=3.9.12
     echo "export MVN_VERSION=${MVN_VERSION}"
 
-    export NERDFONTS="Noto "
-    echo "export NERDFONTS=${NERDFONTS}"
-    
-    ### Corporate software
-    # https://zoom.us/download?os=linux 
-    export ZOOM_VERSION=6.5.11.4015
-    echo "export ZOOM_VERSION=${ZOOM_VERSION}"
-
-    # https://hub.docker.com/r/infinityofspace/certbot_dns_duckdns/tags
-    export CERTBOT_DUCKDNS_VERSION=v1.8.0
-    echo "export CERTBOT_DUCKDNS_VERSION=${CERTBOT_DUCKDNS_VERSION}"
-
-    ### appimages
-
     # Speedtest ookla
     export SPEEDTEST_VERSION=1.2.0
     echo "export SPEEDTEST_VERSION=${SPEEDTEST_VERSION}" 
 
-    # https://mlv.app/
-    export MLVAPP_VERSION=1.15
-    echo "export MLVAPP_VERSION=${MLVAPP_VERSION}"
+    # https://github.com/pythops/bluetui/releases
+    export BLUETUI_VERSION=0.8.0
+    echo "export BLUETUI_VERSION=${BLUETUI_VERSION}" 
 
-    # https://beeref.org/
-    export BEEREF_VERSION=0.3.3
-    echo "export BEEREF_VERSION=${BEEREF_VERSION}"
+    # https://github.com/pythops/impala/releases
+    export IMPALA_VERSION=0.7.3
+    echo "export IMPALA_VERSION=${IMPALA_VERSION}" 
 
-    # https://www.freac.org/downloads-mainmenu-33
-    export FREAC_VERSION=1.1.7
-    echo "export FREAC_VERSION=${FREAC_VERSION}"
-
-    # https://github.com/jgraph/drawio-desktop/releases
-    export DRAWIO_VERSION=29.3.6
-    echo "export DRAWIO_VERSION=${DRAWIO_VERSION}"
-
-    # https://www.onlyoffice.com/download-desktop.aspx
-    export ONLYOFFICE_VERSION=v9.2.1
-    echo "export ONLYOFFICE_VERSION=${ONLYOFFICE_VERSION}"
-
-    # https://kdenlive.org/download/ 
-    export KDENLIVE_MAIN_VERSION=25.12
-    echo "export KDENLIVE_MAIN_VERSION=${KDENLIVE_MAIN_VERSION}"
-    export KDENLIVE_FULL_VERSION=25.12.1
-    echo "export KDENLIVE_FULL_VERSION=${KDENLIVE_FULL_VERSION}"
-    # https://heldercorreia.bitbucket.io/speedcrunch/download.html
-    export SPEEDCRUNCH_VERSION=0.12
-    echo "export SPEEDCRUNCH_VERSION=${SPEEDCRUNCH_VERSION}"
-
-    # https://www.videohelp.com/software/AviDemux
-    export AVIDEMUX_VERSION=2.8.1
-    echo "export AVIDEMUX_VERSION=${AVIDEMUX_VERSION}"
-
-    # https://github.com/localsend/localsend/releases
-    export LOCALSEND_VERSION=1.17.0
-    echo "export LOCALSEND_VERSION=${LOCALSEND_VERSION}"
-
-    ## end appimages
+    ##############################
+    # DWM                        #
+    ##############################
 
     # https://github.com/yshui/picom/releases
-    export PICOM_VERSION=12.5
+    export PICOM_VERSION=13
     echo "export PICOM_VERSION=${PICOM_VERSION}"
 
     # https://github.com/Hummer12007/brightnessctl/releases
@@ -95,15 +60,15 @@ inputversions() {
     # https://github.com/naelstrof/maim/releases
     export MAIM_VERSION=5.8.1
     echo "export MAIM_VERSION=${MAIM_VERSION}"
-    # https://gitlab.com/es-de/emulationstation-de/-/releases https://gitlab.com/es-de/emulationstation-de/-/package_files/243196984/download #https://gitlab.com/es-de/emulationstation-de/-/package_files/246875981/download
-    export ESDE_VERSION=3.4.0
-    echo "export ESDE_VERSION=${ESDE_VERSION}"
-    export ESDE_VERSION_ID=246875981
-    echo "export ESDE_VERSION_ID=${ESDE_VERSION_ID}"
 
-    # https://buildbot.libretro.com/stable/
-    export RETROARCH_VERSION=1.22.2
-    echo "export RETROARCH_VERSION=${RETROARCH_VERSION}"
+
+    ##############################
+    # APPS                       #
+    ##############################
+
+    # https://mlv.app/
+    export MLVAPP_VERSION=1.15
+    echo "export MLVAPP_VERSION=${MLVAPP_VERSION}"
 
     # https://github.com/moonlight-stream/moonlight-qt/releases/
     export MOONLIGHT_VERSION=6.1.0
@@ -112,6 +77,21 @@ inputversions() {
     # https://github.com/LizardByte/Sunshine/releases
     export SUNSHINE_VERSION=2025.924.154138
     echo "export SUNSHINE_VERSION=${SUNSHINE_VERSION}" 
+
+    ##############################
+    # GAMING                     #
+    ##############################
+
+    # https://gitlab.com/es-de/emulationstation-de/-/releases https://gitlab.com/es-de/emulationstation-de/-/package_files/243196984/download #https://gitlab.com/es-de/emulationstation-de/-/package_files/246875981/download
+    export ESDE_VERSION=3.4.0
+    echo "export ESDE_VERSION=${ESDE_VERSION}"
+
+    export ESDE_VERSION_ID=246875981
+    echo "export ESDE_VERSION_ID=${ESDE_VERSION_ID}"
+
+    # https://buildbot.libretro.com/stable/
+    export RETROARCH_VERSION=1.22.2
+    echo "export RETROARCH_VERSION=${RETROARCH_VERSION}"
 
     #  https://github.com/PCSX2/pcsx2/releases/latest
     export PCSX2_VERSION=2.6.3
@@ -126,20 +106,15 @@ inputversions() {
     echo "export CEMU_VERSION=${CEMU_VERSION}" 
 
     # https://github.com/godotengine/godot/releases https://github.com/godotengine/godot/releases/download/4.5.1-stable/Godot_v4.5.1-stable_linux.x86_64.zip
-    export GODOT_VERSION=4.6.1-stable
+    export GODOT_VERSION=4.6.2-stable
     echo "export GODOT_VERSION=${GODOT_VERSION}" 
 
-    # https://github.com/pythops/bluetui/releases
-    export BLUETUI_VERSION=0.8.0
-    echo "export BLUETUI_VERSION=${BLUETUI_VERSION}" 
+    ##############################
+    # OS RELATED                 #
+    ##############################
 
-    # https://github.com/pythops/impala/releases
-    export IMPALA_VERSION=0.7.3
-    echo "export IMPALA_VERSION=${IMPALA_VERSION}" 
-    
-    # https://github.com/AntiMicroX/antimicrox/releases
-    export ANTIMICROX_VERSION=3.5.1
-    echo "export ANTIMICROX_VERSION=${ANTIMICROX_VERSION}" 
+    export ROOTFS=/
+    echo "export ROOTFS=${ROOTFS}"
 
     export OSNAME=$(awk -F= '/^ID=/ {gsub(/"/, "", $2); print $2}' /etc/os-release)
     echo "export OSNAME=${OSNAME}"
@@ -160,10 +135,6 @@ inputversions() {
 
 inputtasks() {
     trap 'return 1' ERR
-
-    #default root
-    export ROOTFS=/
-    echo "export ROOTFS=${ROOTFS}"
 
     # Map input parameters
     export TARGET_USERNAME=${1:-user}
@@ -201,16 +172,14 @@ inputtasks() {
     export CHROOT_BASH=""
 }
 
-bastion(){
-    trap 'return 1' ERR
-    apt update 
-    apt install -y curl git qemu-utils parted cloud-guest-utils
-    ilineinfile
-}
-
 ilineinfile(){
-scripts="lineinfile"
+trap 'return 1' ERR
 
+if ! which wget > /dev/null 2>&1; then
+    apt update && apt install -y wget
+fi
+
+scripts="lineinfile"
 for script in $scripts ; do
 wget -O ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/dotfiles/master/scripts/os/$script
 chmod 755 ${ROOTFS}/usr/local/bin/$script
@@ -225,69 +194,54 @@ ilineinfile
 
 export BASHRC="/etc/bash.bashrc"
 
-lineinfile ${ROOTFS}${BASHRC} ".*alias.*ll.*=.*" 'alias ll="ls -larth"'
 
-lineinfile ${ROOTFS}${BASHRC} ".*alias.*ap=.*" 'alias ap=ansible-playbook'
+lineinfile ${ROOTFS}${BASHRC} ".*export.*CORE_VERSION=.*" "export CORE_VERSION='${CORE_VERSION}'"
 
-
-lineinfile ${ROOTFS}${BASHRC} ".*export.*ROOTFS=.*" 'export ROOTFS=\/'
-lineinfile ${ROOTFS}${BASHRC} ".*export.*TARGET_USERNAME=.*" "export TARGET_USERNAME=${TARGET_USERNAME}"
+# TOOLING
+lineinfile ${ROOTFS}${BASHRC} ".*export.*NERDFONTS=.*" "export NERDFONTS=\"${NERDFONTS}\""
 lineinfile ${ROOTFS}${BASHRC} ".*export.*MAJOR_KUBE_VERSION=.*" "export MAJOR_KUBE_VERSION=${MAJOR_KUBE_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*K3S_VERSION=.*" "export K3S_VERSION=${K3S_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*K9S_VERSION=.*" "export K9S_VERSION=${K9S_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*MVN_VERSION=.*" "export MVN_VERSION=${MVN_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*NERDFONTS=.*" "export NERDFONTS=\"${NERDFONTS}\""
-lineinfile ${ROOTFS}${BASHRC} ".*export.*ZOOM_VERSION=.*" "export ZOOM_VERSION=${ZOOM_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*MLVAPP_VERSION=.*" "export MLVAPP_VERSION=${MLVAPP_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*BEEREF_VERSION=.*" "export BEEREF_VERSION=${BEEREF_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*FREAC_VERSION=.*" "export FREAC_VERSION=${FREAC_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*DRAWIO_VERSION=.*" "export DRAWIO_VERSION=${DRAWIO_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*CERTBOT_DUCKDNS_VERSION=.*" "export CERTBOT_DUCKDNS_VERSION=${CERTBOT_DUCKDNS_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*ONLYOFFICE_VERSION=.*" "export ONLYOFFICE_VERSION=${ONLYOFFICE_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*SPEEDTEST_VERSION=.*" "export SPEEDTEST_VERSION=${SPEEDTEST_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*BLUETUI_VERSION=.*" "export BLUETUI_VERSION=${BLUETUI_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*IMPALA_VERSION=.*" "export IMPALA_VERSION=${IMPALA_VERSION}"
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*PICOM_VERSION=.*" "export PICOM_VERSION=${PICOM_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*BRIGHTNESSCTL_VERSION=.*" "export BRIGHTNESSCTL_VERSION=${BRIGHTNESSCTL_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*SLOP_VERSION=.*" "export SLOP_VERSION=${SLOP_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*MAIM_VERSION=.*" "export MAIM_VERSION=${MAIM_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*KDENLIVE_MAIN_VERSION=.*" "export KDENLIVE_MAIN_VERSION=${KDENLIVE_MAIN_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*KDENLIVE_FULL_VERSION=.*" "export KDENLIVE_FULL_VERSION=${KDENLIVE_FULL_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*SPEEDCRUNCH_VERSION=.*" "export SPEEDCRUNCH_VERSION=${SPEEDCRUNCH_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*AVIDEMUX_VERSION=.*" "export AVIDEMUX_VERSION=${AVIDEMUX_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*LOCALSEND_VERSION=.*" "export LOCALSEND_VERSION=${LOCALSEND_VERSION}"
+
+# APPS
+lineinfile ${ROOTFS}${BASHRC} ".*export.*MLVAPP_VERSION=.*" "export MLVAPP_VERSION=${MLVAPP_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*GODOT_VERSION=.*" "export GODOT_VERSION=${GODOT_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*MOONLIGHT_VERSION=.*" "export MOONLIGHT_VERSION=${MOONLIGHT_VERSION}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*SUNSHINE_VERSION=.*" "export SUNSHINE_VERSION=${SUNSHINE_VERSION}"
+
+# GAMING
 lineinfile ${ROOTFS}${BASHRC} ".*export.*ESDE_VERSION=.*" "export ESDE_VERSION=${ESDE_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*ESDE_VERSION_ID=.*" "export ESDE_VERSION_ID=${ESDE_VERSION_ID}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*RETROARCH_VERSION=.*" "export RETROARCH_VERSION=${RETROARCH_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*MOONLIGHT_VERSION=.*" "export MOONLIGHT_VERSION=${MOONLIGHT_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*SUNSHINE_VERSION=.*" "export SUNSHINE_VERSION=${SUNSHINE_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*PCSX2_VERSION=.*" "export PCSX2_VERSION=${PCSX2_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*PPSSPP_VERSION=.*" "export PPSSPP_VERSION=${PPSSPP_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*CEMU_VERSION=.*" "export CEMU_VERSION=${CEMU_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*GODOT_VERSION=.*" "export GODOT_VERSION=${GODOT_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*BLUETUI_VERSION=.*" "export BLUETUI_VERSION=${BLUETUI_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*IMPALA_VERSION=.*" "export IMPALA_VERSION=${IMPALA_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*ANTIMICROX_VERSION=.*" "export ANTIMICROX_VERSION=${ANTIMICROX_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*SPEEDTEST_VERSION=.*" "export SPEEDTEST_VERSION=${SPEEDTEST_VERSION}"
 
+# OS RELATED
+lineinfile ${ROOTFS}${BASHRC} ".*export.*ROOTFS=.*" 'export ROOTFS=\/'
 lineinfile ${ROOTFS}${BASHRC} ".*export.*OSNAME=.*" "export OSNAME=${OSNAME}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*OSVERSION=.*" "export OSVERSION=${OSVERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*WILDCARD_DOMAIN=.*" "export WILDCARD_DOMAIN=houze.dns.army"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*EMAIL=.*" "export EMAIL=admin@houze.dns.army"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*DUCKDNS_TOKEN=.*" "export DUCKDNS_TOKEN=xxxx-xxxx-xxxx-xxxx-xxxx"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*PRODUCT_NAME=.*" "export PRODUCT_NAME='${PRODUCT_NAME}'"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*TIMEZONE=.*" "export TIMEZONE=${TIMEZONE}"
+
+lineinfile ${ROOTFS}${BASHRC} ".*export.*TARGET_USERNAME=.*" "export TARGET_USERNAME=${TARGET_USERNAME}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*KEYBOARD_LAYOUT=.*" "export KEYBOARD_LAYOUT=${KEYBOARD_LAYOUT}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*KEYBOARD_MODEL=.*" "export KEYBOARD_MODEL=${KEYBOARD_MODEL}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*KEYBOARD_VARIANT=.*" "export KEYBOARD_VARIANT=${KEYBOARD_VARIANT}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*NUMLOCK_ON_BOOT=.*" "export NUMLOCK_ON_BOOT=${NUMLOCK_ON_BOOT}"
 
-lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_ADDR=.*" "export SYNCTHING_HUB_ADDR=tcp://192.168.8.100:22000"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_APIURL=.*" "export SYNCTHING_HUB_APIURL=http://192.168.8.100:8384"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_ID=.*" "export SYNCTHING_HUB_ID=XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX-XXXXXXX"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*SYNCTHING_HUB_APIKEY=.*" "export SYNCTHING_HUB_APIKEY=X"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*WILDCARD_DOMAIN=.*" "export WILDCARD_DOMAIN=houze.dns.army"
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*APT_PROXY=.*" "export APT_PROXY='${APT_PROXY}'"
 
-lineinfile ${ROOTFS}${BASHRC} ".*export.*CORE_VERSION=.*" "export CORE_VERSION='${CORE_VERSION}'"
 
 
 echo "bash aliases setup finished"
@@ -501,17 +455,7 @@ cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt install -y sudo git tmux vim micro curl wget rsync ncdu dnsutils bmon htop btop nvtop bash-completion gpg whois haveged zip unzip virt-what wireguard iptables jq jc sshfs iotop wakeonlan stow tini
     apt install -y systemd-timesyncd
     DEBIAN_FRONTEND=noninteractive apt install -y cloud-guest-utils openssh-server console-setup iperf3
-
-    mkdir /tmp/sptest
-    curl -L -o /tmp/sptest/speedtest.tgz https://install.speedtest.net/app/cli/ookla-speedtest-$SPEEDTEST_VERSION-linux-x86_64.tgz
-    
-    tar -xzf /tmp/sptest/speedtest.tgz -C /tmp/sptest
-    cp /tmp/sptest/speedtest /usr/local/bin/speedtest
-    chmod 755 /usr/local/bin/speedtest
-    rm -f /tmp/sptest.tgz
 EOF
-
-
 
 # No unattended upgrade
 cat << EOF | tee ${ROOTFS}/etc/apt/apt.conf.d/20auto-upgrades
@@ -519,9 +463,12 @@ APT::Periodic::Update-Package-Lists "0";
 APT::Periodic::Unattended-Upgrade "0";
 EOF
 
+ispeedtest
+
 istowdotfiles
 
 echo "essentials installed"
+
 }
 
 isudo() {
@@ -532,6 +479,22 @@ cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
 EOF
 
 echo "sudo setup finished"
+}
+
+ispeedtest() {
+trap 'return 1' ERR
+
+# Essentials packages
+echo "install essentials"
+
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
+    mkdir /tmp/sptest
+    curl -L -o /tmp/sptest/speedtest.tgz https://install.speedtest.net/app/cli/ookla-speedtest-$SPEEDTEST_VERSION-linux-x86_64.tgz
+    tar -xzf /tmp/sptest/speedtest.tgz -C /tmp/sptest
+    cp /tmp/sptest/speedtest /usr/local/bin/speedtest
+    chmod 755 /usr/local/bin/speedtest
+    rm -f /tmp/sptest.tgz
+EOF
 }
 
 istowdotfiles() {
@@ -875,6 +838,8 @@ echo "additional gui packages"
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt install -y ntfs-3g ifuse rofi mousepad mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv nomacs kimageformat-plugins  acpitool lm-sensors fonts-noto libnotify-bin dunst mkvtoolnix-gui python3-mutagen imagemagick mediainfo-gui mediainfo arandr picom jgmenu brightnessctl cups xsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze-gtk-theme breeze-icon-theme joystick gparted vulkan-tools flatpak
     apt install -y ffmpeg libfdk-aac2 libnppig12 libnppicc12 libnppidei12 libnppif12 libminiupnpc17
+    flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+    flatpak install -y flathub com.github.tchx84.Flatseal
 EOF
 
 #YT-DLP latest
@@ -1199,27 +1164,30 @@ EOF
 
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     DEBIAN_FRONTEND=noninteractive apt install -y libdvd-pkg
-EOF
-
-echo "dpkg libdvd-pkg"
-cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     DEBIAN_FRONTEND=noninteractive dpkg-reconfigure libdvd-pkg
 EOF
 
-# install dbeaver
-if [ ! -f "${ROOTFS}/usr/bin/dbeaver" ] || [ "$force_reinstall" = "1" ]; then
-mkdir -p ${ROOTFS}/opt/debs/
-wget -O ${ROOTFS}/opt/debs/dbeaver.deb https://dbeaver.io/files/dbeaver-ce_latest_amd64.deb
-cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    apt install -y /opt/debs/dbeaver.deb
-EOF
-fi
-
 # configure OBS
 mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/recordings
+
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/recordings
 EOF
+
+
+flatpak install -y flathub io.dbeaver.DBeaverCommunity
+flatpak install -y flathub org.kde.kdenlive
+flatpak install -y flathub org.onlyoffice.desktopeditors
+flatpak install -y flathub com.jgraph.drawio.desktop
+flatpak install -y flathub com.viber.Viber
+flatpak install -y flathub org.beeref.BeeRef
+flatpak install -y flathub org.freac.freac
+flatpak install -y flathub org.localsend.localsend_app
+flatpak install -y flathub org.avidemux.Avidemux
+flatpak install -y flathub com.getpostman.Postman
+flatpak install -y flathub io.github.antimicrox.antimicrox
+flatpak install -y flathub us.zoom.Zoom
+flatpak install -y flathub com.slack.Slack
 
 iappimages $force_reinstall
 
@@ -1233,22 +1201,14 @@ trap 'return 1' ERR
 force_reinstall=${1:-0}
 
 # APPimages
-ikdenlive $force_reinstall
-ionlyoffice $force_reinstall
-imlvapp $force_reinstall
-idrawio $force_reinstall
-iviber $force_reinstall
-ibeeref $force_reinstall
-ifreac $force_reinstall
-ilocalsend $force_reinstall
-iavidemux $force_reinstall
-ipostman $force_reinstall
-imoonlight $force_reinstall
-isunshine $force_reinstall
 ibluetui $force_reinstall
 iimpala $force_reinstall
+imlvapp $force_reinstall
+
+imoonlight $force_reinstall
+isunshine $force_reinstall
 igodot $force_reinstall
-iantimicrox $force_reinstall
+
 }
 
 iwebapps(){
@@ -1299,38 +1259,6 @@ echo "moonlight already installed, skipping"
 fi
 }
 
-ikdenlive(){
-trap 'return 1' ERR
-force_reinstall=${1:-0}
-
-#kdenlive
-if [ ! -f ${ROOTFS}/opt/appimages/kdenlive.AppImage ] || [ "$force_reinstall" = "1" ]; then
-wget -O ${ROOTFS}/opt/appimages/kdenlive.AppImage \
-https://download.kde.org/stable/kdenlive/${KDENLIVE_MAIN_VERSION}/linux/kdenlive-${KDENLIVE_FULL_VERSION}-x86_64.AppImage
-cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    chmod 755 /opt/appimages/kdenlive.AppImage
-    ln -sf /opt/appimages/kdenlive.AppImage /usr/local/bin/kdenlive
-EOF
-else
-echo "kdenlive already installed, skipping"
-fi
-}
-
-ionlyoffice() {
-trap 'return 1' ERR
-force_reinstall=${1:-0}
-# Only Office
-if [ ! -f ${ROOTFS}/opt/appimages/onlyoffice.AppImage ] || [ "$force_reinstall" = "1" ]; then
-wget -O ${ROOTFS}/opt/appimages/onlyoffice.AppImage https://github.com/ONLYOFFICE/appimage-desktopeditors/releases/download/${ONLYOFFICE_VERSION}/DesktopEditors-x86_64.AppImage
-cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    chmod 755 /opt/appimages/onlyoffice.AppImage
-    ln -sf /opt/appimages/onlyoffice.AppImage /usr/local/bin/onlyoffice
-EOF
-else
-echo "onlyoffice already installed, skipping"
-fi
-}
-
 imlvapp(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
@@ -1346,137 +1274,6 @@ echo "mlvapp already installed, skipping"
 fi
 }
 
-iantimicrox(){
-trap 'return 1' ERR
-force_reinstall=${1:-0}
-if [ ! -f ${ROOTFS}/opt/appimages/antimicrox.AppImage ] || [ "$force_reinstall" = "1" ]; then
-wget -O ${ROOTFS}/opt/appimages/antimicrox.AppImage https://github.com/AntiMicroX/antimicrox/releases/download/${ANTIMICROX_VERSION}/AntiMicroX-x86_64.AppImage
-cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    chmod 755 /opt/appimages/antimicrox.AppImage
-    ln -sf /opt/appimages/antimicrox.AppImage /usr/local/bin/antimicrox
-EOF
-else
-echo "antimicrox already installed, skipping"
-fi
-}
-
-idrawio(){
-trap 'return 1' ERR
-force_reinstall=${1:-0}
-# Drawio
-if [ ! -f ${ROOTFS}/opt/appimages/drawio.AppImage ] || [ "$force_reinstall" = "1" ]; then
-wget -O ${ROOTFS}/opt/appimages/drawio.AppImage https://github.com/jgraph/drawio-desktop/releases/download/v${DRAWIO_VERSION}/drawio-x86_64-${DRAWIO_VERSION}.AppImage
-cat << EOF | tee ${ROOTFS}/usr/local/bin/drawio
-/opt/appimages/drawio.AppImage --no-sandbox
-EOF
-cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    chmod 755 /opt/appimages/drawio.AppImage
-    chmod 755 /usr/local/bin/drawio
-EOF
-else
-echo "drawio already installed, skipping"
-fi
-}
-
-iviber() {
-trap 'return 1' ERR
-force_reinstall=${1:-0}
-#viber
-if [ ! -f ${ROOTFS}/opt/appimages/viber.AppImage ] || [ "$force_reinstall" = "1" ]; then
-wget -O ${ROOTFS}/opt/appimages/viber.AppImage https://download.cdn.viber.com/desktop/Linux/viber.AppImage
-cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    chmod 755 /opt/appimages/viber.AppImage
-    ln -sf /opt/appimages/viber.AppImage /usr/local/bin/viber
-EOF
-else
-echo "viber already installed, skipping"
-fi
-}
-
-ibeeref() {
-trap 'return 1' ERR
-force_reinstall=${1:-0}
-# beeref
-if [ ! -f ${ROOTFS}/opt/appimages/beeref.AppImage ] || [ "$force_reinstall" = "1" ]; then
-wget -O ${ROOTFS}/opt/appimages/beeref.AppImage https://github.com/rbreu/beeref/releases/download/v${BEEREF_VERSION}/BeeRef-${BEEREF_VERSION}.appimage
-cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    chmod 755 /opt/appimages/beeref.AppImage
-    ln -sf /opt/appimages/beeref.AppImage /usr/local/bin/beeref
-EOF
-else
-echo "beeref already installed, skipping"
-fi
-}
-
-ifreac() {
-trap 'return 1' ERR
-force_reinstall=${1:-0}
-#freac
-if [ ! -f ${ROOTFS}/opt/appimages/freac.AppImage ] || [ "$force_reinstall" = "1" ]; then
-wget -O ${ROOTFS}/opt/appimages/freac.AppImage https://github.com/enzo1982/freac/releases/download/v${FREAC_VERSION}/freac-${FREAC_VERSION}-linux-x86_64.AppImage
-cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    chmod 755 /opt/appimages/freac.AppImage
-    ln -sf /opt/appimages/freac.AppImage /usr/local/bin/freac
-EOF
-else
-echo "freac already installed, skipping"
-fi
-}
-
-ilocalsend() {
-trap 'return 1' ERR
-force_reinstall=${1:-0}
-
-# localsend
-if [ ! -f ${ROOTFS}/opt/appimages/localsend.AppImage ] || [ "$force_reinstall" = "1" ]; then
-wget -O ${ROOTFS}/opt/appimages/localsend.AppImage https://github.com/localsend/localsend/releases/download/v${LOCALSEND_VERSION}/LocalSend-${LOCALSEND_VERSION}-linux-x86-64.AppImage
-cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    chmod 755 /opt/appimages/localsend.AppImage
-    ln -sf /opt/appimages/localsend.AppImage /usr/local/bin/localsend
-    ln -sf /opt/appimages/localsend.AppImage /usr/local/bin/localsend_app
-EOF
-else
-echo "localsend already installed, skipping"
-fi
-}
-
-iavidemux(){
-trap 'return 1' ERR
-force_reinstall=${1:-0}
-# avidemux
-if [ ! -f ${ROOTFS}/opt/appimages/avidemux.AppImage ] || [ "$force_reinstall" = "1" ]; then
-wget -O ${ROOTFS}/opt/appimages/avidemux.AppImage https://altushost-swe.dl.sourceforge.net/project/avidemux/avidemux/${AVIDEMUX_VERSION}/avidemux_${AVIDEMUX_VERSION}.appImage?viasf=1
-cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    chmod 755 /opt/appimages/avidemux.AppImage
-    ln -sf /opt/appimages/avidemux.AppImage /usr/local/bin/avidemux
-EOF
-else
-echo "avidemux already installed, skipping"
-fi
-}
-
-
-ipostman(){
-trap "return 1" ERR
-
-force_reinstall=${1:-0}
-
-if [ -f "${ROOTFS}/opt/appimages/postman/Postman" ] && [ "$force_reinstall" = "0" ]; then
-    echo "postman already installed, skipping"
-    return 0
-fi
-
-mkdir -p ${ROOTFS}/opt/appimages/postman
-rm -rf ${ROOTFS}/opt/appimages/postman/*
-
-curl -L -o /tmp/postman.tar.gz https://dl.pstmn.io/download/latest/linux_64
-tar --strip-components=1 -xzvf /tmp/postman.tar.gz -C ${ROOTFS}/opt/appimages/postman
-cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    ln -sf /opt/appimages/postman/Postman /usr/local/bin/postman
-EOF
-rm -f /tmp/postman.tar.gz
-echo "postman installed"
-}
 
 igodot(){
 trap "return 1" ERR
@@ -1547,14 +1344,8 @@ ipcsx2 $force_reinstall
 #dolphin GC wii
 idolphinbin $force_reinstall
 
-#jellyfin
-ijfin $force_reinstall
-
 #cemu wiiu
 icemu $force_reinstall
-
-#Bottles for PC games
-ibottles $force_reinstall
 
 #shortcuts with gamepads
 igshorts
@@ -1737,57 +1528,6 @@ echo "cemu already installed, skipping"
 fi
 }
 
-
-ibottles(){
-trap 'return 1' ERR
-# flatpaks
-cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-
-flatpak install -y flathub com.usebottles.bottles
-EOF
-
-cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-flatpak install -y flathub com.github.tchx84.Flatseal
-EOF
-
-cat <<EOF | tee ${ROOTFS}/usr/local/bin/bottles
-flatpak run com.usebottles.bottles
-EOF
-
-cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-   chmod 755 /usr/local/bin/bottles
-EOF
-
-cat <<EOF | tee ${ROOTFS}/usr/local/bin/flatseal
-flatpak run com.github.tchx84.Flatseal
-EOF
-cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-   chmod 755 /usr/local/bin/flatseal
-EOF
-
-# post install : launch bottles to download
-# create a bottle called games
-# create a bottle called apps
-# give access to GPU and user folder through flatseal.
-}
-
-idolphin(){
-trap 'return 1' ERR
-cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-
-    flatpak install -y flathub org.DolphinEmu.dolphin-emu
-EOF
-
-cat <<EOF | tee ${ROOTFS}/usr/local/bin/dolphin
-flatpak run org.DolphinEmu.dolphin-emu
-EOF
-cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-   chmod 755 /usr/local/bin/dolphin
-EOF
-}
-
 idolphinbin(){
 trap "return 1" ERR
 
@@ -1811,20 +1551,6 @@ echo "dolphin installed"
 }
 
 
-ijfin(){
-trap 'return 1' ERR
-cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-flatpak install -y flathub com.github.iwalton3.jellyfin-media-player
-EOF
-cat <<EOF | tee ${ROOTFS}/usr/local/bin/jellyfin-media-player
-flatpak run com.github.iwalton3.jellyfin-media-player
-EOF
-
-cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-   chmod 755 /usr/local/bin/jellyfin-media-player
-EOF
-}
 
 iemucfg(){
 trap 'return 1' ERR
@@ -1845,19 +1571,6 @@ cat << EOF | tee ${ROOTFS}/etc/systemd/system/getty@tty1.service.d/override.conf
 ExecStart=
 ExecStart=-/sbin/getty --autologin ${TARGET_USERNAME} --noclear %I \$TERM
 EOF
-}
-
-icorporate(){
-trap 'return 1' ERR
-## corporate apps
-
-# install zoom
-mkdir -p ${ROOTFS}/opt/debs/
-wget -O ${ROOTFS}/opt/debs/zoom_amd64.deb https://zoom.us/client/${ZOOM_VERSION}/zoom_amd64.deb
-cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    apt install -y /opt/debs/zoom_amd64.deb
-EOF
-
 }
 
 ivirt() {
@@ -2026,6 +1739,13 @@ unmountraw
 reboot
 }
 
+bastion(){
+trap 'return 1' ERR
+apt update 
+apt install -y curl git qemu-utils parted cloud-guest-utils
+ilineinfile
+}
+
 sandbox(){
 trap 'return 1' ERR
 init user "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "0"
@@ -2070,23 +1790,6 @@ cloudvm_common
 reboot
 }
 
-alpinevm(){
-trap 'return 1' ERR
-cat <<EOF | tee /etc/apk/repositories
-http://dl-cdn.alpinelinux.org/alpine/edge/main
-http://dl-cdn.alpinelinux.org/alpine/edge/community
-EOF
-apk update
-apk add curl git dmidecode bash bash-completion sudo
-sed -i 's|/bin/sh|/bin/bash|' /etc/passwd
-init user "p" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "0"
-createuser
-setpasswd
-isshkey
-isudo
-cloudvm_common
-reboot
-}
 
 dlraw(){
 trap 'return 1' ERR
