@@ -1243,6 +1243,7 @@ EOF
 else
 echo "sunshine already installed, skipping"
 fi
+}
 
 imoonlight(){
 trap 'return 1' ERR
