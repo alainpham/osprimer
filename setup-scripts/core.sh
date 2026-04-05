@@ -1064,6 +1064,11 @@ cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     adduser $TARGET_USERNAME input
 EOF
 
+touch ${ROOTFS}/home/$TARGET_USERNAME/.startxon
+mkdir -p ${ROOTFS}/home/$TARGET_USERNAME/syncthing
+chown $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/$TARGET_USERNAME/.startxon
+chown $TARGET_USERNAME:$TARGET_USERNAME ${ROOTFS}/home/$TARGET_USERNAME/syncthing
+
 }
 # END igui()
 
