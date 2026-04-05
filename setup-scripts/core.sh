@@ -1344,6 +1344,9 @@ iesde $force_reinstall
 #retroarch
 iretroarch $force_reinstall
 
+#ppsspp
+ippsspp $force_reinstall
+
 #PCSX2
 ipcsx2 $force_reinstall
 
@@ -1352,6 +1355,7 @@ idolphinbin $force_reinstall
 
 #cemu wiiu
 icemu $force_reinstall
+
 
 #shortcuts with gamepads
 igshorts
