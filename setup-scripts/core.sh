@@ -1233,25 +1233,26 @@ isunshine(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
 
-if [ ! -f ${ROOTFS}/opt/appimages/sunshine.AppImage ] || [ "$force_reinstall" = "1" ]; then
+if [ ! -f ${ROOTFS}/opt/appimages/sunshine.AppImage ] || [ "$force_reinstall" = "1" ] || [ "$(cat ${ROOTFS}/opt/appimages/sunshine.version 2>/dev/null)" != "${SUNSHINE_VERSION}" ]; then
 wget -O ${ROOTFS}/opt/appimages/sunshine.AppImage https://github.com/LizardByte/Sunshine/releases/download/v$SUNSHINE_VERSION/sunshine.AppImage
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /opt/appimages/sunshine.AppImage
+    echo "${SUNSHINE_VERSION}" > /opt/appimages/sunshine.version
     ln -sf /opt/appimages/sunshine.AppImage /usr/local/bin/sunshine
 EOF
 else
 echo "sunshine already installed, skipping"
 fi
-}
 
 imoonlight(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
 
-if [ ! -f ${ROOTFS}/opt/appimages/moonlight.AppImage ] || [ "$force_reinstall" = "1" ]; then
+if [ ! -f ${ROOTFS}/opt/appimages/moonlight.AppImage ] || [ "$force_reinstall" = "1" ] || [ "$(cat ${ROOTFS}/opt/appimages/moonlight.version 2>/dev/null)" != "${MOONLIGHT_VERSION}" ]; then
 wget -O ${ROOTFS}/opt/appimages/moonlight.AppImage https://github.com/moonlight-stream/moonlight-qt/releases/download/v$MOONLIGHT_VERSION/Moonlight-$MOONLIGHT_VERSION-x86_64.AppImage
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /opt/appimages/moonlight.AppImage
+    echo "${MOONLIGHT_VERSION}" > /opt/appimages/moonlight.version
     ln -sf /opt/appimages/moonlight.AppImage /usr/local/bin/moonlight
 EOF
 else
@@ -1263,10 +1264,11 @@ imlvapp(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
 # MLVP APP
-if [ ! -f ${ROOTFS}/opt/appimages/mlvapp.AppImage ] || [ "$force_reinstall" = "1" ]; then
+if [ ! -f ${ROOTFS}/opt/appimages/mlvapp.AppImage ] || [ "$force_reinstall" = "1" ] || [ "$(cat ${ROOTFS}/opt/appimages/mlvapp.version 2>/dev/null)" != "${MLVAPP_VERSION}" ]; then
 wget -O ${ROOTFS}/opt/appimages/mlvapp.AppImage https://github.com/ilia3101/MLV-App/releases/download/QTv${MLVAPP_VERSION}/MLV.App.v${MLVAPP_VERSION}.Linux.x86_64.AppImage
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /opt/appimages/mlvapp.AppImage
+    echo "${MLVAPP_VERSION}" > /opt/appimages/mlvapp.version
     ln -sf /opt/appimages/mlvapp.AppImage /usr/local/bin/mlvapp
 EOF
 else
@@ -1279,8 +1281,9 @@ igodot(){
 trap "return 1" ERR
 
 force_reinstall=${1:-0}
+godot_version_file="${ROOTFS}/opt/appimages/godot.version"
 
-if [ -f "${ROOTFS}/usr/local/bin/godot" ] && [ "$force_reinstall" = "0" ]; then
+if [ -f "${ROOTFS}/usr/local/bin/godot" ] && [ "$force_reinstall" = "0" ] && [ "$(cat ${godot_version_file} 2>/dev/null)" = "${GODOT_VERSION}" ]; then
     echo "godot already installed, skipping"
     return 0
 fi
@@ -1289,6 +1292,8 @@ curl -L -o /tmp/godot.zip https://github.com/godotengine/godot/releases/download
 cd /tmp
 unzip godot.zip
 mv Godot_v${GODOT_VERSION}_linux.x86_64 ${ROOTFS}/usr/local/bin
+mkdir -p "${ROOTFS}/opt/appimages"
+echo "${GODOT_VERSION}" > "${godot_version_file}"
 rm -f /tmp/godot.zip
 echo "godot installed"
 cd -
@@ -1407,12 +1412,16 @@ EOF
 
 iesde(){
 trap 'return 1' ERR
+force_reinstall=${1:-0}
+esde_version_file="${ROOTFS}/opt/appimages/emustation.version"
+
 # Install RetroArch AppImage if not present or force_reinstall is 1
-if [ ! -f ${ROOTFS}/opt/appimages/emustation.AppImage ] || [ "$force_reinstall" = "1" ]; then
+if [ ! -f ${ROOTFS}/opt/appimages/emustation.AppImage ] || [ "$force_reinstall" = "1" ] || [ "$(cat ${esde_version_file} 2>/dev/null)" != "${ESDE_VERSION}" ]; then
 echo "emulation tools"
 wget -O ${ROOTFS}/opt/appimages/emustation.AppImage https://gitlab.com/es-de/emulationstation-de/-/package_files/${ESDE_VERSION_ID}/download
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /opt/appimages/emustation.AppImage
+    echo "${ESDE_VERSION}" > /opt/appimages/emustation.version
     ln -sf /opt/appimages/emustation.AppImage /usr/local/bin/estation
 EOF
 else
@@ -1423,8 +1432,10 @@ fi
 
 iretroarch(){
 trap 'return 1' ERR
+force_reinstall=${1:-0}
+retroarch_version_file="${ROOTFS}/opt/appimages/retroarch.version"
 # https://buildbot.libretro.com/stable/
-if [ ! -f ${ROOTFS}/opt/appimages/RetroArch-Linux-x86_64.AppImage ] || [ "$force_reinstall" = "1" ]; then
+if [ ! -f ${ROOTFS}/opt/appimages/RetroArch-Linux-x86_64.AppImage ] || [ "$force_reinstall" = "1" ] || [ "$(cat ${retroarch_version_file} 2>/dev/null)" != "${RETROARCH_VERSION}" ]; then
 wget -O ${ROOTFS}/tmp/RetroArch.7z https://buildbot.libretro.com/stable/${RETROARCH_VERSION}/linux/x86_64/RetroArch.7z
 wget -O ${ROOTFS}/tmp/RetroArch_cores.7z https://buildbot.libretro.com/stable/${RETROARCH_VERSION}/linux/x86_64/RetroArch_cores.7z
 cd ${ROOTFS}/tmp/
@@ -1436,10 +1447,10 @@ unzip ${ROOTFS}/tmp/bios.zip 'system/*' -d /tmp/RetroArch-Linux-x86_64/RetroArch
 
 mkdir -p /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/system/PPSSPP
 rm -rf /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/system/PPSSPP/*
-wget -O ${ROOTFS}/tmp/ppsspp.zip https://github.com/hrydgard/ppsspp/archive/refs/tags/v{$PPSSPP_VERSION}.zip
-7z x ${ROOTFS}/tmp/ppsspp.zip 'ppsspp*/assets' -o/tmp
-mv ${ROOTFS}/tmp/ppsspp-*/assets/* /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/system/PPSSPP
-rm -rf ${ROOTFS}/tmp/ppsspp*
+# wget -O ${ROOTFS}/tmp/ppsspp.zip https://github.com/hrydgard/ppsspp/archive/refs/tags/v{$PPSSPP_VERSION}.zip
+# 7z x ${ROOTFS}/tmp/ppsspp.zip 'ppsspp*/assets' -o/tmp
+# mv ${ROOTFS}/tmp/ppsspp-*/assets/* /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage.home/.config/retroarch/system/PPSSPP
+# rm -rf ${ROOTFS}/tmp/ppsspp*
 
 rm -f /usr/local/bin/retroarch
 
@@ -1454,6 +1465,7 @@ cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     mkdir -p /opt/appimages/
     mv /tmp/RetroArch-Linux-x86_64/RetroArch-Linux-x86_64.AppImage /opt/appimages/RetroArch-Linux-x86_64.AppImage
     chmod 755 /opt/appimages/RetroArch-Linux-x86_64.AppImage
+    echo "${RETROARCH_VERSION}" > /opt/appimages/retroarch.version
 
     mkdir -p /home/$TARGET_USERNAME/.config/retroarch
 
@@ -1478,12 +1490,14 @@ fi
 ipcsx2(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
+pcsx2_version_file="${ROOTFS}/opt/appimages/pcsx2.version"
 #TODO put in env vars
 
-if [ ! -f ${ROOTFS}/opt/appimages/pcsx2.AppImage ] || [ "$force_reinstall" = "1" ]; then
+if [ ! -f ${ROOTFS}/opt/appimages/pcsx2.AppImage ] || [ "$force_reinstall" = "1" ] || [ "$(cat ${pcsx2_version_file} 2>/dev/null)" != "${PCSX2_VERSION}" ]; then
 wget -O ${ROOTFS}/opt/appimages/pcsx2.AppImage https://github.com/PCSX2/pcsx2/releases/download/v${PCSX2_VERSION}/pcsx2-v${PCSX2_VERSION}-linux-appimage-x64-Qt.AppImage
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /opt/appimages/pcsx2.AppImage
+    echo "${PCSX2_VERSION}" > /opt/appimages/pcsx2.version
     ln -sf /opt/appimages/pcsx2.AppImage /usr/local/bin/pcsx2
 EOF
 else
@@ -1500,12 +1514,14 @@ EOF
 icemu(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
+cemu_version_file="${ROOTFS}/opt/appimages/cemu.version"
 #TODO put in env vars https://github.com/cemu-project/Cemu/releases 
 
-if [ ! -f ${ROOTFS}/opt/appimages/cemu.AppImage ] || [ "$force_reinstall" = "1" ]; then
+if [ ! -f ${ROOTFS}/opt/appimages/cemu.AppImage ] || [ "$force_reinstall" = "1" ] || [ "$(cat ${cemu_version_file} 2>/dev/null)" != "${CEMU_VERSION}" ]; then
 wget -O ${ROOTFS}/opt/appimages/cemu.AppImage https://github.com/cemu-project/Cemu/releases/download/v$CEMU_VERSION/Cemu-$CEMU_VERSION-x86_64.AppImage
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /opt/appimages/cemu.AppImage
+    echo "${CEMU_VERSION}" > /opt/appimages/cemu.version
     ln -sf /opt/appimages/cemu.AppImage /usr/local/bin/cemu
 EOF
 else
@@ -1517,14 +1533,15 @@ ippsspp(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
 
-if [ ! -f ${ROOTFS}/opt/appimages/ppsspp.AppImage ] || [ "$force_reinstall" = "1" ]; then
+if [ ! -f ${ROOTFS}/opt/appimages/ppsspp.AppImage ] || [ "$force_reinstall" = "1" ] || [ "$(cat ${ROOTFS}/opt/appimages/ppsspp.version 2>/dev/null)" != "${PPSSPP_VERSION}" ]; then
 wget -O ${ROOTFS}/opt/appimages/ppsspp.AppImage https://github.com/hrydgard/ppsspp/releases/download/v${PPSSPP_VERSION}/PPSSPP-v${PPSSPP_VERSION}-anylinux-x86_64.AppImage
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /opt/appimages/ppsspp.AppImage
+    echo "${PPSSPP_VERSION}" > /opt/appimages/ppsspp.version
     ln -sf /opt/appimages/ppsspp.AppImage /usr/local/bin/ppsspp
 EOF
 else
-echo "cemu already installed, skipping"
+echo "ppsspp already installed, skipping"
 fi
 }
 
