@@ -1003,6 +1003,9 @@ cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     cd /home/$TARGET_USERNAME/wm/slock-flexipatch && make clean install
     
     mkdir -p build /home/$TARGET_USERNAME/wm/sdl-jstest/build
+    cd  /home/$TARGET_USERNAME/wm/sdl-jstest
+    git submodule init
+    git submodule update
     cd /home/$TARGET_USERNAME/wm/sdl-jstest/build && cmake .. && make install
 
     chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/wm
