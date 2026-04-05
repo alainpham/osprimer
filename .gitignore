@@ -6,3 +6,4 @@ authorized_keys
 pack.tar
 dwm-src
 .secret
+.codex
