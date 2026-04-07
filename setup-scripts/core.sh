@@ -840,56 +840,7 @@ cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt install -y ffmpeg libfdk-aac2 libnppig12 libnppicc12 libnppidei12 libnppif12 libminiupnpc17
     flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
     flatpak install -y flathub com.github.tchx84.Flatseal
-
-    update-alternatives --set x-cursor-theme /usr/share/icons/Adwaita/cursor.theme
-
-    rm -rf      /home/$TARGET_USERNAME/.icons
-    mkdir -p    /home/$TARGET_USERNAME/.icons
-    cp -r       /usr/share/icons/* /home/$TARGET_USERNAME/.icons/
-    rm          /home/$TARGET_USERNAME/.icons/default/index.theme
-    
-    rm -rf      /home/$TARGET_USERNAME/.local/share/icons
-    mkdir -p    /home/$TARGET_USERNAME/.local/share/icons
-    cp -r       /usr/share/icons/* /home/$TARGET_USERNAME/.local/share/icons/
-    rm          /home/$TARGET_USERNAME/.local/share/icons/default/index.theme
-
-    rm -rf      /home/$TARGET_USERNAME/.themes
-    mkdir -p    /home/$TARGET_USERNAME/.themes
-    cp -r       /usr/share/themes/* /home/$TARGET_USERNAME/.themes/
-
-    rm -rf      /home/$TARGET_USERNAME/.local/share/themes
-    mkdir -p    /home/$TARGET_USERNAME/.local/share/themes
-    cp -r       /usr/share/themes/* /home/$TARGET_USERNAME/.local/share/themes
-
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.icons
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.themes
-    chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/.local
-
-    sudo flatpak override \
-        --filesystem=/home/$TARGET_USERNAME/.themes \
-        --filesystem=/home/$TARGET_USERNAME/.icons \
-        --filesystem=/home/$TARGET_USERNAME/.local/share/themes \
-        --filesystem=/home/$TARGET_USERNAME/.local/share/icons
-
-
-    sudo flatpak override \
-        --filesystem=host
-
-    sudo flatpak override \
-    --env=XCURSOR_THEME=Adwaita \
-    --env=XCURSOR_SIZE=24
-
 EOF
-
-# themes
-
-flatpak --user override \
-        --filesystem=host
-
-flatpak --user override \
-    --env=XCURSOR_THEME=Adwaita \
-    --env=XCURSOR_SIZE=24
-
 
 
 #YT-DLP latest
