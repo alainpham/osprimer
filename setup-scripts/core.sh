@@ -2086,7 +2086,7 @@ trap 'return 1' ERR
     cp ~/.ssh/id_ed25519* ~/ssh/
     ssh-keygen -p ~/.ssh/id_ed25519
 
-    git config core.sshCommand 'ssh -i /home/user/ssh/id_ed25519'
+    git config --global core.sshCommand 'ssh -i /home/user/ssh/id_ed25519'
 
     echo '/usr/bin/ssh -i ~/ssh/id_ed25519 $@' | sudo tee /usr/local/bin/ssh
     sudo chmod 755 /usr/local/bin/ssh
