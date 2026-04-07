@@ -1620,7 +1620,7 @@ echo "virtualization tools"
 
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt install -y qemu-system qemu-utils virtinst libvirt-clients libvirt-daemon-system libguestfs-tools bridge-utils libosinfo-bin virt-manager genisoimage
-    adduser $TARGET_USERNAME libvirt
+    usermod -aG kvm,libvirt $TARGET_USERNAME
 EOF
 
 gitroot=https://raw.githubusercontent.com/alainpham/dotfiles/master/scripts/vm
@@ -2048,6 +2048,14 @@ rmnouveau
 reboot
 }
 
+hpjb(){
+trap 'return 1' ERR
+force_reinstall=${1:-0}
+init user "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "1"
+laptop_common $force_reinstall
+reboot
+}
+
 # lenovo T14 amd ubuntu workstation for work
 lpro(){
 trap 'return 1' ERR
@@ -2079,7 +2087,9 @@ lpro_postinstall(){
 trap 'return 1' ERR
 
     sthinginit
-
+    sudo setfacl -m u:libvirt-qemu:x /home/user/virt/runtime
+    sudo setfacl -m u:libvirt-qemu:x /home/user/virt
+    sudo setfacl -m u:libvirt-qemu:x /home/user
     # log into google accounts
     # log into github 
     # launch vs code login
