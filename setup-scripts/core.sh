@@ -1154,6 +1154,9 @@ ln -sf /home/$TARGET_USERNAME/virt/runtime/vms /etc/NetworkManager/dnsmasq.d/vms
 chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/virt/runtime
 EOF
 
+curl -Lo ${ROOTFS}/usr/local/bin/enrollvpn https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/os/enrollvpn
+chmod 755 ${ROOTFS}/usr/local/bin/enrollvpn
+
 }
 
 itheming() {
