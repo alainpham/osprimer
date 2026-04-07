@@ -2054,7 +2054,7 @@ reboot
 hpjb(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
-init user "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "1"
+init user "NA" "authorized_keys" "NA" "NA" "NA" "de" "pc105" "nodeadkeys" "1"
 laptop_common $force_reinstall
 reboot
 }
