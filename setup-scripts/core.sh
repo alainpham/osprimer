@@ -842,6 +842,10 @@ cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     flatpak install -y flathub com.github.tchx84.Flatseal
 EOF
 
+# To reset dark theme
+# dconf reset -f /
+# gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
+
 
 #YT-DLP latest
 curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o ${ROOTFS}/usr/local/bin/yt-dlp
