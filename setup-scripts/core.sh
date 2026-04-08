@@ -1099,8 +1099,17 @@ iffmpeg(){
 inetworking(){
 trap 'return 1' ERR
 
-curl -Lo ${ROOTFS}/usr/local/bin/enrollvpn https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/os/enrollvpn
-chmod 755 ${ROOTFS}/usr/local/bin/enrollvpn
+dlfiles="
+enrollvpn
+wifiscan
+"
+for fname in $dlfiles ; do
+curl -Lo ${ROOTFS}/usr/local/bin/$fname https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/os/$fname
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
+    chmod 755 /usr/local/bin/$fname
+EOF
+done
+
 
 
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
