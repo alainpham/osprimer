@@ -2120,4 +2120,6 @@ trap 'return 1' ERR
     echo "deb [signed-by=/usr/share/keyrings/cloud.google.gpg] https://packages.cloud.google.com/apt cloud-sdk main" | sudo tee /etc/apt/sources.list.d/google-cloud-sdk.list
 
     sudo apt-get update && sudo apt-get install google-cloud-cli
+
+    #k6 for demos
 }
