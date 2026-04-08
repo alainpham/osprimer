@@ -239,6 +239,7 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*KEYBOARD_MODEL=.*" "export KEYBOARD_MOD
 lineinfile ${ROOTFS}${BASHRC} ".*export.*KEYBOARD_VARIANT=.*" "export KEYBOARD_VARIANT=${KEYBOARD_VARIANT}"
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*WILDCARD_DOMAIN=.*" "export WILDCARD_DOMAIN=houze.dns.army"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*K3S_WILDCARD_DOMAIN=.*" "export K3S_WILDCARD_DOMAIN=kubes.dns.army"
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*APT_PROXY=.*" "export APT_PROXY='${APT_PROXY}'"
 
