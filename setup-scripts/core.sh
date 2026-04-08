@@ -836,7 +836,7 @@ fi
 
 echo "additional gui packages"
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    apt install -y ntfs-3g ifuse rofi mousepad mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv nomacs kimageformat-plugins  acpitool lm-sensors fonts-noto libnotify-bin dunst mkvtoolnix-gui python3-mutagen imagemagick mediainfo-gui mediainfo arandr picom jgmenu brightnessctl cups xsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze joystick gparted vulkan-tools flatpak dconf-cli
+    apt install -y ntfs-3g ifuse rofi mousepad mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv nomacs kimageformat-plugins  acpitool lm-sensors fonts-noto libnotify-bin dunst mkvtoolnix-gui python3-mutagen imagemagick mediainfo-gui mediainfo arandr picom jgmenu brightnessctl cups xsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze breeze-gtk-theme breeze-icon-theme joystick gparted vulkan-tools flatpak dconf-cli
     apt install -y ffmpeg libfdk-aac2 libnppig12 libnppicc12 libnppidei12 libnppif12 libminiupnpc17
     flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
     flatpak install -y flathub com.github.tchx84.Flatseal
@@ -1099,6 +1099,10 @@ iffmpeg(){
 inetworking(){
 trap 'return 1' ERR
 
+curl -Lo ${ROOTFS}/usr/local/bin/enrollvpn https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/os/enrollvpn
+chmod 755 ${ROOTFS}/usr/local/bin/enrollvpn
+
+
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt install -y network-manager dnsmasq
 EOF
@@ -1153,9 +1157,6 @@ touch /home/$TARGET_USERNAME/virt/runtime/vms
 ln -sf /home/$TARGET_USERNAME/virt/runtime/vms /etc/NetworkManager/dnsmasq.d/vms
 chown -R $TARGET_USERNAME:$TARGET_USERNAME /home/$TARGET_USERNAME/virt/runtime
 EOF
-
-curl -Lo ${ROOTFS}/usr/local/bin/enrollvpn https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/os/enrollvpn
-chmod 755 ${ROOTFS}/usr/local/bin/enrollvpn
 
 }
 
@@ -2097,8 +2098,6 @@ trap 'return 1' ERR
     # log into github 
     # launch vs code login
     sudo flatpak install -y flathub org.mozilla.firefox
-
-    sudo -u $TARGET_USERNAME lineinfile ${ROOTFS}/home/$TARGET_USERNAME/.local/share/dwm/autostart.sh ".*slack.*" 'slack \&'
 
     echo "make sure to install kolide"
     mkdir -p ~/ssh/
