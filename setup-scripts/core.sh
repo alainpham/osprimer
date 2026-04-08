@@ -1624,7 +1624,7 @@ echo "virtualization tools"
 
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt install -y qemu-system qemu-utils virtinst libvirt-clients libvirt-daemon-system libguestfs-tools bridge-utils libosinfo-bin virt-manager genisoimage
-    usermod -aG kvm,libvirt $TARGET_USERNAME
+    usermod -aG kvm,libvirt,render $TARGET_USERNAME
 EOF
 
 gitroot=https://raw.githubusercontent.com/alainpham/dotfiles/master/scripts/vm
@@ -1879,6 +1879,7 @@ if [ -f /home/user/virt/images/d12-kube.qcow2 ]; then
     rm /home/user/virt/images/d12-kube.qcow2
 fi
 qemu-img convert -f raw -O qcow2 /home/user/virt/images/lnsvr.raw /home/user/virt/images/lnsvr.qcow2
+chown root:kvm /dev/kvm
 }
 
 desktop_common(){
