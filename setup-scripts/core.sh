@@ -1145,10 +1145,12 @@ cat << 'EOF' | tee ${ROOTFS}/etc/NetworkManager/conf.d/default-wifi-powersave-on
 wifi.powersave = 2
 EOF
 
-cat << 'EOF' | tee ${ROOTFS}/etc/NetworkManager/dnsmasq.d/dev.conf
+cat << EOF | tee ${ROOTFS}/etc/NetworkManager/dnsmasq.d/dev.conf
 #/etc/NetworkManager/dnsmasq.d/dev.conf
-local=/houze.dns.army/
-address=/houze.dns.army/172.18.0.1
+local=/${WILDCARD_DOMAIN}/
+address=/${WILDCARD_DOMAIN}/172.18.0.1
+local=/${K3S_WILDCARD_DOMAIN}/
+address=/${K3S_WILDCARD_DOMAIN}/172.18.0.1
 EOF
 
 # allow nmcli reload
