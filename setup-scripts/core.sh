@@ -1646,6 +1646,10 @@ cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     mkdir -p /home/${TARGET_USERNAME}/virt/runtime
     chown -R ${TARGET_USERNAME}:${TARGET_USERNAME} /home/${TARGET_USERNAME}/virt
     chown -R ${TARGET_USERNAME}:${TARGET_USERNAME} /home/${TARGET_USERNAME}/ssh
+
+    setfacl -m u:libvirt-qemu:x /home/${TARGET_USERNAME}/virt/runtime
+    setfacl -m u:libvirt-qemu:x /home/${TARGET_USERNAME}/virt
+    setfacl -m u:libvirt-qemu:x /home/${TARGET_USERNAME}
 EOF
 
 cat <<EOF | tee ${ROOTFS}/etc/systemd/system/firstboot-virt.service
@@ -2091,9 +2095,7 @@ lpro_postinstall(){
 trap 'return 1' ERR
 
     sthinginit
-    sudo setfacl -m u:libvirt-qemu:x /home/user/virt/runtime
-    sudo setfacl -m u:libvirt-qemu:x /home/user/virt
-    sudo setfacl -m u:libvirt-qemu:x /home/user
+
     # log into google accounts
     # log into github 
     # launch vs code login
