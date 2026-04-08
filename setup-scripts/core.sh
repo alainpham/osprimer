@@ -2124,5 +2124,8 @@ trap 'return 1' ERR
 
     sudo apt-get update && sudo apt-get install google-cloud-cli
 
-    #k6 for demos
+    # k6 for demos
+    # claude
+    # codex
+
 }
