@@ -2110,7 +2110,8 @@ trap 'return 1' ERR
     sthinginit
 
     # log into google accounts
-    # log into github 
+    # log into github to be able to downloads and upload gcr
+    # login to docker clu for push
     # launch vs code login
     sudo flatpak install -y flathub org.mozilla.firefox
 
