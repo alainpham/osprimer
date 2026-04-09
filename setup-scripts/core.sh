@@ -2128,7 +2128,8 @@ trap 'return 1' ERR
     sudo chmod 755 /usr/local/bin/scp
     echo '/usr/bin/sshfs -o ssh_command=/usr/local/bin/ssh $@' | sudo tee /usr/local/bin/sshfs
     sudo chmod 755 /usr/local/bin/sshfs
-
+    echo '/usr/bin/ssh-copy-id -i ~/ssh/id_ed25519 $@' | sudo tee /usr/local/bin/ssh-copy-id
+    sudo chmod 755 /usr/local/bin/ssh-copy-id
     #install gcp
     sudo apt-get update
     sudo apt-get install apt-transport-https ca-certificates gnupg curl

@@ -3,7 +3,7 @@
 ## AI Sandbox Container
 
 ```sh
-docker build -t aisandbox .
+docker build -t alainpham/aisandbox:latest .
 
 mkdir -p ~/workspaces/ai/slop/
 mkdir -p ~/workspaces/ai/home/claude
