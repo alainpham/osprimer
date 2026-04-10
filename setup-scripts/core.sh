@@ -1815,6 +1815,7 @@ createuser
 iessentials
 isudo
 idev
+ikube
 }
 
 cloudvm_common(){

@@ -5,6 +5,8 @@
 ```sh
 docker build -t alainpham/aisandbox:latest .
 
+docker push alainpham/aisandbox:latest
+
 mkdir -p ~/workspaces/ai/slop/
 mkdir -p ~/workspaces/ai/home/claude
 mkdir -p ~/workspaces/ai/home/codex
@@ -21,7 +23,7 @@ docker run -d \
     -v ~/workspaces/ai/home/copilot/:/home/user/.copilot \
     -v ~/workspaces/ai/home/opencode/:/home/user/.opencode \
     -v ~/workspaces/ai/home/hermes:/home/user/.hermes \
-    aisandbox sleep infinity
+    alainpham/aisandbox:latest sleep infinity
 
 docker exec -it aisandbox bash
 ```
