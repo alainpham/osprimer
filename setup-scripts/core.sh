@@ -592,7 +592,9 @@ trap 'return 1' ERR
 force_reinstall=${1:-0}
 
 if [ ! -f ${ROOTFS}/opt/appimages/opencode ] || [ "$force_reinstall" = "1" ] || [ "$(cat ${ROOTFS}/opt/appimages/opencode.version 2>/dev/null)" != "${OPENCODE_VERSION}" ]; then
-wget -O ${ROOTFS}/opt/appimages/opencode https://github.com/anomalyco/opencode/releases/download/v${OPENCODE_VERSION}/opencode-linux-x64.tar.gz
+wget -O /tmp/opencode.tar.gz https://github.com/anomalyco/opencode/releases/download/v${OPENCODE_VERSION}/opencode-linux-x64.tar.gz
+tar -xzvf /tmp/opencode.tar.gz -C ${ROOTFS}/opt/appimages/
+rm -f /tmp/opencode.tar.gz
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     chmod 755 /opt/appimages/opencode
     echo "${OPENCODE_VERSION}" > /opt/appimages/opencode.version
