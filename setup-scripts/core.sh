@@ -12,7 +12,11 @@ inputversions() {
     ##############################
     export NERDFONTS="Noto "
     echo "export NERDFONTS=${NERDFONTS}"
-    
+
+    # https://github.com/anomalyco/opencode/releases/latest
+    export OPENCODE_VERSION=1.4.3
+    echo "export OPENCODE_VERSION=${OPENCODE_VERSION}"
+        
     # https://kubernetes.io/releases/  https://cloud.google.com/kubernetes-engine/docs/release-notes
     export MAJOR_KUBE_VERSION=v1.34
     echo "export MAJOR_KUBE_VERSION=${MAJOR_KUBE_VERSION}"
@@ -580,7 +584,23 @@ lineinfile ${ROOTFS}/etc/bash.bashrc ".*export.*JAVA_HOME*=.*" "export JAVA_HOME
 echo "java home setup finished"
 
 imaven $force_reinstall
+iopencode $force_reinstall
+}
 
+iopencode(){
+trap 'return 1' ERR
+force_reinstall=${1:-0}
+
+if [ ! -f ${ROOTFS}/opt/appimages/opencode ] || [ "$force_reinstall" = "1" ] || [ "$(cat ${ROOTFS}/opt/appimages/opencode.version 2>/dev/null)" != "${OPENCODE_VERSION}" ]; then
+wget -O ${ROOTFS}/opt/appimages/opencode https://github.com/anomalyco/opencode/releases/download/v${OPENCODE_VERSION}/opencode-linux-x64.tar.gz
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
+    chmod 755 /opt/appimages/opencode
+    echo "${OPENCODE_VERSION}" > /opt/appimages/opencode.version
+    ln -sf /opt/appimages/opencode /usr/local/bin/opencode
+EOF
+else
+echo "opencode already installed, skipping"
+fi
 }
 
 imaven() {
