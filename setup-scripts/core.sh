@@ -598,6 +598,13 @@ rm -f /tmp/maven.tar.gz
 echo "maven installed"
 }
 
+ibuildah(){
+
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
+    apt install -y buildah
+EOF
+}
+
 idocker() {
 trap 'return 1' ERR
 
@@ -1815,6 +1822,7 @@ createuser
 iessentials
 isudo
 idev
+idocker
 ikube
 }
 
