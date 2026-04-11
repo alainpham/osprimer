@@ -1820,7 +1820,7 @@ apt install -y curl git qemu-utils parted cloud-guest-utils
 ilineinfile
 }
 
-sandbox(){
+containersandbox(){
 trap 'return 1' ERR
 init user "NA" "authorized_keys" "NA" "NA" "NA" "fr" "pc105" "azerty" "0"
 bashaliases

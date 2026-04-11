@@ -6,7 +6,7 @@ RUN if id -u 1000 >/dev/null 2>&1; then userdel -r "$(id -nu 1000)" || true; fi 
 RUN apt-get update && apt-get install -y wget curl && rm -rf /var/lib/apt/lists/*
 
 COPY ./setup-scripts/core.sh /usr/local/bin/core.sh
-RUN chmod +x /usr/local/bin/core.sh && bash -c "source /usr/local/bin/core.sh && sandbox && rm -rf /var/lib/apt/lists/*"  
+RUN chmod +x /usr/local/bin/core.sh && bash -c "source /usr/local/bin/core.sh && containersandbox && rm -rf /var/lib/apt/lists/*"  
 RUN echo 'PS1='"'"'${debian_chroot:+($debian_chroot)}\[\033[01;33m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '"'"'' >> /home/user/.bashrc
 
 # # claude code
