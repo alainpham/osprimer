@@ -566,6 +566,12 @@ force_reinstall=${1:-0}
 
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt install -y ansible openjdk-17-jdk-headless npm golang-go
+    apt install -y apache2 php libapache2-mod-php php-cli php-cgi php-sqlite3
+EOF
+
+# disable apache2 by default
+cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
+    systemctl disable apache2.service 
 EOF
 
 export JAVA_HOME_TARGET=/usr/lib/jvm/java-17-openjdk-amd64
@@ -1822,7 +1828,7 @@ createuser
 iessentials
 isudo
 idev
-idocker
+ibuildah
 ikube
 }
 
