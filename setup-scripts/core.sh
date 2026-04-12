@@ -660,7 +660,7 @@ cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     adduser $TARGET_USERNAME docker
 EOF
 
-fnamelist="firstboot-dockernet firstboot-dockerbuildx"
+fnamelist="firstboot-dockernet firstboot-dockerbuildx dsh"
 for fname in $fnamelist ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$fname https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/docker/$fname
 chmod 755 ${ROOTFS}/usr/local/bin/$fname
