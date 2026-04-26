@@ -838,6 +838,68 @@ fi
 }
 
 ##############################################
+########### Sound setup ######################
+##############################################
+
+isndpulse() {
+trap 'return 1' ERR
+force_reinstall=${1:-0}
+apt install -y pulseaudio pulseaudio-module-bluetooth pulseaudio-utils pavucontrol-qt alsa-utils
+
+# pulseaudio podcast setup
+
+# create alsa loopback
+isndcommon
+
+cat << 'EOF' | tee ${ROOTFS}/etc/udev/rules.d/89-pulseaudio-udev.rules
+# to be pasted in sudo cp 89-pulseaudio-udev.rules /etc/udev/rules.d/
+# reload rules : sudo udevadm control --reload-rules && sudo  udevadm trigger
+# udevadm info -a -p /sys/class/sound/card11
+ATTR{id}=="dummy", ATTR{number}=="11",SUBSYSTEM=="sound", ENV{PULSE_IGNORE}="1",ENV{ACP_IGNORE}="1"
+ATTR{id}=="loop", ATTR{number}=="10",SUBSYSTEM=="sound", ENV{PULSE_IGNORE}="1"
+ATTR{id}=="C920", SUBSYSTEM=="sound", ENV{PULSE_IGNORE}="1",ENV{ACP_IGNORE}="1"
+EOF
+
+}
+
+isndpw(){
+trap 'return 1' ERR
+force_reinstall=${1:-0}
+apt install -y  pipewire \
+    pipewire-audio \
+    pipewire-pulse \
+    wireplumber \
+    pipewire-alsa \
+    libspa-0.2-bluetooth \
+    pulseaudio-utils  \
+    qpwgraph \
+    pavucontrol-qt
+
+# create alsa loopback
+isndcommon
+
+}
+
+isndcommon() {
+lineinfile ${ROOTFS}/etc/modules ".*snd-aloop.*" "snd-aloop"
+lineinfile ${ROOTFS}/etc/modules ".*snd-dummy.*" "snd-dummy"
+
+cat << 'EOF' | tee ${ROOTFS}/etc/modprobe.d/alsa-loopback.conf
+options snd-aloop index=10 id=loop
+options snd-dummy index=11 id=dummy
+EOF
+
+# install scripts for sound 
+gitroot=https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/sound
+files="snd asnd asndenv asnddef csndfoczv csndjbr csndbth csndbtf csndhds csndzv csndh6 csndacer csndint csnddmy clrmix clrmixoff jbrconnect"
+for file in $files ; do
+curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
+chmod 755 ${ROOTFS}/usr/local/bin/$file
+done
+
+}
+
+##############################################
 ########### GUI setup ########################
 ##############################################
 
@@ -852,10 +914,11 @@ echo "install gui"
 
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt install -y make gcc libx11-dev libxft-dev libxrandr-dev libimlib2-dev libfreetype-dev libxinerama-dev xorg numlockx usbutils libsdl1.2-dev libsdl2-dev libncurses5-dev
-    apt install -y pulseaudio pulseaudio-module-bluetooth pulseaudio-utils pavucontrol-qt alsa-utils
     apt remove -y xserver-xorg-video-intel
 EOF
- 
+
+isndpw
+
 if [ -d "${ROOTFS}/usr/share/fonts/nerd-fonts/" ] && [ "$force_reinstall" = "0" ]; then
     echo "Nerd Fonts already installed, skipping."
 else
@@ -867,6 +930,7 @@ for font in ${NERDFONTS} ; do
  unzip -o /tmp/${font}.zip -d ${ROOTFS}/usr/share/fonts/nerd-fonts/
  rm -f /tmp/${font}.zip
  echo "installed $font"
+
 done
 fi
 
@@ -881,7 +945,6 @@ EOF
 # To reset dark theme
 # dconf reset -f /
 # gsettings set org.gnome.desktop.interface color-scheme 'prefer-dark'
-
 
 #YT-DLP latest
 curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o ${ROOTFS}/usr/local/bin/yt-dlp
@@ -919,40 +982,11 @@ cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
 EOF
 done
 
-# pulseaudio podcast setup
-
-# create alsa loopback
-
-lineinfile ${ROOTFS}/etc/modules ".*snd-aloop.*" "snd-aloop"
-lineinfile ${ROOTFS}/etc/modules ".*snd-dummy.*" "snd-dummy"
-
-cat << 'EOF' | tee ${ROOTFS}/etc/modprobe.d/alsa-loopback.conf
-options snd-aloop index=10 id=loop
-options snd-dummy index=11 id=dummy
-EOF
-
-cat << 'EOF' | tee ${ROOTFS}/etc/udev/rules.d/89-pulseaudio-udev.rules
-# to be pasted in sudo cp 89-pulseaudio-udev.rules /etc/udev/rules.d/
-# reload rules : sudo udevadm control --reload-rules && sudo  udevadm trigger
-# udevadm info -a -p /sys/class/sound/card11
-ATTR{id}=="dummy", ATTR{number}=="11",SUBSYSTEM=="sound", ENV{PULSE_IGNORE}="1",ENV{ACP_IGNORE}="1"
-ATTR{id}=="loop", ATTR{number}=="10",SUBSYSTEM=="sound", ENV{PULSE_IGNORE}="1"
-ATTR{id}=="C920", SUBSYSTEM=="sound", ENV{PULSE_IGNORE}="1",ENV{ACP_IGNORE}="1"
+cat << 'EOF' | tee ${ROOTFS}/etc/udev/rules.d/89-uinput-udev.rules
 KERNEL=="uinput", MODE="0660", GROUP="input", SYMLINK+="uinput"
-
-# ATTR{id}=="dummy", ATTR{number}=="11",SUBSYSTEM=="sound", ENV{PULSE_IGNORE}="1"
-# ATTR{id}=="loop", ATTR{number}=="10",SUBSYSTEM=="sound", ENV{PULSE_IGNORE}="1"
-# ATTR{id}=="C920", SUBSYSTEM=="sound", ENV{PULSE_IGNORE}="1"
 EOF
 
-# install scripts for sound and monitor
-gitroot=https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/sound
-files="snd asnd asndenv asnddef csndfoczv csndjbr csndbth csndbtf csndhds csndzv csndh6 csndacer csndint csnddmy clrmix clrmixoff jbrconnect"
-for file in $files ; do
-curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
-chmod 755 ${ROOTFS}/usr/local/bin/$file
-done
-
+# install script for monitor
 gitroot=https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/desktop
 files="bestmode mon sbg snotifs winshot sthinginit "
 for file in $files ; do
