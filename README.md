@@ -28,6 +28,42 @@ docker run -d \
 docker exec -it aisandbox bash
 ```
 
+## Running llama cpp for local AI
+
+# Gemma
+```
+llama-server \
+    -hf unsloth/gemma-4-26B-A4B-it-GGUF:UD-Q4_K_XL \
+    --temp 1.0 \
+    --top-p 0.95 \
+    --top-k 64 \
+    --chat-template-kwargs '{"enable_thinking":false}'
+
+# 26B
+llama-server -hf ggml-org/gemma-4-26B-A4B-it-GGUF:Q4_K_M --host 0.0.0.0 --reasoning off
+
+# E4B
+llama-server -hf ggml-org/gemma-4-E4B-it-GGUF:Q4_K_M --host 0.0.0.0 --reasoning off
+    --temp 1.0 \
+    --top-p 0.95 \
+    --top-k 64 
+
+# E2B
+llama-server -hf ggml-org/gemma-4-E2B-it-GGUF:Q8_0 --host 0.0.0.0 --reasoning off \
+    --temp 1.0 \
+    --top-p 0.95 \
+    --top-k 64 \
+    -ngl 99 -c 32768 --jinja 
+
+
+llama-server -hf unsloth/Qwen3-Coder-Next-GGUF:UD-Q4_K_M  --host 0.0.0.0 --ctx-size 16384 \
+    --temp 1.0 --top-p 0.95 --min-p 0.01 --top-k 40
+
+
+llama-server -hf ggml-org/gemma-4-E2B-it-GGUF:Q8_0 --host 0.0.0.0 --reasoning off 
+
+```
+
 ## Install windows
 
 ```PS1
