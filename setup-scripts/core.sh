@@ -1435,7 +1435,8 @@ chmod 755 $ROOTFS/usr/local/bin/impala
 iemulation(){
 trap 'return 1' ERR
 force_reinstall=${1:-0}
-
+mkdir -p ${ROOTFS}/etc/bluetooth
+touch ${ROOTFS}/etc/bluetooth/input.conf
 lineinfile ${ROOTFS}/etc/bluetooth/input.conf ".*ClassicBondedOnly.*" "ClassicBondedOnly=false"
 
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
