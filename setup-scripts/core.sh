@@ -848,6 +848,15 @@ apt install -y pulseaudio pulseaudio-module-bluetooth pulseaudio-utils pavucontr
 
 # pulseaudio podcast setup
 
+lineinfile ${ROOTFS}/etc/modules ".*snd-aloop.*" "snd-aloop"
+lineinfile ${ROOTFS}/etc/modules ".*snd-dummy.*" "snd-dummy"
+
+cat << 'EOF' | tee ${ROOTFS}/etc/modprobe.d/alsa-loopback.conf
+options snd-aloop index=10 id=loop
+options snd-dummy index=11 id=dummy
+EOF
+
+
 # create alsa loopback
 isndcommon
 
@@ -881,13 +890,6 @@ isndcommon
 }
 
 isndcommon() {
-lineinfile ${ROOTFS}/etc/modules ".*snd-aloop.*" "snd-aloop"
-lineinfile ${ROOTFS}/etc/modules ".*snd-dummy.*" "snd-dummy"
-
-cat << 'EOF' | tee ${ROOTFS}/etc/modprobe.d/alsa-loopback.conf
-options snd-aloop index=10 id=loop
-options snd-dummy index=11 id=dummy
-EOF
 
 # install scripts for sound 
 gitroot=https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/sound
@@ -936,7 +938,7 @@ fi
 
 echo "additional gui packages"
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    apt install -y ntfs-3g ifuse rofi mousepad mpv haruna vlc cmatrix nmon mesa-utils neofetch feh qimgv nomacs kimageformat-plugins  acpitool lm-sensors fonts-noto libnotify-bin dunst mkvtoolnix-gui python3-mutagen imagemagick mediainfo-gui mediainfo arandr picom jgmenu brightnessctl cups xsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze breeze-gtk-theme breeze-icon-theme joystick gparted vulkan-tools flatpak dconf-cli libnss3-tools
+    apt install -y ntfs-3g ifuse rofi mousepad mpv haruna vlc cmatrix nmon mesa-utils fastfetch feh qimgv nomacs kimageformat-plugins  acpitool lm-sensors fonts-noto libnotify-bin dunst mkvtoolnix-gui python3-mutagen imagemagick mediainfo-gui mediainfo arandr picom jgmenu brightnessctl cups xsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze breeze-gtk-theme breeze-icon-theme joystick gparted vulkan-tools flatpak dconf-cli libnss3-tools
     apt install -y ffmpeg libfdk-aac2 libnppig12 libnppicc12 libnppidei12 libnppif12 libminiupnpc17
     flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
     flatpak install -y flathub com.github.tchx84.Flatseal
