@@ -1249,7 +1249,7 @@ echo theming
 }
 
 ipicomgit(){
-apt install -y cmake meson libepoxy-dev uthash-dev libxcb-present-dev libxcb-glx0-dev libxcb-damage0-dev libxcb-composite0-dev libxcb-util-dev libxcb-render-util0-dev libxcb-image0-dev libx11-xcb-dev libev-dev  
+apt install -y libconfig-dev libdbus-1-dev libegl-dev libgl-dev libpixman-1-dev libpcre2-dev  cmake meson libepoxy-dev uthash-dev libxcb-present-dev libxcb-glx0-dev libxcb-damage0-dev libxcb-composite0-dev libxcb-util-dev libxcb-render-util0-dev libxcb-image0-dev libx11-xcb-dev libev-dev libxcb1-dev libxcb-randr0-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev ninja-build
 cd /tmp/
 wget -O picom.zip "https://github.com/yshui/picom/archive/refs/tags/v${PICOM_VERSION}.zip"
 unzip -o picom.zip
