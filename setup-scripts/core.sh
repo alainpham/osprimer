@@ -879,6 +879,7 @@ apt install -y  pipewire \
     pipewire-pulse \
     wireplumber \
     pipewire-alsa \
+    pipewire-jack \
     libspa-0.2-bluetooth \
     pulseaudio-utils  \
     qpwgraph \
