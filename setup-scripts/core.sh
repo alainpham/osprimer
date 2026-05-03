@@ -134,6 +134,12 @@ inputversions() {
 
     export APT_PROXY="http://192.168.8.100:3142"
     echo "export APT_PROXY=${APT_PROXY}"
+
+    export WILDCARD_DOMAIN="houze.dns.army"
+    echo "export WILDCARD_DOMAIN=${WILDCARD_DOMAIN}"
+
+    export K3S_WILDCARD_DOMAIN="kubes.dns.army"
+    echo "export K3S_WILDCARD_DOMAIN=${K3S_WILDCARD_DOMAIN}"
 }
 
 
@@ -242,8 +248,8 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*KEYBOARD_LAYOUT=.*" "export KEYBOARD_LA
 lineinfile ${ROOTFS}${BASHRC} ".*export.*KEYBOARD_MODEL=.*" "export KEYBOARD_MODEL=${KEYBOARD_MODEL}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*KEYBOARD_VARIANT=.*" "export KEYBOARD_VARIANT=${KEYBOARD_VARIANT}"
 
-lineinfile ${ROOTFS}${BASHRC} ".*export\s*WILDCARD_DOMAIN=.*" "export WILDCARD_DOMAIN=houze.dns.army"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*K3S_WILDCARD_DOMAIN=.*" "export K3S_WILDCARD_DOMAIN=kubes.dns.army"
+lineinfile ${ROOTFS}${BASHRC} ".*export\s*WILDCARD_DOMAIN=.*" "export WILDCARD_DOMAIN=${WILDCARD_DOMAIN}"
+lineinfile ${ROOTFS}${BASHRC} ".*export.*K3S_WILDCARD_DOMAIN=.*" "export K3S_WILDCARD_DOMAIN=${K3S_WILDCARD_DOMAIN}"
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*APT_PROXY=.*" "export APT_PROXY='${APT_PROXY}'"
 
@@ -939,7 +945,7 @@ fi
 
 echo "additional gui packages"
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    apt install -y ntfs-3g ifuse rofi mousepad mpv haruna qml6-module-org-kde-desktop vlc cmatrix nmon mesa-utils fastfetch feh qimgv nomacs kimageformat-plugins  acpitool lm-sensors fonts-noto libnotify-bin dunst mkvtoolnix-gui python3-mutagen imagemagick mediainfo-gui mediainfo arandr picom jgmenu brightnessctl cups xsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance breeze breeze-gtk-theme breeze-icon-theme joystick gparted vulkan-tools flatpak dconf-cli libnss3-tools bluetooth
+    apt install -y ntfs-3g ifuse rofi mousepad mpv haruna qml6-module-org-kde-desktop vlc cmatrix nmon mesa-utils fastfetch feh qimgv nomacs kimageformat-plugins  acpitool lm-sensors fonts-noto libnotify-bin dunst mkvtoolnix-gui python3-mutagen imagemagick mediainfo-gui mediainfo arandr picom jgmenu brightnessctl cups xsane sane-utils filezilla speedcrunch fonts-font-awesome lxappearance nwg-look breeze breeze-gtk-theme breeze-icon-theme joystick gparted vulkan-tools flatpak dconf-cli libnss3-tools bluetooth
     apt install -y ffmpeg libfdk-aac2 libnppig12 libnppicc12 libnppidei12 libnppif12 libminiupnpc-dev
     flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
     flatpak install -y flathub com.github.tchx84.Flatseal
