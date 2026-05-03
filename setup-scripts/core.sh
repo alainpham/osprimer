@@ -899,12 +899,15 @@ isndcommon
 isndcommon() {
 
 # install scripts for sound 
-gitroot=https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/sound
-files="snd asnd asndenv asnddef csndfoczv csndjbr csndbth csndbtf csndhds csndzv csndh6 csndacer csndint csnddmy clrmix clrmixoff jbrconnect vol"
-for file in $files ; do
-curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
-chmod 755 ${ROOTFS}/usr/local/bin/$file
-done
+# gitroot=https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/sound
+# files="snd asnd asndenv asnddef csndfoczv csndjbr csndbth csndbtf csndhds csndzv csndh6 csndacer csndint csnddmy clrmix clrmixoff jbrconnect vol"
+# for file in $files ; do
+# curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
+# chmod 755 ${ROOTFS}/usr/local/bin/$file
+# done
+
+cp -R ${ROOTFS}/home/$TARGET_USERNAME/dotfiles/scripts/sound/* ${ROOTFS}/usr/local/bin/
+
 
 }
 
@@ -1149,6 +1152,7 @@ cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     adduser $TARGET_USERNAME audio
     adduser $TARGET_USERNAME video
     adduser $TARGET_USERNAME input
+    adduser $TARGET_USERNAME lpadmin
 EOF
 
 touch ${ROOTFS}/home/$TARGET_USERNAME/.startxon
