@@ -2189,7 +2189,7 @@ lpro_postinstall(){
 trap 'return 1' ERR
 
     sthinginit
-
+    enrollvpn
     # log into google accounts
     # log into github to be able to downloads and upload gcr : https://github.com/settings/tokens : echo ghp_xxxxx | docker login ghcr.io -u alainpham --password-stdin
     # login to docker clu for push
