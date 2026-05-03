@@ -990,7 +990,7 @@ EOF
 
 # install script for monitor
 gitroot=https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/desktop
-files="bestmode mon sbg snotifs winshot sthinginit "
+files="bestmode mon sbg snotifs winshot fullscreenshot sthinginit "
 for file in $files ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
 chmod 755 ${ROOTFS}/usr/local/bin/$file
