@@ -282,7 +282,7 @@ mountraw() {
     echo "Mount OS partition"
     mkdir -p ${ROOTFS}
     mount ${DEVICE}p1 ${ROOTFS}
-    mount ${DEVICE}p16 ${ROOTFS}/boot
+    mount ${DEVICE}p13 ${ROOTFS}/boot
     mount ${DEVICE}p15 ${ROOTFS}/boot/efi
 
     echo "Get ready for chroot"
@@ -1718,7 +1718,7 @@ trap 'return 1' ERR
 echo "virtualization tools"
 
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    apt install -y qemu-system qemu-utils virtinst libvirt-clients libvirt-daemon-system libguestfs-tools bridge-utils libosinfo-bin virt-manager genisoimage
+    apt install -y qemu-system qemu-utils virtinst libvirt-clients libvirt-daemon-system libguestfs-tools bridge-utils libosinfo-bin osinfo-db-tools virt-manager genisoimage
     usermod -aG kvm,libvirt,render $TARGET_USERNAME
 EOF
 
@@ -1941,7 +1941,7 @@ dlraw(){
 trap 'return 1' ERR
 # imageurl=https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-nocloud-amd64.raw
 
-imageurl=https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img
+imageurl=https://cloud-images.ubuntu.com/resolute/current/resolute-server-cloudimg-amd64.img
 mkdir -p /home/user/virt/images
 curl -Lo /home/user/virt/images/lnsvr-orig.qcow2 $imageurl
 qemu-img convert -f qcow2 -O raw /home/user/virt/images/lnsvr-orig.qcow2 /home/user/virt/images/lnsvr-orig.raw
