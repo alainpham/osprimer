@@ -14,7 +14,7 @@ inputversions() {
     echo "export NERDFONTS=${NERDFONTS}"
 
     # https://github.com/anomalyco/opencode/releases/latest
-    export OPENCODE_VERSION=1.4.3
+    export OPENCODE_VERSION=1.4.40
     echo "export OPENCODE_VERSION=${OPENCODE_VERSION}"
         
     # https://kubernetes.io/releases/  https://cloud.google.com/kubernetes-engine/docs/release-notes
@@ -661,11 +661,7 @@ cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     adduser $TARGET_USERNAME docker
 EOF
 
-fnamelist="firstboot-dockernet firstboot-dockerbuildx dsh"
-for fname in $fnamelist ; do
-curl -Lo ${ROOTFS}/usr/local/bin/$fname https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/docker/$fname
-chmod 755 ${ROOTFS}/usr/local/bin/$fname
-done
+cp -R ${ROOTFS}/home/$TARGET_USERNAME/dotfiles/scripts/docker/* ${ROOTFS}/usr/local/bin/
 
 cat <<EOF | tee ${ROOTFS}/etc/systemd/system/firstboot-dockernet.service
 [Unit]
@@ -744,13 +740,8 @@ EOF
 
 ik9s
 
-kubescript="kubecr kubedel kubetraefik kubehaproxy kubeexpose kubecfg"
-for script in $kubescript ; do
-curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/dotfiles/master/scripts/kube/$script
-cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    chmod 755 /usr/local/bin/$script
-EOF
-done
+cp -R ${ROOTFS}/home/$TARGET_USERNAME/dotfiles/scripts/kube/* ${ROOTFS}/usr/local/bin/
+
 
 }
 
@@ -958,64 +949,16 @@ curl -L https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp -o ${RO
 chmod 755 ${ROOTFS}/usr/local/bin/yt-dlp
 
 # ffmpeg scripts
-ffmpegscripts="
-vconv-archive-lossless-h264-vaapi
-vconv-audiosync
-vconv-audiostretch-pal-to-ntsc
-vconv-extract-audio
-vconv-h264-vaapi-qp
-vconv-h264-vaapi-vbr
-vconv-hevc-vaapi-qp
-vconv-imdb
-vconv-make-mkv
-vconv-make-mp4
-vconv-make-mp4-singletrack
-vconv-mkvmerge
-vconv-mp3-hq
-vconv-playdubbed
-vconv-ripbm
-vconv-ripscreen
-vconv-travel
-vconv-vp9-vaapi-qp
-vconv-x264-crf
-vconv-x264-lowres-lowvbr-2pass
-vconv-x264-lowres-vbr-2pass
-vconv-x264-vbr-2pass
-"
-for script in $ffmpegscripts ; do
-curl -Lo ${ROOTFS}/usr/local/bin/$script https://raw.githubusercontent.com/alainpham/dotfiles/master/scripts/av/$script
-cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    chmod 755 /usr/local/bin/$script
-EOF
-done
+cp -R ${ROOTFS}/home/$TARGET_USERNAME/dotfiles/scripts/av/* ${ROOTFS}/usr/local/bin/
 
 cat << 'EOF' | tee ${ROOTFS}/etc/udev/rules.d/89-uinput-udev.rules
 KERNEL=="uinput", MODE="0660", GROUP="input", SYMLINK+="uinput"
 EOF
 
 # install script for monitor
-gitroot=https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/desktop
-files="bestmode mon sbg snotifs winshot fullscreenshot sthinginit "
-for file in $files ; do
-curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
-chmod 755 ${ROOTFS}/usr/local/bin/$file
-done
 
-# link st as default terminal on x
-gitroot=https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/desktop
-files="xdg-terminal-exec x-terminal-emulator"
-for file in $files ; do
-curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
-chmod 755 ${ROOTFS}/usr/local/bin/$file
-done
-
-# install scripts for webcam
-gitroot=https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/webcam
-files="c920"
-for file in $files ; do
-curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
-chmod 755 ${ROOTFS}/usr/local/bin/$file
-done
+cp -R ${ROOTFS}/home/$TARGET_USERNAME/dotfiles/scripts/desktop/* ${ROOTFS}/usr/local/bin/
+cp -R ${ROOTFS}/home/$TARGET_USERNAME/dotfiles/scripts/webcam/* ${ROOTFS}/usr/local/bin/
 
 # install chrome browser
 
@@ -1116,12 +1059,6 @@ fi
 ipicomgit
 
 # convert pdf to png with whitebackground
-gitroot=https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/desktop
-files="pdf2png ctext"
-for file in $files ; do
-curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
-chmod 755 ${ROOTFS}/usr/local/bin/$file
-done
 
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     apt install -y v4l2loopback-utils flameshot maim xclip xdotool thunar thunar-archive-plugin
@@ -1176,17 +1113,7 @@ iffmpeg(){
 inetworking(){
 trap 'return 1' ERR
 
-dlfiles="
-enrollvpn
-wifiscan
-"
-for fname in $dlfiles ; do
-curl -Lo ${ROOTFS}/usr/local/bin/$fname https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/os/$fname
-cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    chmod 755 /usr/local/bin/$fname
-EOF
-done
-
+cp -R ${ROOTFS}/home/$TARGET_USERNAME/dotfiles/scripts/os/* ${ROOTFS}/usr/local/bin/
 
 
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
@@ -1496,13 +1423,7 @@ cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
 EOF
 done
 
-dlfiles="inhibit-gpad-kbd"
-for fname in $dlfiles ; do
-curl -Lo ${ROOTFS}/usr/local/bin/$fname https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/gaming/$fname
-cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    chmod 755 /usr/local/bin/$fname
-EOF
-done
+cp -R ${ROOTFS}/home/$TARGET_USERNAME/dotfiles/scripts/gaming/* ${ROOTFS}/usr/local/bin/
 
 cat << 'EOF' | tee ${ROOTFS}/etc/udev/rules.d/99-gpad.rules
 # shanwan controller with keyboard to be deactivated
@@ -1702,12 +1623,7 @@ cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     usermod -aG kvm,libvirt,render $TARGET_USERNAME
 EOF
 
-gitroot=https://raw.githubusercontent.com/alainpham/dotfiles/master/scripts/vm
-files="vmcr vmcrb vmcrs vmcrm vmcrl vmdl vmls vmsh vmip firstboot-virt"
-for file in $files ; do
-    curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
-    chmod 755 ${ROOTFS}/usr/local/bin/$file
-done
+cp -R ${ROOTFS}/home/$TARGET_USERNAME/dotfiles/scripts/vm/* ${ROOTFS}/usr/local/bin/
 
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     mkdir -p /home/${TARGET_USERNAME}/ssh
