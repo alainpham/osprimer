@@ -41,10 +41,6 @@ inputversions() {
     export BLUETUI_VERSION=0.8.0
     echo "export BLUETUI_VERSION=${BLUETUI_VERSION}" 
 
-    # https://github.com/pythops/impala/releases
-    export IMPALA_VERSION=0.7.3
-    echo "export IMPALA_VERSION=${IMPALA_VERSION}" 
-
     ##############################
     # DWM                        #
     ##############################
@@ -215,7 +211,6 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*K9S_VERSION=.*" "export K9S_VERSION=${K
 lineinfile ${ROOTFS}${BASHRC} ".*export.*MVN_VERSION=.*" "export MVN_VERSION=${MVN_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*SPEEDTEST_VERSION=.*" "export SPEEDTEST_VERSION=${SPEEDTEST_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*BLUETUI_VERSION=.*" "export BLUETUI_VERSION=${BLUETUI_VERSION}"
-lineinfile ${ROOTFS}${BASHRC} ".*export.*IMPALA_VERSION=.*" "export IMPALA_VERSION=${IMPALA_VERSION}"
 
 lineinfile ${ROOTFS}${BASHRC} ".*export.*PICOM_VERSION=.*" "export PICOM_VERSION=${PICOM_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*BRIGHTNESSCTL_VERSION=.*" "export BRIGHTNESSCTL_VERSION=${BRIGHTNESSCTL_VERSION}"
@@ -1007,9 +1002,8 @@ chmod 755 ${ROOTFS}/usr/local/bin/$file
 done
 
 # link st as default terminal on x
-ln -sf /usr/local/bin/st /usr/bin/x-terminal-emulator
 gitroot=https://raw.githubusercontent.com/alainpham/dotfiles/refs/heads/master/scripts/desktop
-files="xdg-terminal-exec"
+files="xdg-terminal-exec x-terminal-emulator"
 for file in $files ; do
 curl -Lo ${ROOTFS}/usr/local/bin/$file $gitroot/$file
 chmod 755 ${ROOTFS}/usr/local/bin/$file
@@ -1319,7 +1313,6 @@ force_reinstall=${1:-0}
 
 # APPimages
 ibluetui $force_reinstall
-iimpala $force_reinstall
 imlvapp $force_reinstall
 
 imoonlight $force_reinstall
@@ -1431,19 +1424,6 @@ curl -L -o $ROOTFS/usr/local/bin/bluetui https://github.com/pythops/bluetui/rele
 chmod 755 $ROOTFS/usr/local/bin/bluetui
 }
 
-iimpala(){
-trap "return 1" ERR
-
-force_reinstall=${1:-0}
-
-if [ -f "${ROOTFS}/usr/local/bin/impala" ] && [ "$force_reinstall" = "0" ]; then
-    echo "impala already installed, skipping"
-    return 0
-fi
-
-curl -L -o $ROOTFS/usr/local/bin/impala https://github.com/pythops/impala/releases/download/v${IMPALA_VERSION}/impala-x86_64-unknown-linux-gnu
-chmod 755 $ROOTFS/usr/local/bin/impala
-}
 
 iemulation(){
 trap 'return 1' ERR
