@@ -38,7 +38,7 @@ inputversions() {
     echo "export SPEEDTEST_VERSION=${SPEEDTEST_VERSION}" 
 
     # https://github.com/pythops/bluetui/releases
-    export BLUETUI_VERSION=0.8.0
+    export BLUETUI_VERSION=0.8.1
     echo "export BLUETUI_VERSION=${BLUETUI_VERSION}" 
 
     ##############################
@@ -82,11 +82,11 @@ inputversions() {
     # GAMING                     #
     ##############################
 
-    # https://gitlab.com/es-de/emulationstation-de/-/releases https://gitlab.com/es-de/emulationstation-de/-/package_files/243196984/download #https://gitlab.com/es-de/emulationstation-de/-/package_files/246875981/download
-    export ESDE_VERSION=3.4.0
+    # https://gitlab.com/es-de/emulationstation-de/-/releases https://gitlab.com/es-de/emulationstation-de/-/package_files/288156961/download #https://gitlab.com/es-de/emulationstation-de/-/package_files/288156961/download
+    export ESDE_VERSION=3.4.1
     echo "export ESDE_VERSION=${ESDE_VERSION}"
 
-    export ESDE_VERSION_ID=246875981
+    export ESDE_VERSION_ID=288156961
     echo "export ESDE_VERSION_ID=${ESDE_VERSION_ID}"
 
     # https://buildbot.libretro.com/stable/
