@@ -14,7 +14,7 @@ inputversions() {
     echo "export NERDFONTS=${NERDFONTS}"
 
     # https://github.com/anomalyco/opencode/releases/latest
-    export OPENCODE_VERSION=1.4.40
+    export OPENCODE_VERSION=1.14.40
     echo "export OPENCODE_VERSION=${OPENCODE_VERSION}"
         
     # https://kubernetes.io/releases/  https://cloud.google.com/kubernetes-engine/docs/release-notes
@@ -205,6 +205,7 @@ lineinfile ${ROOTFS}${BASHRC} ".*export.*CORE_VERSION=.*" "export CORE_VERSION='
 
 # TOOLING
 lineinfile ${ROOTFS}${BASHRC} ".*export.*NERDFONTS=.*" "export NERDFONTS=\"${NERDFONTS}\""
+lineinfile ${ROOTFS}${BASHRC} ".*export.*OPENCODE_VERSION=.*" "export OPENCODE_VERSION=${OPENCODE_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*MAJOR_KUBE_VERSION=.*" "export MAJOR_KUBE_VERSION=${MAJOR_KUBE_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*K3S_VERSION=.*" "export K3S_VERSION=${K3S_VERSION}"
 lineinfile ${ROOTFS}${BASHRC} ".*export.*K9S_VERSION=.*" "export K9S_VERSION=${K9S_VERSION}"
@@ -594,6 +595,7 @@ force_reinstall=${1:-0}
 
 if [ ! -f ${ROOTFS}/opt/appimages/opencode ] || [ "$force_reinstall" = "1" ] || [ "$(cat ${ROOTFS}/opt/appimages/opencode.version 2>/dev/null)" != "${OPENCODE_VERSION}" ]; then
 wget -O /tmp/opencode.tar.gz https://github.com/anomalyco/opencode/releases/download/v${OPENCODE_VERSION}/opencode-linux-x64.tar.gz
+
 tar -xzvf /tmp/opencode.tar.gz -C ${ROOTFS}/opt/appimages/
 rm -f /tmp/opencode.tar.gz
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
