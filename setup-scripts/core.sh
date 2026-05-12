@@ -730,7 +730,7 @@ cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
 EOF
 
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
-    curl -fsSL -o /tmp/get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+    curl -fsSL -o /tmp/get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-4
     chmod 755 /tmp/get_helm.sh
     /tmp/get_helm.sh
 EOF
