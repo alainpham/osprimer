@@ -1083,6 +1083,7 @@ fi
 # video and audio group
 cat << EOF | chroot ${ROOTFS} ${CHROOT_BASH}
     adduser $TARGET_USERNAME audio
+    adduser $TARGET_USERNAME pipewire
     adduser $TARGET_USERNAME video
     adduser $TARGET_USERNAME input
     adduser $TARGET_USERNAME lpadmin
